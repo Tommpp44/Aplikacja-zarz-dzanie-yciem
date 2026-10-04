@@ -7,6 +7,7 @@ import { QuickAddBar } from '@/components/tasks/quick-add-bar'
 import { TaskList } from '@/components/tasks/task-list'
 import { FocusEditor } from '@/components/today/focus-editor'
 import { Timeline } from '@/components/today/timeline'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -177,7 +178,18 @@ export default async function TodayPage({ searchParams }: PageProps<'/today'>) {
                     compact
                     icon={Flame}
                     title="No habits today"
-                    description="Create a habit to build consistency."
+                    description={
+                      data.habits.items.length === 0
+                        ? 'Start with one tiny habit — consistency beats intensity.'
+                        : 'Nothing due today. Enjoy the breathing room.'
+                    }
+                    action={
+                      data.habits.items.length === 0 ? (
+                        <Button asChild size="sm">
+                          <Link href="/habits?new=1">Create a habit</Link>
+                        </Button>
+                      ) : undefined
+                    }
                   />
                 ) : (
                   <>

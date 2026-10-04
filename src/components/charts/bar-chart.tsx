@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { ChartEmpty } from './chart-empty'
 import { axisProps, CHART, tooltipStyle, makeFormatter, type ChartFormat } from './chart-theme'
 
 export type BarSeries = { key: string; label: string; color?: string }
@@ -30,6 +31,8 @@ export function BarsChart({
   stacked?: boolean
 }) {
   const formatValue = makeFormatter(format)
+  if (data.every((row) => series.every((sr) => !Number(row[sr.key]))))
+    return <ChartEmpty height={height} label={ariaLabel} />
   return (
     <div role="img" aria-label={ariaLabel} style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">

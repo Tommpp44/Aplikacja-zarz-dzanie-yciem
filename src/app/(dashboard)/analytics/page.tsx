@@ -1,8 +1,11 @@
+import { BarChart3 } from 'lucide-react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BarsChart, TrendChart } from '@/components/charts/lazy'
 import { GoalProgressBar } from '@/components/goals/goal-progress-bar'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/ui/page-header'
 import { Progress } from '@/components/ui/progress'
 import { SegmentedLinks } from '@/components/ui/segmented'
@@ -85,6 +88,13 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
             />
           }
           chartTitle="Tasks completed"
+          empty={
+            allZero(a.productivity.series) && {
+              description: 'Complete a few tasks and your productivity trend appears here.',
+              href: '/tasks',
+              cta: 'Open tasks',
+            }
+          }
         />
       )}
 
@@ -108,6 +118,13 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
               />
             }
             chartTitle="Check-ins"
+            empty={
+              allZero(a.habits.series) && {
+                description: 'Check in on a habit and your consistency builds up here.',
+                href: '/habits?new=1',
+                cta: 'Create a habit',
+              }
+            }
           />
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             {(
@@ -158,6 +175,13 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
             />
           }
           chartTitle="Workouts"
+          empty={
+            allZero(a.fitness.series) && {
+              description: 'Log a workout — even a walk — to start your training history.',
+              href: '/workouts',
+              cta: 'Log a workout',
+            }
+          }
         />
       )}
 
@@ -182,6 +206,13 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
               />
             }
             chartTitle="Net worth"
+            empty={
+              allZero(a.finance.netWorthSeries) && {
+                description: 'Add an account to see how your net worth develops.',
+                href: '/finances/accounts?new=1',
+                cta: 'Add account',
+              }
+            }
           />
           <Card className="mt-6">
             <CardHeader>
@@ -263,6 +294,16 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
             />
           }
           chartTitle="Where your time went"
+          empty={
+            !a.time.eventMinutes &&
+            !a.time.trainingMinutes &&
+            !a.time.focusMinutes && {
+              description:
+                'Plan events, log workouts or give tasks a duration to see your time split.',
+              href: '/calendar?view=week',
+              cta: 'Open calendar',
+            }
+          }
         />
       )}
     </>
@@ -273,10 +314,13 @@ function Section({
   stats,
   chart,
   chartTitle,
+  empty,
 }: {
   stats: [string, React.ReactNode, string?][]
   chart: React.ReactNode
   chartTitle: string
+  /** Shown instead of a flat chart when there is nothing to plot yet. */
+  empty?: { description: string; href: string; cta: string } | false
 }) {
   return (
     <div className="flex flex-col gap-6">
@@ -289,8 +333,26 @@ function Section({
         <CardHeader>
           <CardTitle>{chartTitle}</CardTitle>
         </CardHeader>
-        <CardContent>{chart}</CardContent>
+        <CardContent>
+          {empty ? (
+            <EmptyState
+              compact
+              icon={BarChart3}
+              title="Nothing to chart yet"
+              description={empty.description}
+              action={
+                <Button asChild size="sm">
+                  <Link href={empty.href}>{empty.cta}</Link>
+                </Button>
+              }
+            />
+          ) : (
+            chart
+          )}
+        </CardContent>
       </Card>
     </div>
   )
 }
+
+const allZero = (series: { value: number }[]) => series.every((p) => !p.value)

@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { ChartEmpty } from './chart-empty'
 import { CHART, axisProps, tooltipStyle, makeFormatter, type ChartFormat } from './chart-theme'
 
 export type LinePoint = { label: string; value: number; [key: string]: string | number }
@@ -31,6 +32,7 @@ export function TrendChart({
 }) {
   const id = `grad-${ariaLabel.replace(/\W/g, '')}`
   const formatValue = makeFormatter(format)
+  if (data.every((p) => !p.value)) return <ChartEmpty height={height} label={ariaLabel} />
   return (
     <div role="img" aria-label={ariaLabel} style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
