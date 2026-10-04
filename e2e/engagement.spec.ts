@@ -26,3 +26,29 @@ test('new users get a setup checklist, keyboard shortcuts work', async ({ page }
   await expect(page.getByText("Today's focus")).toBeVisible()
   await expect(checklist).toHaveCount(0)
 })
+
+test('the onboarding starter kit fills an empty account', async ({ page }) => {
+  await signUp(page, uniqueEmail('starter'))
+  await page.getByRole('button', { name: 'Everything' }).click()
+  await page.getByRole('button', { name: 'Continue' }).click()
+  await page.getByRole('button', { name: 'Continue' }).click()
+  for (const pack of [
+    'Three tiny habits',
+    'A morning routine',
+    'A first goal',
+    'A weekly planning ritual',
+  ])
+    await expect(page.getByRole('checkbox', { name: new RegExp(pack) })).toBeChecked()
+  await page.getByRole('button', { name: 'Go to dashboard' }).click()
+  await expect(page).toHaveURL(/\/dashboard/)
+
+  await page.goto('/habits')
+  await expect(page.getByText('Drink a glass of water').first()).toBeVisible()
+  await expect(page.getByText('Read 10 minutes').first()).toBeVisible()
+  await page.goto('/routines')
+  await expect(page.getByText('Morning routine')).toBeVisible()
+  await page.goto('/goals')
+  await expect(page.getByText('Read 12 books this year')).toBeVisible()
+  await page.goto('/tasks?view=today')
+  await expect(page.getByText('Plan your week')).toBeVisible()
+})

@@ -17,10 +17,18 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Field } from '@/components/ui/field'
 import { NativeSelect } from '@/components/ui/native-select'
 import { Switch } from '@/components/ui/switch'
 import { COMMON_CURRENCIES } from '@/lib/money'
+import { applyStarterPacks } from '@/lib/onboarding/actions'
+import {
+  defaultStarterPacks,
+  STARTER_PACK_META,
+  STARTER_PACKS,
+  type StarterPack,
+} from '@/lib/onboarding/starter'
 import { completeOnboarding } from '@/lib/settings/actions'
 import { INTERESTS } from '@/lib/settings/schemas'
 import { cn } from '@/lib/utils'
@@ -63,6 +71,7 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
     budget_warnings: true,
     habit_reminders: false,
   })
+  const [packs, setPacks] = useState<StarterPack[]>([])
   const [pending, startTransition] = useTransition()
   const router = useRouter()
 
@@ -85,6 +94,11 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
       if (!result.ok) {
         toast.error(t(result.error))
         return
+      }
+      if (packs.length > 0) {
+        const starter = await applyStarterPacks({ packs, interests })
+        if (starter.ok) toast.success(t('Your starter kit is ready — tick something off today!'))
+        else toast.error(t(starter.error))
       }
       router.replace(target)
       router.refresh()
@@ -141,7 +155,7 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
               {t('Skip')}
             </Button>
             <Button onClick={goToSettings}>
-              Continue <ArrowRight />
+              {t('Continue')} <ArrowRight />
             </Button>
           </div>
         </section>
@@ -228,8 +242,13 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
             <Button variant="ghost" onClick={() => setStep(1)}>
               {t('Back')}
             </Button>
-            <Button onClick={() => setStep(3)}>
-              Continue <ArrowRight />
+            <Button
+              onClick={() => {
+                setPacks(defaultStarterPacks(interests))
+                setStep(3)
+              }}
+            >
+              {t('Continue')} <ArrowRight />
             </Button>
           </div>
         </section>
@@ -243,6 +262,38 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
               {t('Start with one small step — or explore on your own.')}
             </p>
           </div>
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-2 text-sm font-medium">
+              {t('Quick start — we can set these up for you')}
+            </legend>
+            {STARTER_PACKS.map((pack) => {
+              const meta = STARTER_PACK_META[pack]
+              const checked = packs.includes(pack)
+              return (
+                <label
+                  key={pack}
+                  className={cn(
+                    'bg-card flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm transition-colors',
+                    checked && 'border-primary/60 bg-primary/5',
+                  )}
+                >
+                  <Checkbox
+                    checked={checked}
+                    onCheckedChange={(v) =>
+                      setPacks((prev) =>
+                        v === true ? [...prev, pack] : prev.filter((p) => p !== pack),
+                      )
+                    }
+                  />
+                  <span className="flex flex-col">
+                    <span className="font-medium">{t(meta.label)}</span>
+                    <span className="text-muted-foreground text-xs">{t(meta.hint)}</span>
+                  </span>
+                </label>
+              )
+            })}
+          </fieldset>
+          <p className="text-muted-foreground -mb-2 text-sm">{t('Then jump straight in:')}</p>
           <div className="flex flex-col gap-2">
             {[
               { label: t('Add your first goal'), href: '/goals?new=1', icon: Target },
