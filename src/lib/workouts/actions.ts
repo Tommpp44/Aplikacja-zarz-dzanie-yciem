@@ -337,15 +337,13 @@ export const logSet = authedAction(
       .select('id', { count: 'exact', head: true })
       .eq('workout_exercise_id', workout_exercise_id)
     unwrap(
-      await supabase
-        .from('workout_sets')
-        .insert({
-          ...rest,
-          workout_exercise_id,
-          user_id: user.id,
-          set_number: (count ?? 0) + 1,
-          weight_kg: weight ? displayToKg(weight, u) : null,
-        }),
+      await supabase.from('workout_sets').insert({
+        ...rest,
+        workout_exercise_id,
+        user_id: user.id,
+        set_number: (count ?? 0) + 1,
+        weight_kg: weight ? displayToKg(weight, u) : null,
+      }),
       'save the set',
     )
   },
@@ -502,18 +500,16 @@ export const createPlan = authedAction(
     )
     if (sessions.length) {
       unwrap(
-        await supabase
-          .from('training_plan_sessions')
-          .insert(
-            sessions.map((s) => ({
-              ...s,
-              week: s.week ?? null,
-              template_id: s.template_id || null,
-              notes: s.notes || null,
-              plan_id: plan.id,
-              user_id: user.id,
-            })),
-          ),
+        await supabase.from('training_plan_sessions').insert(
+          sessions.map((s) => ({
+            ...s,
+            week: s.week ?? null,
+            template_id: s.template_id || null,
+            notes: s.notes || null,
+            plan_id: plan.id,
+            user_id: user.id,
+          })),
+        ),
         'save plan sessions',
       )
     }
@@ -549,17 +545,15 @@ export const logActivity = authedAction(
   async ({ distance, ...input }, { supabase, user }) => {
     const u = await units()
     unwrap(
-      await supabase
-        .from('activity_records')
-        .upsert(
-          {
-            ...input,
-            distance_m: distance ? Math.round(displayToMeters(distance, u)) : null,
-            user_id: user.id,
-            source: 'manual',
-          },
-          { onConflict: 'user_id,record_date,source' },
-        ),
+      await supabase.from('activity_records').upsert(
+        {
+          ...input,
+          distance_m: distance ? Math.round(displayToMeters(distance, u)) : null,
+          user_id: user.id,
+          source: 'manual',
+        },
+        { onConflict: 'user_id,record_date,source' },
+      ),
       'save activity',
     )
   },
