@@ -207,7 +207,7 @@
   }
   /* Visible keyboard focus everywhere. */
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-ring;
+    @apply outline-ring outline-2 outline-offset-2;
   }
   .tabular {
     font-variant-numeric: tabular-nums;
@@ -240,13 +240,13 @@
   @apply my-2 list-decimal pl-6;
 }
 .prose-lifeos :where(blockquote) {
-  @apply my-3 border-l-2 pl-4 text-muted-foreground;
+  @apply text-muted-foreground my-3 border-l-2 pl-4;
 }
 .prose-lifeos :where(code) {
-  @apply rounded bg-muted px-1 py-0.5 font-mono text-[13px];
+  @apply bg-muted rounded px-1 py-0.5 font-mono text-[13px];
 }
 .prose-lifeos :where(pre) {
-  @apply my-3 overflow-x-auto rounded-lg bg-muted p-3 font-mono text-[13px];
+  @apply bg-muted my-3 overflow-x-auto rounded-lg p-3 font-mono text-[13px];
 }
 .prose-lifeos :where(a) {
   @apply text-primary underline underline-offset-2;
@@ -256,7 +256,7 @@
 }
 .prose-lifeos .is-editor-empty:first-child::before {
   content: attr(data-placeholder);
-  @apply pointer-events-none float-left h-0 text-muted-foreground;
+  @apply text-muted-foreground pointer-events-none float-left h-0;
 }
 .ProseMirror:focus {
   outline: none;

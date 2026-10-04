@@ -10,10 +10,11 @@ function SubmitButton({
   children,
   pendingLabel,
   disabled,
+  type = 'submit',
   ...props
 }: ButtonProps & { pending: boolean; pendingLabel?: string }) {
   return (
-    <Button type="submit" disabled={pending || disabled} aria-busy={pending} {...props}>
+    <Button type={type} disabled={pending || disabled} aria-busy={pending} {...props}>
       {pending && <Spinner />}
       {pending && pendingLabel ? pendingLabel : children}
     </Button>
