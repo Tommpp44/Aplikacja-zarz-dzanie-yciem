@@ -1,5 +1,6 @@
 'use client'
 
+import { Check } from 'lucide-react'
 import { useOptimistic, useTransition } from 'react'
 import { toast } from 'sonner'
 import { colorClass } from '@/lib/colors'
@@ -63,11 +64,15 @@ export function WeekGrid({
                 due &&
                 !future &&
                 'bg-muted text-muted-foreground hover:bg-accent',
-              !done && (!due || future) && 'text-muted-foreground/50',
+              !done && (!due || future) && 'text-muted-foreground border border-dashed',
               d === today && !done && 'ring-ring ring-1',
             )}
           >
-            {WEEKDAY_SHORT[weekdayOf(d)]!.slice(0, 2)}
+            {done ? (
+              <Check className="size-3.5" strokeWidth={3} aria-hidden />
+            ) : (
+              WEEKDAY_SHORT[weekdayOf(d)]!.slice(0, 2)
+            )}
           </button>
         )
       })}

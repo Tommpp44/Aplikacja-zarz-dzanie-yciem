@@ -10,7 +10,7 @@ import { z } from 'zod'
 import { Field } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { SubmitButton } from '@/components/ui/submit-button'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { sendMagicLink, signIn } from '@/lib/auth/actions'
 import { emailSchema } from '@/lib/auth/schemas'
 
@@ -59,6 +59,7 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
         <p className="text-muted-foreground mt-1 text-sm">Sign in to see what matters today.</p>
       </div>
       <Tabs
+        className="flex flex-col gap-5"
         value={mode}
         onValueChange={(v) => {
           setMode(v as 'password' | 'magic')
@@ -73,89 +74,94 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
             Magic link
           </TabsTrigger>
         </TabsList>
-      </Tabs>
 
-      {error && (
-        <p
-          role="alert"
-          className="bg-destructive-soft text-destructive rounded-md px-3 py-2 text-sm"
-        >
-          {error}
-        </p>
-      )}
-
-      {mode === 'password' ? (
-        <form
-          noValidate
-          className="flex flex-col gap-4"
-          onSubmit={pw.handleSubmit((values) =>
-            startTransition(async () => {
-              const result = await signIn({ ...values, next })
-              if (!result.ok) return setError(result.error)
-              router.replace(result.data.redirectTo)
-              router.refresh()
-            }),
-          )}
-        >
-          <Field label="Email" htmlFor="email" error={pw.formState.errors.email?.message}>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              autoFocus
-              {...pw.register('email')}
-            />
-          </Field>
-          <Field label="Password" htmlFor="password" error={pw.formState.errors.password?.message}>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              {...pw.register('password')}
-            />
-          </Field>
-          <div className="-mt-2 text-right">
-            <Link
-              href="/forgot-password"
-              className="text-muted-foreground hover:text-foreground text-xs"
-            >
-              Forgot password?
-            </Link>
-          </div>
-          <SubmitButton pending={pending} pendingLabel="Signing in…">
-            Sign in
-          </SubmitButton>
-        </form>
-      ) : (
-        <form
-          noValidate
-          className="flex flex-col gap-4"
-          onSubmit={magic.handleSubmit((values) =>
-            startTransition(async () => {
-              const result = await sendMagicLink({ ...values, next })
-              if (!result.ok) return setError(result.error)
-              setSentTo(values.email)
-            }),
-          )}
-        >
-          <Field
-            label="Email"
-            htmlFor="magic-email"
-            error={magic.formState.errors.email?.message}
-            hint="We'll email you a one-time sign-in link."
+        {error && (
+          <p
+            role="alert"
+            className="bg-destructive-soft text-destructive rounded-md px-3 py-2 text-sm"
           >
-            <Input
-              id="magic-email"
-              type="email"
-              autoComplete="email"
-              {...magic.register('email')}
-            />
-          </Field>
-          <SubmitButton pending={pending} pendingLabel="Sending…">
-            Send magic link
-          </SubmitButton>
-        </form>
-      )}
+            {error}
+          </p>
+        )}
+
+        <TabsContent value="password">
+          <form
+            noValidate
+            className="flex flex-col gap-4"
+            onSubmit={pw.handleSubmit((values) =>
+              startTransition(async () => {
+                const result = await signIn({ ...values, next })
+                if (!result.ok) return setError(result.error)
+                router.replace(result.data.redirectTo)
+                router.refresh()
+              }),
+            )}
+          >
+            <Field label="Email" htmlFor="email" error={pw.formState.errors.email?.message}>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                autoFocus
+                {...pw.register('email')}
+              />
+            </Field>
+            <Field
+              label="Password"
+              htmlFor="password"
+              error={pw.formState.errors.password?.message}
+            >
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                {...pw.register('password')}
+              />
+            </Field>
+            <div className="-mt-2 text-right">
+              <Link
+                href="/forgot-password"
+                className="text-muted-foreground hover:text-foreground text-xs"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <SubmitButton pending={pending} pendingLabel="Signing in…">
+              Sign in
+            </SubmitButton>
+          </form>
+        </TabsContent>
+        <TabsContent value="magic">
+          <form
+            noValidate
+            className="flex flex-col gap-4"
+            onSubmit={magic.handleSubmit((values) =>
+              startTransition(async () => {
+                const result = await sendMagicLink({ ...values, next })
+                if (!result.ok) return setError(result.error)
+                setSentTo(values.email)
+              }),
+            )}
+          >
+            <Field
+              label="Email"
+              htmlFor="magic-email"
+              error={magic.formState.errors.email?.message}
+              hint="We'll email you a one-time sign-in link."
+            >
+              <Input
+                id="magic-email"
+                type="email"
+                autoComplete="email"
+                {...magic.register('email')}
+              />
+            </Field>
+            <SubmitButton pending={pending} pendingLabel="Sending…">
+              Send magic link
+            </SubmitButton>
+          </form>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

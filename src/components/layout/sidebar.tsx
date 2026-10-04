@@ -62,7 +62,7 @@ export function Sidebar() {
         {NAV_GROUPS.map((group, i) => (
           <div key={group.label ?? i} className="mb-3">
             {group.label && (
-              <p className="text-muted-foreground/80 mb-1 px-2 text-[11px] font-medium tracking-wide uppercase">
+              <p className="text-muted-foreground mb-1 px-2 text-[11px] font-medium tracking-wide uppercase">
                 {group.label}
               </p>
             )}
@@ -74,7 +74,7 @@ export function Sidebar() {
           </div>
         ))}
         <div className="mb-3">
-          <p className="text-muted-foreground/80 mb-1 px-2 text-[11px] font-medium tracking-wide uppercase">
+          <p className="text-muted-foreground mb-1 px-2 text-[11px] font-medium tracking-wide uppercase">
             More
           </p>
           <div className="flex flex-col gap-0.5">

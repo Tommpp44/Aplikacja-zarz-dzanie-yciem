@@ -11,7 +11,7 @@ test.describe('authentication', () => {
   test('rejects a wrong password with a human message', async ({ page }) => {
     await page.goto('/login')
     await page.getByLabel('Email').fill('nobody@example.com')
-    await page.getByLabel('Password').fill('wrong-password')
+    await page.locator('input').and(page.getByLabel('Password')).fill('wrong-password')
     await page.getByRole('button', { name: 'Sign in' }).click()
     await expect(
       page.getByRole('alert').filter({ hasText: 'Incorrect email or password.' }),

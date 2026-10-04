@@ -2,7 +2,7 @@
 
 import { CalendarDays, CheckSquare, Dumbbell, Repeat } from 'lucide-react'
 import Link from 'next/link'
-import { useOptimistic, useTransition } from 'react'
+import { Fragment, useOptimistic, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Checkbox } from '@/components/ui/checkbox'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -110,10 +110,10 @@ export function Timeline({
       {state.timed.length > 0 && (
         <ol className="relative flex flex-col divide-y" aria-label="Timeline">
           {state.timed.map((entry, i) => (
-            <div key={entry.key}>
+            <Fragment key={entry.key}>
               {i === idx && <NowMarker now={now} />}
               <Row entry={entry} onToggle={toggle} />
-            </div>
+            </Fragment>
           ))}
           {idx === state.timed.length && <NowMarker now={now} />}
         </ol>

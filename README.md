@@ -83,6 +83,7 @@ npm run test:e2e     # Playwright E2E against a production build + local Supabas
 - **Component tests** cover Quick Add, the transaction form and task items.
 - **RLS tests** (`supabase/tests/rls.test.sql`) prove users can't read, modify or reference other users' data.
 - **E2E** runs `npm run build` output on port 3100 (`npm run build && npm run test:e2e`). Every run signs up brand-new users, so it never touches existing data. Use only the local stack (or a dedicated test project) — never production.
+- **Accessibility** — `e2e/a11y.spec.ts` runs axe-core (WCAG 2.1 A/AA) over every main page in light and dark mode as part of the E2E suite.
 
 ## Deployment
 

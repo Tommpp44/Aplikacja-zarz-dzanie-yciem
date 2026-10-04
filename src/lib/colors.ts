@@ -33,17 +33,17 @@ const BG: Record<EntityColor, string> = {
 }
 
 const TEXT: Record<EntityColor, string> = {
-  slate: 'text-slate-500 dark:text-slate-400',
-  indigo: 'text-indigo-600 dark:text-indigo-400',
-  blue: 'text-blue-600 dark:text-blue-400',
-  cyan: 'text-cyan-600 dark:text-cyan-400',
-  teal: 'text-teal-600 dark:text-teal-400',
-  emerald: 'text-emerald-600 dark:text-emerald-400',
-  amber: 'text-amber-600 dark:text-amber-400',
-  orange: 'text-orange-600 dark:text-orange-400',
-  rose: 'text-rose-600 dark:text-rose-400',
-  pink: 'text-pink-600 dark:text-pink-400',
-  violet: 'text-violet-600 dark:text-violet-400',
+  slate: 'text-slate-600 dark:text-slate-400',
+  indigo: 'text-indigo-700 dark:text-indigo-400',
+  blue: 'text-blue-700 dark:text-blue-400',
+  cyan: 'text-cyan-700 dark:text-cyan-400',
+  teal: 'text-teal-700 dark:text-teal-400',
+  emerald: 'text-emerald-700 dark:text-emerald-400',
+  amber: 'text-amber-700 dark:text-amber-400',
+  orange: 'text-orange-700 dark:text-orange-400',
+  rose: 'text-rose-700 dark:text-rose-400',
+  pink: 'text-pink-700 dark:text-pink-400',
+  violet: 'text-violet-700 dark:text-violet-400',
 }
 
 const SOFT: Record<EntityColor, string> = {
