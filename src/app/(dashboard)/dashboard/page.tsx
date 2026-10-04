@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { GettingStarted } from '@/components/dashboard/getting-started'
 import { NudgeCard } from '@/components/dashboard/nudge-card'
-import { Celebrate } from '@/components/engagement/celebrate'
+import { InstallPrompt } from '@/components/engagement/install-prompt'
+import { HabitCelebrations } from '@/components/engagement/habit-celebrations'
 import { CustomizeDashboard } from '@/components/dashboard/customize-dashboard'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { QuickActions } from '@/components/dashboard/quick-actions'
@@ -74,14 +75,16 @@ export default async function DashboardPage() {
           />
         }
       />
-      <Celebrate
-        when={dueCount > 0 && doneCount >= dueCount}
-        onceKey={`habits:${today}`}
-        message="All habits done today — great work!"
+      <HabitCelebrations
+        items={data.day.habits.items}
+        dueCount={dueCount}
+        doneCount={doneCount}
+        today={today}
       />
       <div className="mb-6 flex flex-col gap-4">
         {showChecklist && <GettingStarted items={data.checklist!} />}
         {nudge && <NudgeCard nudge={nudge} />}
+        {!showChecklist && <InstallPrompt />}
         <Card>
           <CardContent className="pt-4">
             <p className="text-muted-foreground mb-2 text-xs font-medium">Today&apos;s focus</p>

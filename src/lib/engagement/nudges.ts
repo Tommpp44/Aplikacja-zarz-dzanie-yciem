@@ -39,3 +39,36 @@ export function pickNudge(input: {
   }
   return null
 }
+
+const DAY_MILESTONES = [7, 14, 21, 30, 50, 75, 100, 150, 200, 365]
+const WEEK_MILESTONES = [4, 8, 12, 26, 52]
+
+/** Returns the milestone a streak just hit (exact match), otherwise null. */
+export function streakMilestone(streak: number, unit: 'days' | 'weeks' = 'days') {
+  const list = unit === 'weeks' ? WEEK_MILESTONES : DAY_MILESTONES
+  if (list.includes(streak)) return streak
+  if (unit === 'days' && streak > 365 && streak % 100 === 0) return streak
+  return null
+}
+
+/** The most impressive milestone among habits completed today. */
+export function bestMilestoneToday(
+  items: {
+    id: string
+    name: string
+    doneToday: boolean
+    streak: number
+    unit: 'days' | 'weeks'
+  }[],
+) {
+  let best: { id: string; name: string; streak: number; unit: 'days' | 'weeks' } | null = null
+  for (const i of items) {
+    if (!i.doneToday) continue
+    const m = streakMilestone(i.streak, i.unit)
+    if (m === null) continue
+    const score = i.unit === 'weeks' ? m * 7 : m
+    const bestScore = best ? (best.unit === 'weeks' ? best.streak * 7 : best.streak) : -1
+    if (score > bestScore) best = { id: i.id, name: i.name, streak: m, unit: i.unit }
+  }
+  return best
+}

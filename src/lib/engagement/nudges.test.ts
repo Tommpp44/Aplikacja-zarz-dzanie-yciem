@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { pickNudge } from './nudges'
+import { bestMilestoneToday, pickNudge, streakMilestone } from './nudges'
 
 const none = { dailyReview: false, journal: false, weeklyReview: false }
 
@@ -43,5 +43,26 @@ describe('pickNudge', () => {
       status: { ...none, weeklyReview: true },
     })
     expect(done?.kind).toBe('evening')
+  })
+})
+
+describe('streak milestones', () => {
+  it('recognises exact milestones only', () => {
+    expect(streakMilestone(7)).toBe(7)
+    expect(streakMilestone(8)).toBeNull()
+    expect(streakMilestone(4, 'weeks')).toBe(4)
+    expect(streakMilestone(7, 'weeks')).toBeNull()
+    expect(streakMilestone(500)).toBe(500)
+  })
+
+  it('picks the biggest milestone among habits done today', () => {
+    expect(
+      bestMilestoneToday([
+        { id: 'a', name: 'Read', doneToday: true, streak: 7, unit: 'days' },
+        { id: 'b', name: 'Gym', doneToday: true, streak: 4, unit: 'weeks' },
+        { id: 'c', name: 'Water', doneToday: false, streak: 30, unit: 'days' },
+      ]),
+    ).toMatchObject({ id: 'b', streak: 4 })
+    expect(bestMilestoneToday([])).toBeNull()
   })
 })

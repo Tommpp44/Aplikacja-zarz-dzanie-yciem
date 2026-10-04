@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Celebrate } from '@/components/engagement/celebrate'
+import { HabitCelebrations } from '@/components/engagement/habit-celebrations'
 import { HabitsBoard } from '@/components/habits/habits-board'
 import { PageHeader } from '@/components/ui/page-header'
 import { Progress } from '@/components/ui/progress'
@@ -27,11 +27,7 @@ export default async function HabitsPage({ searchParams }: PageProps<'/habits'>)
 
   return (
     <>
-      <Celebrate
-        when={dueCount > 0 && doneCount >= dueCount}
-        onceKey={`habits:${today}`}
-        message="All habits done today — great work!"
-      />
+      <HabitCelebrations items={items} dueCount={dueCount} doneCount={doneCount} today={today} />
       <PageHeader title="Habits" description="One tap to log. Consistency beats perfection." />
       {items.length > 0 && (
         <div className="bg-card mb-6 grid grid-cols-2 gap-4 rounded-xl border p-5 sm:grid-cols-4">

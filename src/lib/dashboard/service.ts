@@ -42,18 +42,29 @@ export function categoryWeeklyDeltas(
 export async function getDashboardData(ctx: UserContext) {
   const { supabase, user, today, currency, prefs } = ctx
   const weekStart = startOfWeekISO(today, prefs.week_start)
-  const [day, finance, goals, notes, recentTxns] = await Promise.all([
-    getTodayData(ctx),
-    getFinanceOverview(supabase, user.id, today, currency),
-    listGoalsWithProgress(supabase, user.id, today, ['active']),
-    listNotes(supabase, user.id, { limit: 4 }),
-    listTransactionsInRange(supabase, user.id, addDaysISO(weekStart, -56), today),
-  ])
-  // First-week checklist (skipped once dismissed or completed).
-  const [checklist, reflection] = await Promise.all([
-    prefs.last_used.checklist_dismissed ? null : getChecklist(supabase, user.id),
-    getReflectionStatus(supabase, user.id, today, weekStart),
-  ])
+  // Finance widget period (configurable): month, quarter or year to date.
+  const financeRange = prefs.last_used.finance_range ?? 'month'
+  const periodStart =
+    financeRange === 'year'
+      ? `${today.slice(0, 4)}-01-01`
+      : financeRange === 'quarter'
+        ? addMonthsISO(startOfMonthISO(today), -2)
+        : startOfMonthISO(today)
+  // Everything independent is fetched in parallel.
+  const [day, finance, goals, notes, recentTxns, checklist, reflection, periodTxns] =
+    await Promise.all([
+      getTodayData(ctx),
+      getFinanceOverview(supabase, user.id, today, currency),
+      listGoalsWithProgress(supabase, user.id, today, ['active']),
+      listNotes(supabase, user.id, { limit: 4 }),
+      listTransactionsInRange(supabase, user.id, addDaysISO(weekStart, -56), today),
+      // First-week checklist (skipped once dismissed).
+      prefs.last_used.checklist_dismissed ? null : getChecklist(supabase, user.id),
+      getReflectionStatus(supabase, user.id, today, weekStart),
+      financeRange === 'month'
+        ? null
+        : listTransactionsInRange(supabase, user.id, periodStart, today),
+    ])
   const categoryNames = new Map(finance.categories.map((c) => [c.id, c.name]))
   const nextEvent = day.timeline.timed.find(
     (e) => e.kind === 'event' && (e.endTime ?? e.time)! >= day.now,
@@ -78,21 +89,7 @@ export async function getDashboardData(ctx: UserContext) {
     dueRecurring: finance.dueRecurring.length,
   })
 
-  // Finance widget period (configurable): month, quarter or year to date.
-  const financeRange = prefs.last_used.finance_range ?? 'month'
-  const periodStart =
-    financeRange === 'year'
-      ? `${today.slice(0, 4)}-01-01`
-      : financeRange === 'quarter'
-        ? addMonthsISO(startOfMonthISO(today), -2)
-        : startOfMonthISO(today)
-  const periodSummary =
-    financeRange === 'month'
-      ? finance.month
-      : summarize(
-          (await listTransactionsInRange(supabase, user.id, periodStart, today)) as Txn[],
-          currency,
-        )
+  const periodSummary = periodTxns ? summarize(periodTxns as Txn[], currency) : finance.month
 
   return {
     checklist,
