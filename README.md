@@ -107,6 +107,18 @@ With `SMTP_URL` (any SMTP provider) and `EMAIL_FROM` set, users can opt in under
 
 The hourly cron sends each digest at most once per day/week (`email_deliveries`). "Send a test e-mail" in settings sends today's agenda immediately. Locally, Supabase's Mailpit catches everything (UI at http://127.0.0.1:54324).
 
+## Integrations
+
+Settings → Integrations:
+
+- **Calendars (Google, Outlook, iCloud)** — paste the calendar's iCal link (Google: "Secret address in iCal format"; Outlook: published ICS link; iCloud: public calendar link) or import an `.ics` file. Events are read-only copies, refreshed hourly by the cron and removed when they disappear from the feed. Feeds are fetched server-side with SSRF protection (https only, public addresses only, size/time limits).
+- **Apple Health** — import `export.zip` / `export.xml` (iPhone: Health → profile → Export All Health Data). Parsed in the browser; only daily totals (steps, distance, exercise minutes, calories) and workouts from the last year are sent. When several sources record the same day, the largest value wins.
+- **GPX** — runs and rides from Strava, Garmin Connect, Komoot or any GPS watch; distance, duration and elevation are calculated.
+- **Strava** (optional) — set `STRAVA_CLIENT_ID` / `STRAVA_CLIENT_SECRET` (and `SUPABASE_SERVICE_ROLE_KEY`); users connect with OAuth and new activities are imported hourly. Tokens live in `integration_tokens`, which only the server can read.
+- **Bank** — CSV import of transactions (Finances → Transactions).
+
+All imports are idempotent: records carry their source and external id, so re-importing never creates duplicates.
+
 ## Deployment
 
 1. Create a Supabase project, run `npx supabase db push`, configure Auth URLs.

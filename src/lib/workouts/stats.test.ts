@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { formatDistance, formatPace, formatWeight } from '@/lib/units'
 import {
+  mergeActivityByDay,
   e1rmSeries,
   estimatedOneRepMax,
   isNewRecord,
@@ -96,5 +97,54 @@ describe('e1rmSeries', () => {
     expect(series.map((p) => p.date)).toEqual(['2026-01-01', '2026-02-01'])
     expect(series[0]!.e1rm).toBeCloseTo(80 * (1 + 5 / 30))
     expect(series[1]!.e1rm).toBe(100)
+  })
+})
+
+describe('mergeActivityByDay', () => {
+  it('keeps the largest value per metric across sources', () => {
+    const merged = mergeActivityByDay([
+      {
+        record_date: '2026-10-01',
+        steps: 8000,
+        distance_m: null,
+        active_minutes: 30,
+        calories: null,
+        source: 'manual',
+      },
+      {
+        record_date: '2026-10-01',
+        steps: 9500,
+        distance_m: '6200.5',
+        active_minutes: 20,
+        calories: 400,
+        source: 'apple_health',
+      },
+      {
+        record_date: '2026-10-02',
+        steps: 100,
+        distance_m: null,
+        active_minutes: null,
+        calories: null,
+        source: 'manual',
+      },
+    ])
+    expect(merged).toEqual([
+      {
+        record_date: '2026-10-01',
+        steps: 9500,
+        distance_m: 6200.5,
+        active_minutes: 30,
+        calories: 400,
+        source: 'mixed',
+      },
+      {
+        record_date: '2026-10-02',
+        steps: 100,
+        distance_m: null,
+        active_minutes: null,
+        calories: null,
+        source: 'manual',
+      },
+    ])
   })
 })

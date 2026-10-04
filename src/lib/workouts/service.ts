@@ -11,7 +11,7 @@ import {
   plannedSessionsPerWeek,
   sessionsForDate,
 } from './repository'
-import { personalRecords, totalVolume, weeklyFrequency } from './stats'
+import { mergeActivityByDay, personalRecords, totalVolume, weeklyFrequency } from './stats'
 
 /** Training snapshot used by Workouts, Today and the Dashboard. */
 export async function getTrainingOverview(
@@ -26,6 +26,7 @@ export async function getTrainingOverview(
     listPlans(db, userId),
     listActivity(db, userId, addDaysISO(today, -29), today),
   ])
+  const mergedActivity = mergeActivityByDay(activity)
   const completed = workouts.filter((w) => w.status === 'completed')
   const thisWeek = completed.filter((w) => w.performed_on >= weekStart)
   const todaysSessions = sessionsForDate(plans, today)
@@ -44,8 +45,9 @@ export async function getTrainingOverview(
     plans,
     todaysSessions: todaysSessions.map((s) => ({ ...s, done: doneSessionIds.has(s.id) })),
     inProgress: workouts.find((w) => w.status === 'in_progress') ?? null,
-    activityToday: activity.find((a) => a.record_date === today) ?? null,
-    activity,
+    activityToday: mergedActivity.find((a) => a.record_date === today) ?? null,
+    activity: mergedActivity,
+    manualActivity: activity.filter((a) => a.source === 'manual'),
   }
 }
 

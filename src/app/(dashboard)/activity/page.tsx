@@ -58,7 +58,7 @@ export default async function ActivityPage() {
             <CardTitle>{t('Log activity')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ActivityForm today={today} units={units} records={tr.activity} />
+            <ActivityForm today={today} units={units} records={tr.manualActivity} />
           </CardContent>
         </Card>
         <Card>

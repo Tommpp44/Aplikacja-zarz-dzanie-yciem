@@ -207,4 +207,74 @@ export const extra: Dict = {
   "Sent — check your inbox for today's agenda.":
     'Wysłano — sprawdź skrzynkę, czeka tam plan na dziś.',
   'Send a test e-mail': 'Wyślij testowy e-mail',
+  'Calendar added — {n} events imported': 'Kalendarz dodany — zaimportowano wydarzenia: {n}',
+  '{n} events imported': 'Zaimportowano wydarzenia: {n}',
+  'Last sync failed: {error}': 'Ostatnia synchronizacja nie powiodła się: {error}',
+  '{n} events · synced {date}': 'wydarzenia: {n} · zsynchronizowano {date}',
+  'Not synced yet': 'Jeszcze nie zsynchronizowano',
+  Error: 'Błąd',
+  'Sync {name} now': 'Synchronizuj teraz: {name}',
+  'Calendar removed': 'Kalendarz usunięty',
+  'Calendar link (iCal)': 'Link do kalendarza (iCal)',
+  Work: 'Praca',
+  'Where do I find the link?': 'Gdzie znajdę link?',
+  'Google Calendar: Settings → your calendar → “Secret address in iCal format”.':
+    'Kalendarz Google: Ustawienia → Twój kalendarz → „Tajny adres w formacie iCal”.',
+  'Outlook: Settings → Calendar → Shared calendars → Publish a calendar → ICS link.':
+    'Outlook: Ustawienia → Kalendarz → Udostępnione kalendarze → Opublikuj kalendarz → link ICS.',
+  'iCloud: Calendar → share icon next to the calendar → Public Calendar → copy link.':
+    'iCloud: Kalendarz → ikona udostępniania przy kalendarzu → Kalendarz publiczny → skopiuj link.',
+  'Events are read-only copies and refresh every hour.':
+    'Wydarzenia są kopiami tylko do odczytu i odświeżają się co godzinę.',
+  'Add calendar': 'Dodaj kalendarz',
+  'Import .ics file': 'Importuj plik .ics',
+  'Imported {days} days of activity and {workouts} workouts':
+    'Zaimportowano dni aktywności: {days} i treningi: {workouts}',
+  'This file could not be read. Use export.zip or export.xml from the Health app.':
+    'Nie udało się odczytać pliku. Użyj eksport.zip lub eksport.xml z aplikacji Zdrowie.',
+  'No GPS tracks found in these files.': 'W tych plikach nie znaleziono tras GPS.',
+  '{n} workouts imported': 'Zaimportowano treningi: {n}',
+  'Import failed. Please try again.': 'Import się nie powiódł. Spróbuj ponownie.',
+  'On iPhone: Health → your photo → Export All Health Data. Then pick the export.zip here. Steps, distance and workouts from the last year are imported; the file never leaves your device.':
+    'Na iPhonie: Zdrowie → Twoje zdjęcie → Eksportuj wszystkie dane zdrowotne. Potem wybierz tu plik eksport.zip. Importujemy kroki, dystans i treningi z ostatniego roku; plik nie opuszcza Twojego urządzenia.',
+  'Reading the export': 'Odczytywanie eksportu',
+  'Choose export file': 'Wybierz plik eksportu',
+  'GPX files': 'Pliki GPX',
+  'Runs and rides exported from Strava, Garmin Connect, Komoot or any GPS watch. Distance, time and elevation are calculated automatically; duplicates are skipped.':
+    'Biegi i jazdy wyeksportowane ze Stravy, Garmin Connect, Komoot lub dowolnego zegarka GPS. Dystans, czas i przewyższenie liczymy automatycznie; duplikaty są pomijane.',
+  'Choose GPX files': 'Wybierz pliki GPX',
+  Calendars: 'Kalendarze',
+  'Show Google, Outlook or iCloud events next to your plans — paste the calendar’s iCal link or import an .ics file.':
+    'Pokaż wydarzenia z Google, Outlooka lub iCloud obok swoich planów — wklej link iCal kalendarza albo zaimportuj plik .ics.',
+  'Health and training': 'Zdrowie i trening',
+  'Bring in steps and workouts. Imported records are marked with their source and never duplicated.':
+    'Zaimportuj kroki i treningi. Importowane wpisy są oznaczone źródłem i nigdy się nie dublują.',
+  Bank: 'Bank',
+  'Import transactions from your bank’s CSV export (most Polish and EU banks work). Direct bank connections need a licensed provider and are not available yet.':
+    'Importuj transakcje z pliku CSV z banku (działa z większością polskich i europejskich banków). Bezpośrednie połączenie z bankiem wymaga licencjonowanego dostawcy i nie jest jeszcze dostępne.',
+  'CSV import': 'Import CSV',
+  'Open transactions': 'Otwórz transakcje',
+  'Strava connected — your recent activities are imported.':
+    'Strava połączona — Twoje ostatnie aktywności zostały zaimportowane.',
+  'Strava connection cancelled.': 'Anulowano łączenie ze Stravą.',
+  'Could not connect Strava. Please try again.':
+    'Nie udało się połączyć ze Stravą. Spróbuj ponownie.',
+  'Needs attention': 'Wymaga uwagi',
+  'Runs, rides and swims are imported automatically every hour.':
+    'Biegi, jazdy i pływanie importują się automatycznie co godzinę.',
+  'Automatic Strava sync is not set up on this server — export GPX files from Strava and import them above.':
+    'Automatyczna synchronizacja ze Stravą nie jest skonfigurowana na tym serwerze — wyeksportuj pliki GPX ze Stravy i zaimportuj je powyżej.',
+  '{n} activities checked': 'Sprawdzono aktywności: {n}',
+  'Sync now': 'Synchronizuj teraz',
+  'Strava disconnected': 'Strava odłączona',
+  Disconnect: 'Odłącz',
+  'Connect with Strava': 'Połącz ze Stravą',
+  'This is not an .ics calendar file.': 'To nie jest plik kalendarza .ics.',
+  'Paste an https:// or webcal:// calendar link.':
+    'Wklej link do kalendarza zaczynający się od https:// lub webcal://.',
+  'This link cannot be used. Use the public or secret iCal address of the calendar.':
+    'Tego linku nie można użyć. Użyj publicznego lub tajnego adresu iCal kalendarza.',
+  'We couldn’t read this calendar. Check that the link is the iCal (.ics) address.':
+    'Nie udało się odczytać kalendarza. Sprawdź, czy to adres iCal (.ics).',
+  'Strava is not configured on this server.': 'Strava nie jest skonfigurowana na tym serwerze.',
 }

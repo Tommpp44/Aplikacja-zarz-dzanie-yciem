@@ -125,3 +125,41 @@ export function e1rmSeries(
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, e1rm]) => ({ date, e1rm }))
 }
+
+type ActivityLike = {
+  record_date: string
+  steps: number | null
+  distance_m: number | string | null
+  active_minutes: number | null
+  calories: number | null
+  source: string
+}
+
+/**
+ * One row per day when several sources (manual, Apple Health…) recorded the
+ * same day: the largest value per metric wins, so nothing is double counted.
+ */
+export function mergeActivityByDay<T extends ActivityLike>(records: T[]): T[] {
+  const byDate = new Map<string, T>()
+  const max = (a: number | null, b: number | null) =>
+    a === null ? b : b === null ? a : Math.max(a, b)
+  for (const r of records) {
+    const prev = byDate.get(r.record_date)
+    if (!prev) {
+      byDate.set(r.record_date, { ...r })
+      continue
+    }
+    byDate.set(r.record_date, {
+      ...prev,
+      steps: max(prev.steps, r.steps),
+      distance_m: max(
+        prev.distance_m === null ? null : Number(prev.distance_m),
+        r.distance_m === null ? null : Number(r.distance_m),
+      ),
+      active_minutes: max(prev.active_minutes, r.active_minutes),
+      calories: max(prev.calories, r.calories),
+      source: prev.source === r.source ? prev.source : 'mixed',
+    })
+  }
+  return [...byDate.values()].sort((a, b) => a.record_date.localeCompare(b.record_date))
+}

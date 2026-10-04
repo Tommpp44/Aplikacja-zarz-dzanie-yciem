@@ -10,6 +10,7 @@ import {
   ProfileForm,
   SignOutEverywhereButton,
 } from '@/components/settings/settings-forms'
+import { IntegrationsSection } from '@/components/integrations/integrations-section'
 import { PushToggle } from '@/components/settings/push-toggle'
 import { SendTestEmailButton } from '@/components/settings/send-test-email'
 import { LanguagePicker } from '@/components/shared/language-picker'
@@ -20,21 +21,8 @@ import { getOnboardedUserContext } from '@/lib/settings/service'
 import { emailConfigured } from '@/lib/email/send'
 import { publicEnv } from '@/lib/env'
 import { getT, pageTitle } from '@/lib/i18n/server'
-import { msg } from '@/lib/i18n/translate'
 
 export const generateMetadata = pageTitle('Settings')
-
-const INTEGRATIONS = [
-  { name: 'Google Calendar', area: msg('Calendar') },
-  { name: 'Outlook Calendar', area: msg('Calendar') },
-  { name: 'Apple Calendar', area: msg('Calendar') },
-  { name: 'Apple Health', area: msg('Activity') },
-  { name: 'Google Fit / Health Connect', area: msg('Activity') },
-  { name: 'Garmin', area: msg('Workouts') },
-  { name: 'Strava', area: msg('Workouts') },
-  { name: 'Fitbit', area: msg('Activity') },
-  { name: 'Open Banking', area: msg('Finances') },
-]
 
 export default async function SettingsSectionPage({ params }: PageProps<'/settings/[section]'>) {
   const t = await getT()
@@ -180,29 +168,7 @@ export default async function SettingsSectionPage({ params }: PageProps<'/settin
           </div>
         </div>
       )}
-      {id === 'integrations' && (
-        <>
-          <p className="text-muted-foreground max-w-xl text-sm">
-            {t(
-              'Integrations are on the roadmap. LifeOS already stores the source of every imported record, so connected data will appear next to your manual entries without duplicates.',
-            )}
-          </p>
-          <ul className="grid max-w-2xl gap-2 sm:grid-cols-2">
-            {INTEGRATIONS.map((i) => (
-              <li
-                key={i.name}
-                className="bg-card flex items-center justify-between rounded-lg border px-4 py-3 text-sm"
-              >
-                <span>
-                  <span className="block font-medium">{i.name}</span>
-                  <span className="text-muted-foreground text-xs">{t(i.area)}</span>
-                </span>
-                <Badge variant="secondary">{t('Planned')}</Badge>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      {id === 'integrations' && <IntegrationsSection />}
       {id === 'billing' && (
         <div className="bg-card flex max-w-xl flex-col gap-2 rounded-xl border p-5">
           <div className="flex items-center gap-2">

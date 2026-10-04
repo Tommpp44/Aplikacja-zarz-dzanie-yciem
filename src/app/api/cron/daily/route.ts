@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { todayISO } from '@/lib/dates'
 import { serverEnv } from '@/lib/env.server'
 import { sendDigestsForUser } from '@/lib/email/digests'
+import { syncSubscriptionsForUser } from '@/lib/integrations/calendar-import'
+import { stravaConfigured, syncStrava } from '@/lib/integrations/strava-sync'
 import { logger } from '@/lib/logger'
 import { syncNotificationsForUser } from '@/lib/notifications/service'
 import { nextOccurrenceAfter, parseRepeatRule } from '@/lib/recurrence'
@@ -80,7 +82,21 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // 3. Morning agenda / weekly summary e-mails (opt-in, at most once per period).
+  // 3. Calendar subscriptions (iCal feeds).
+  let calendars = 0
+  for (const userId of tz.keys()) calendars += await syncSubscriptionsForUser(db, userId)
+
+  // 4. Strava activities (users who connected Strava).
+  let strava = 0
+  if (stravaConfigured()) {
+    const { data: connected } = await db
+      .from('integration_tokens')
+      .select('user_id')
+      .eq('provider', 'strava')
+    for (const row of connected ?? []) strava += await syncStrava(db, row.user_id, { days: 7 })
+  }
+
+  // 5. Morning agenda / weekly summary e-mails (opt-in, at most once per period).
   let emailed = 0
   for (const userId of tz.keys()) emailed += await sendDigestsForUser(db, userId)
 
@@ -89,5 +105,5 @@ export async function GET(request: NextRequest) {
     count: posted,
     durationMs: Date.now() - started,
   })
-  return NextResponse.json({ posted, notified, emailed })
+  return NextResponse.json({ posted, notified, emailed, calendars, strava })
 }

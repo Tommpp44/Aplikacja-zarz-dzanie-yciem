@@ -2,7 +2,7 @@
 -- users' data. Run with `npx supabase test db` (uses pgTAP, local stack only).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(24);
+select plan(27);
 
 -- Two users (the bootstrap trigger creates profiles, preferences, categories).
 insert into auth.users (id, email, raw_user_meta_data) values
@@ -88,6 +88,20 @@ select throws_ok(
 select throws_ok(
   $$insert into public.email_deliveries (user_id, kind, period_key) values ('22222222-2222-2222-2222-222222222222', 'daily_agenda', '2026-01-01')$$,
   '42501', null, 'users cannot write the e-mail delivery log');
+
+-- Calendar subscriptions are private; OAuth tokens are never readable by users.
+reset role;
+insert into public.calendar_subscriptions (user_id, name, url)
+  values ('11111111-1111-1111-1111-111111111111', 'Work', 'https://calendar.example.com/alice.ics');
+insert into public.integration_tokens (user_id, provider, access_token, refresh_token, expires_at)
+  values ('22222222-2222-2222-2222-222222222222', 'strava', 'secret-a', 'secret-r', now());
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+select is((select count(*)::int from public.calendar_subscriptions), 0, 'bob cannot see alice calendar subscriptions');
+select throws_ok($$select * from public.integration_tokens$$, '42501', null, 'users cannot read their own oauth tokens');
+select throws_ok(
+  $$insert into public.calendar_subscriptions (user_id, name, url) values ('22222222-2222-2222-2222-222222222222', 'x', 'http://insecure.example.com/a.ics')$$,
+  '23514', null, 'calendar subscriptions must use https');
 
 select * from finish();
 rollback;

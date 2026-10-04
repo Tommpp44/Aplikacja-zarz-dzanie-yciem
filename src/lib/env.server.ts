@@ -12,6 +12,8 @@ const serverSchema = z.object({
     .regex(/^smtps?:\/\//)
     .optional(),
   EMAIL_FROM: z.string().min(3).default('LifeOS <no-reply@lifeos.app>'),
+  STRAVA_CLIENT_ID: z.string().min(1).optional(),
+  STRAVA_CLIENT_SECRET: z.string().min(1).optional(),
 })
 
 /** Server-only secrets. Never import this module from client components. */
@@ -23,4 +25,6 @@ export const serverEnv = serverSchema.parse({
   VAPID_SUBJECT: process.env.VAPID_SUBJECT || undefined,
   SMTP_URL: process.env.SMTP_URL || undefined,
   EMAIL_FROM: process.env.EMAIL_FROM || undefined,
+  STRAVA_CLIENT_ID: process.env.STRAVA_CLIENT_ID || undefined,
+  STRAVA_CLIENT_SECRET: process.env.STRAVA_CLIENT_SECRET || undefined,
 })

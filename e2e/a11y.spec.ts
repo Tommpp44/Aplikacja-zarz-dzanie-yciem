@@ -22,6 +22,9 @@ const PAGES = [
   '/reviews',
   '/analytics',
   '/settings/profile',
+  '/settings/notifications',
+  '/settings/integrations',
+  '/settings/appearance',
 ]
 
 async function audit(page: import('@playwright/test').Page) {

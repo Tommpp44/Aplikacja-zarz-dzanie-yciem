@@ -293,6 +293,45 @@ export type Database = {
           },
         ]
       }
+      calendar_subscriptions: {
+        Row: {
+          color: string
+          created_at: string
+          event_count: number
+          id: string
+          last_error: string | null
+          last_synced_at: string | null
+          name: string
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          event_count?: number
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          name: string
+          updated_at?: string
+          url: string
+          user_id?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          event_count?: number
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          name?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_reviews: {
         Row: {
           created_at: string
@@ -689,6 +728,39 @@ export type Database = {
             referencedColumns: ['id', 'user_id']
           },
         ]
+      }
+      integration_tokens: {
+        Row: {
+          access_token: string
+          expires_at: string
+          external_account_id: string | null
+          provider: string
+          refresh_token: string
+          scope: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          expires_at: string
+          external_account_id?: string | null
+          provider: string
+          refresh_token: string
+          scope?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          expires_at?: string
+          external_account_id?: string | null
+          provider?: string
+          refresh_token?: string
+          scope?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       integrations: {
         Row: {
