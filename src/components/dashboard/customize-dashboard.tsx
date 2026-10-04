@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
 import { useServerAction } from '@/hooks/use-server-action'
+import { useT } from '@/lib/i18n/client'
 import { rememberLastUsed, updateDashboardLayout } from '@/lib/settings/actions'
 import { DASHBOARD_WIDGETS, type DashboardWidget, type FinanceRange } from '@/lib/settings/schemas'
 import { NativeSelect } from '@/components/ui/native-select'
@@ -24,11 +25,16 @@ export function CustomizeDashboard({
   layout: DashboardWidget[]
   financeRange: FinanceRange
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState(layout)
   const [range, setRange] = useState<FinanceRange>(financeRange)
   const [pending, run] = useServerAction()
-  const label = (id: string) => DASHBOARD_WIDGETS.find((w) => w.id === id)
+  const widget = (id: string) => DASHBOARD_WIDGETS.find((w) => w.id === id)
+  const label = (id: string) => {
+    const w = widget(id)
+    return w ? { ...w, label: t(w.label) } : undefined
+  }
   const move = (index: number, dir: -1 | 1) => {
     const next = [...items]
     const [item] = next.splice(index, 1)
@@ -38,14 +44,16 @@ export function CustomizeDashboard({
   return (
     <>
       <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-        <SlidersHorizontal /> Customize
+        <SlidersHorizontal /> {t('Customize')}
       </Button>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent>
           <SheetHeader>
-            <SheetTitle>Customize dashboard</SheetTitle>
+            <SheetTitle>{t('Customize dashboard')}</SheetTitle>
             <SheetDescription>
-              Show what matters to you. P0 widgets answer “what now?”, P2 are for deeper insight.
+              {t(
+                'Show what matters to you. P0 widgets answer “what now?”, P2 are for deeper insight.',
+              )}
             </SheetDescription>
           </SheetHeader>
           <ul className="flex flex-col gap-1 overflow-y-auto px-5">
@@ -58,7 +66,7 @@ export function CustomizeDashboard({
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    aria-label={`Move ${label(w.id)?.label} up`}
+                    aria-label={t('Move {name} up', { name: label(w.id)?.label ?? '' })}
                     disabled={i === 0}
                     onClick={() => move(i, -1)}
                   >
@@ -67,7 +75,7 @@ export function CustomizeDashboard({
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    aria-label={`Move ${label(w.id)?.label} down`}
+                    aria-label={t('Move {name} down', { name: label(w.id)?.label ?? '' })}
                     disabled={i === items.length - 1}
                     onClick={() => move(i, 1)}
                   >
@@ -78,7 +86,7 @@ export function CustomizeDashboard({
                 <span className="text-muted-foreground text-xs">{label(w.id)?.priority}</span>
                 <Switch
                   checked={w.visible}
-                  aria-label={`Show ${label(w.id)?.label}`}
+                  aria-label={t('Show {name}', { name: label(w.id)?.label ?? '' })}
                   onCheckedChange={(v) =>
                     setItems(items.map((x) => (x.id === w.id ? { ...x, visible: v } : x)))
                   }
@@ -87,21 +95,21 @@ export function CustomizeDashboard({
             ))}
           </ul>
           <label className="bg-card mx-5 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm">
-            Finance widget period
+            {t('Finance widget period')}
             <NativeSelect
-              aria-label="Finance widget period"
+              aria-label={t('Finance widget period')}
               className="w-40"
               value={range}
               onChange={(e) => setRange(e.target.value as FinanceRange)}
             >
-              <option value="month">This month</option>
-              <option value="quarter">Last 3 months</option>
-              <option value="year">Year to date</option>
+              <option value="month">{t('This month')}</option>
+              <option value="quarter">{t('Last 3 months')}</option>
+              <option value="year">{t('Year to date')}</option>
             </NativeSelect>
           </label>
           <div className="mt-auto flex justify-end gap-2 border-t px-5 py-3">
             <Button variant="ghost" onClick={() => setItems(layout)}>
-              Reset
+              {t('Reset')}
             </Button>
             <Button
               disabled={pending}
@@ -112,13 +120,13 @@ export function CustomizeDashboard({
                     return r.ok ? updateDashboardLayout({ layout: items }) : r
                   },
                   {
-                    success: 'Dashboard updated',
+                    success: t('Dashboard updated'),
                     onSuccess: () => setOpen(false),
                   },
                 )
               }
             >
-              Save
+              {t('Save')}
             </Button>
           </div>
         </SheetContent>

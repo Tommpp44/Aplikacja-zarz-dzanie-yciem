@@ -38,6 +38,7 @@ import {
 import { STATUS_LABELS, TASK_STATUSES, type TaskStatus } from '@/lib/tasks/schemas'
 import { QuickAddBar } from './quick-add-bar'
 import type { TaskOptions } from './types'
+import { useT } from '@/lib/i18n/client'
 
 type Details = NonNullable<
   Extract<Awaited<ReturnType<typeof getTaskDetails>>, { ok: true }>['data']
@@ -102,6 +103,7 @@ export function TaskDetailSheet({
   options: TaskOptions
   weekStartsOn: 0 | 1
 }) {
+  const t = useT()
   const [details, setDetails] = useState<Details | null>(null)
   const [form, setForm] = useState<FormState | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -114,7 +116,7 @@ export function TaskDetailSheet({
       startLoading(async () => {
         const result = await getTaskDetails({ id })
         if (!result.ok || !result.data) {
-          toast.error(result.ok ? 'This task no longer exists.' : result.error)
+          toast.error(result.ok ? t('This task no longer exists.') : t(result.error))
           onClose()
           return
         }
@@ -122,7 +124,7 @@ export function TaskDetailSheet({
         setForm(toForm(result.data))
         setErrors({})
       }),
-    [onClose],
+    [onClose, t],
   )
 
   useEffect(() => {
@@ -155,11 +157,11 @@ export function TaskDetailSheet({
           reminder_at: form.reminder_at ? new Date(form.reminder_at).toISOString() : null,
           tag_names: form.tags
             .split(',')
-            .map((t) => t.trim())
+            .map((it) => it.trim())
             .filter(Boolean),
         }),
       {
-        success: 'Task updated',
+        success: t('Task updated'),
         onSuccess: () => onClose(),
         onError: (r) => setErrors(r.fieldErrors ?? {}),
       },
@@ -170,7 +172,7 @@ export function TaskDetailSheet({
     if (!details) return
     const id = details.task.id
     run(() => deleteTask({ id }), {
-      success: 'Task deleted',
+      success: t('Task deleted'),
       undo: { action: () => restoreTask({ id }) },
       onSuccess: () => onClose(),
     })
@@ -180,8 +182,8 @@ export function TaskDetailSheet({
     <Sheet open={Boolean(taskId)} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Task</SheetTitle>
-          <SheetDescription>Edit details, subtasks, links and notes.</SheetDescription>
+          <SheetTitle>{t('Task')}</SheetTitle>
+          <SheetDescription>{t('Edit details, subtasks, links and notes.')}</SheetDescription>
         </SheetHeader>
         {!ready || loading ? (
           <div className="flex flex-col gap-3 px-5">
@@ -191,7 +193,7 @@ export function TaskDetailSheet({
           </div>
         ) : (
           <div className="flex flex-col gap-4 px-5 pb-8">
-            <Field label="Title" htmlFor="task-title" error={errors.title}>
+            <Field label={t('Title')} htmlFor="task-title" error={errors.title}>
               <Input
                 id="task-title"
                 value={form.title}
@@ -199,7 +201,7 @@ export function TaskDetailSheet({
                 maxLength={500}
               />
             </Field>
-            <Field label="Description" htmlFor="task-description" optional>
+            <Field label={t('Description')} htmlFor="task-description" optional>
               <Textarea
                 id="task-description"
                 rows={3}
@@ -208,7 +210,7 @@ export function TaskDetailSheet({
               />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Status" htmlFor="task-status">
+              <Field label={t('Status')} htmlFor="task-status">
                 <NativeSelect
                   id="task-status"
                   value={form.status}
@@ -216,24 +218,24 @@ export function TaskDetailSheet({
                 >
                   {TASK_STATUSES.map((s) => (
                     <option key={s} value={s}>
-                      {STATUS_LABELS[s]}
+                      {t(STATUS_LABELS[s])}
                     </option>
                   ))}
                 </NativeSelect>
               </Field>
-              <Field label="Priority" htmlFor="task-priority">
+              <Field label={t('Priority')} htmlFor="task-priority">
                 <NativeSelect
                   id="task-priority"
                   value={form.priority}
                   onChange={(e) => set('priority', Number(e.target.value))}
                 >
-                  <option value={1}>P1 — Urgent</option>
-                  <option value={2}>P2 — High</option>
-                  <option value={3}>P3 — Medium</option>
-                  <option value={4}>P4 — Low</option>
+                  <option value={1}>{t('P1 — Urgent')}</option>
+                  <option value={2}>{t('P2 — High')}</option>
+                  <option value={3}>{t('P3 — Medium')}</option>
+                  <option value={4}>{t('P4 — Low')}</option>
                 </NativeSelect>
               </Field>
-              <Field label="Due date" htmlFor="task-due" error={errors.due_date}>
+              <Field label={t('Due date')} htmlFor="task-due" error={errors.due_date}>
                 <Input
                   id="task-due"
                   type="date"
@@ -241,7 +243,7 @@ export function TaskDetailSheet({
                   onChange={(e) => set('due_date', e.target.value)}
                 />
               </Field>
-              <Field label="Time" htmlFor="task-time" error={errors.due_time}>
+              <Field label={t('Time')} htmlFor="task-time" error={errors.due_time}>
                 <Input
                   id="task-time"
                   type="time"
@@ -250,7 +252,7 @@ export function TaskDetailSheet({
                   onChange={(e) => set('due_time', e.target.value)}
                 />
               </Field>
-              <Field label="Duration (min)" htmlFor="task-duration">
+              <Field label={t('Duration (min)')} htmlFor="task-duration">
                 <Input
                   id="task-duration"
                   type="number"
@@ -260,7 +262,7 @@ export function TaskDetailSheet({
                   onChange={(e) => set('duration_minutes', e.target.value)}
                 />
               </Field>
-              <Field label="Reminder" htmlFor="task-reminder">
+              <Field label={t('Reminder')} htmlFor="task-reminder">
                 <Input
                   id="task-reminder"
                   type="datetime-local"
@@ -269,7 +271,7 @@ export function TaskDetailSheet({
                 />
               </Field>
             </div>
-            <Field label="Repeat" htmlFor="task-repeat">
+            <Field label={t('Repeat')} htmlFor="task-repeat">
               <RepeatRulePicker
                 id="task-repeat"
                 value={form.repeat_rule}
@@ -278,13 +280,13 @@ export function TaskDetailSheet({
               />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Project" htmlFor="task-project">
+              <Field label={t('Project')} htmlFor="task-project">
                 <NativeSelect
                   id="task-project"
                   value={form.project_id}
                   onChange={(e) => set('project_id', e.target.value)}
                 >
-                  <option value="">No project</option>
+                  <option value="">{t('No project')}</option>
                   {options.projects.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name}
@@ -292,13 +294,13 @@ export function TaskDetailSheet({
                   ))}
                 </NativeSelect>
               </Field>
-              <Field label="Goal" htmlFor="task-goal">
+              <Field label={t('Goal')} htmlFor="task-goal">
                 <NativeSelect
                   id="task-goal"
                   value={form.goal_id}
                   onChange={(e) => set('goal_id', e.target.value)}
                 >
-                  <option value="">No goal</option>
+                  <option value="">{t('No goal')}</option>
                   {options.goals.map((g) => (
                     <option key={g.id} value={g.id}>
                       {g.title}
@@ -307,29 +309,29 @@ export function TaskDetailSheet({
                 </NativeSelect>
               </Field>
             </div>
-            <Field label="Tags" htmlFor="task-tags" hint="Comma separated">
+            <Field label={t('Tags')} htmlFor="task-tags" hint={t('Comma separated')}>
               <Input
                 id="task-tags"
                 value={form.tags}
                 onChange={(e) => set('tags', e.target.value)}
-                placeholder="errands, home"
+                placeholder={t('errands, home')}
               />
             </Field>
             <label className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
-              Someday / maybe
+              {t('Someday / maybe')}
               <Switch checked={form.is_someday} onCheckedChange={(v) => set('is_someday', v)} />
             </label>
 
             <section className="flex flex-col gap-2" aria-labelledby="subtasks-heading">
               <h3 id="subtasks-heading" className="text-sm font-medium">
-                Subtasks
+                {t('Subtasks')}
               </h3>
               <ul className="flex flex-col">
                 {details.subtasks.map((s) => (
                   <li key={s.id} className="flex items-center gap-2 py-1 text-sm">
                     <Checkbox
                       checked={s.status === 'completed'}
-                      aria-label={`Complete ${s.title}`}
+                      aria-label={t('Complete {name}', { name: s.title })}
                       onCheckedChange={(v) =>
                         runQuiet(() => toggleTaskCompleted({ id: s.id, completed: v === true }), {
                           onSuccess: () => load(details.task.id),
@@ -349,7 +351,7 @@ export function TaskDetailSheet({
               <QuickAddBar
                 today={today}
                 parentTaskId={details.task.id}
-                placeholder="Add a subtask"
+                placeholder={t('Add a subtask')}
                 onCreated={() => load(details.task.id)}
               />
             </section>
@@ -357,7 +359,7 @@ export function TaskDetailSheet({
             <DependencySection details={details} onChange={() => load(details.task.id)} />
             <AttachmentSection details={details} onChange={() => load(details.task.id)} />
 
-            <Field label="Notes" htmlFor="task-notes" optional>
+            <Field label={t('Notes')} htmlFor="task-notes" optional>
               <Textarea
                 id="task-notes"
                 rows={4}
@@ -373,10 +375,10 @@ export function TaskDetailSheet({
                 className="text-destructive hover:text-destructive"
                 onClick={remove}
               >
-                <Trash2 /> Delete
+                <Trash2 /> {t('Delete')}
               </Button>
               <SubmitButton type="button" pending={saving} onClick={save}>
-                Save changes
+                {t('Save changes')}
               </SubmitButton>
             </div>
           </div>
@@ -387,6 +389,7 @@ export function TaskDetailSheet({
 }
 
 function DependencySection({ details, onChange }: { details: Details; onChange: () => void }) {
+  const t = useT()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<{ id: string; title: string }[]>([])
   const [, run] = useServerAction()
@@ -404,7 +407,7 @@ function DependencySection({ details, onChange }: { details: Details; onChange: 
   return (
     <section className="flex flex-col gap-2" aria-labelledby="deps-heading">
       <h3 id="deps-heading" className="text-sm font-medium">
-        Blocked by
+        {t('Blocked by')}
       </h3>
       {details.dependencyTasks.length > 0 && (
         <ul className="flex flex-col gap-1">
@@ -418,7 +421,7 @@ function DependencySection({ details, onChange }: { details: Details; onChange: 
               <button
                 type="button"
                 className="text-muted-foreground hover:text-foreground ml-auto"
-                aria-label={`Remove dependency ${d.title}`}
+                aria-label={t('Remove dependency {title}', { title: d.title })}
                 onClick={() =>
                   run(() => removeDependency({ task_id: taskId, depends_on_task_id: d.id }), {
                     onSuccess: onChange,
@@ -434,8 +437,8 @@ function DependencySection({ details, onChange }: { details: Details; onChange: 
       <Input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search a task this depends on…"
-        aria-label="Search dependency"
+        placeholder={t('Search a task this depends on…')}
+        aria-label={t('Search dependency')}
       />
       {query && results.length > 0 && (
         <ul className="flex flex-col rounded-md border">
@@ -465,13 +468,14 @@ function DependencySection({ details, onChange }: { details: Details; onChange: 
 }
 
 function AttachmentSection({ details, onChange }: { details: Details; onChange: () => void }) {
+  const t = useT()
   const [name, setName] = useState('')
   const [url, setUrl] = useState('')
   const [pending, run] = useServerAction()
   return (
     <section className="flex flex-col gap-2" aria-labelledby="att-heading">
       <h3 id="att-heading" className="text-sm font-medium">
-        Attachments
+        {t('Attachments')}
       </h3>
       {details.task.attachments.length > 0 && (
         <ul className="flex flex-col gap-1">
@@ -488,7 +492,7 @@ function AttachmentSection({ details, onChange }: { details: Details; onChange: 
               </a>
               <button
                 type="button"
-                aria-label={`Remove ${a.name}`}
+                aria-label={t('Remove {name}', { name: a.name })}
                 className="text-muted-foreground hover:text-foreground ml-auto"
                 onClick={() => run(() => removeAttachment({ id: a.id }), { onSuccess: onChange })}
               >
@@ -502,15 +506,15 @@ function AttachmentSection({ details, onChange }: { details: Details; onChange: 
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Name"
-          aria-label="Attachment name"
+          placeholder={t('Name')}
+          aria-label={t('Attachment name')}
           className="w-1/3"
         />
         <Input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://…"
-          aria-label="Attachment link"
+          aria-label={t('Attachment link')}
           type="url"
         />
         <Button
@@ -527,7 +531,7 @@ function AttachmentSection({ details, onChange }: { details: Details; onChange: 
             })
           }
         >
-          Add
+          {t('Add')}
         </Button>
       </div>
     </section>

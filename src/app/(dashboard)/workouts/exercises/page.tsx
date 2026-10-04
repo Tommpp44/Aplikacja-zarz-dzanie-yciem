@@ -1,5 +1,4 @@
 import { TrendingUp } from 'lucide-react'
-import type { Metadata } from 'next'
 import { TrendChart } from '@/components/charts/lazy'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageHeader } from '@/components/ui/page-header'
@@ -11,10 +10,12 @@ import { getOnboardedUserContext } from '@/lib/settings/service'
 import { formatWeight, kgToDisplay, weightUnit, type Units } from '@/lib/units'
 import { getStrengthRecords } from '@/lib/workouts/service'
 import { e1rmSeries } from '@/lib/workouts/stats'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Exercise library' }
+export const generateMetadata = pageTitle('Exercise library')
 
 export default async function ExercisesPage({ searchParams }: PageProps<'/workouts/exercises'>) {
+  const t = await getT()
   const params = await searchParams
   const { supabase, user, prefs } = await getOnboardedUserContext()
   const units: Units = prefs.units === 'imperial' ? 'imperial' : 'metric'
@@ -45,14 +46,16 @@ export default async function ExercisesPage({ searchParams }: PageProps<'/workou
   return (
     <>
       <PageHeader
-        title="Exercise library"
-        description="Built-in movements plus your own. Personal bests are shown next to each exercise."
+        title={t('Exercise library')}
+        description={t(
+          'Built-in movements plus your own. Personal bests are shown next to each exercise.',
+        )}
       />
       {selectedId && first && last && best && (
         <Card className="mb-6">
           <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="text-primary size-4" aria-hidden /> Strength progress
+              <TrendingUp className="text-primary size-4" aria-hidden /> {t('Strength progress')}
             </CardTitle>
             <ExercisePicker
               value={selectedId}
@@ -61,22 +64,22 @@ export default async function ExercisesPage({ searchParams }: PageProps<'/workou
           </CardHeader>
           <CardContent className="flex flex-col gap-5">
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <Stat label="Estimated 1RM" value={formatWeight(last.e1rm, units)} size="lg" />
+              <Stat label={t('Estimated 1RM')} value={formatWeight(last.e1rm, units)} size="lg" />
               <Stat
-                label="Change"
+                label={t('Change')}
                 value={`${last.e1rm >= first.e1rm ? '+' : '−'}${formatWeight(Math.abs(last.e1rm - first.e1rm), units)}`}
-                hint={`since ${formatISODate(first.date, 'd MMM yyyy')}`}
+                hint={t('since {date}', { date: formatISODate(first.date, 'd MMM yyyy') })}
                 tone={last.e1rm > first.e1rm ? 'positive' : undefined}
               />
               <Stat
-                label="Heaviest set"
+                label={t('Heaviest set')}
                 value={`${formatWeight(best.bestWeight, units)} × ${best.bestWeightReps}`}
               />
-              <Stat label="Sessions" value={series.length} />
+              <Stat label={t('Sessions')} value={series.length} />
             </div>
             {series.length > 1 ? (
               <TrendChart
-                ariaLabel="Estimated one-rep max over time"
+                ariaLabel={t('Estimated one-rep max over time')}
                 format={`unit:${unit}`}
                 data={series.map((p) => ({
                   label: formatISODate(p.date, 'd MMM'),
@@ -85,7 +88,7 @@ export default async function ExercisesPage({ searchParams }: PageProps<'/workou
               />
             ) : (
               <p className="text-muted-foreground text-sm">
-                Log this exercise in another session to see your progress curve.
+                {t('Log this exercise in another session to see your progress curve.')}
               </p>
             )}
           </CardContent>

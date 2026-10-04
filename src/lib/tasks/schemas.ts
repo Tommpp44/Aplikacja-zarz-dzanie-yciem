@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { blankable, optionalDate, optionalTime, optionalUuid } from '@/lib/validation'
 import { repeatRuleSchema } from '@/lib/recurrence'
+import { msg } from '@/lib/i18n/translate'
 
 export const TASK_STATUSES = ['inbox', 'todo', 'in_progress', 'completed', 'cancelled'] as const
 export type TaskStatus = (typeof TASK_STATUSES)[number]
@@ -17,17 +18,17 @@ export const TASK_VIEWS = [
 export type TaskView = (typeof TASK_VIEWS)[number]
 
 export const STATUS_LABELS: Record<TaskStatus, string> = {
-  inbox: 'Inbox',
-  todo: 'Todo',
-  in_progress: 'In progress',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
+  inbox: msg('Inbox'),
+  todo: msg('Todo'),
+  in_progress: msg('In progress'),
+  completed: msg('Completed'),
+  cancelled: msg('Cancelled'),
 }
 
 export const PRIORITY_LABELS: Record<number, string> = { 1: 'P1', 2: 'P2', 3: 'P3', 4: 'P4' }
 
 export const taskFieldsSchema = z.object({
-  title: z.string().trim().min(1, 'Give the task a title').max(500),
+  title: z.string().trim().min(1, msg('Give the task a title')).max(500),
   description: z.string().trim().max(10000).nullable().optional(),
   notes: z.string().trim().max(20000).nullable().optional(),
   status: z.enum(TASK_STATUSES).optional(),
@@ -46,7 +47,7 @@ export const taskFieldsSchema = z.object({
 })
 
 export const createTaskSchema = taskFieldsSchema.refine((v) => !v.due_time || v.due_date, {
-  message: 'Pick a date for the time',
+  message: msg('Pick a date for the time'),
   path: ['due_time'],
 })
 export type CreateTaskInput = z.input<typeof createTaskSchema>
@@ -55,7 +56,7 @@ export const updateTaskSchema = taskFieldsSchema.partial().extend({ id: z.uuid()
 export type UpdateTaskInput = z.input<typeof updateTaskSchema>
 
 export const quickAddSchema = z.object({
-  text: z.string().trim().min(1, 'Type a task').max(500),
+  text: z.string().trim().min(1, msg('Type a task')).max(500),
   project_id: optionalUuid,
   goal_id: optionalUuid,
   parent_task_id: optionalUuid,
@@ -65,7 +66,7 @@ export const quickAddSchema = z.object({
 export const attachmentSchema = z.object({
   task_id: z.uuid(),
   name: z.string().trim().min(1).max(200),
-  url: z.url({ protocol: /^https?$/, message: 'Use an http(s) link' }).max(2048),
+  url: z.url({ protocol: /^https?$/, message: msg('Use an http(s) link') }).max(2048),
 })
 
 export const dependencySchema = z.object({ task_id: z.uuid(), depends_on_task_id: z.uuid() })

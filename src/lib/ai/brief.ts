@@ -1,3 +1,5 @@
+import type { Locale } from '@/lib/i18n/config'
+import { makeT } from '@/lib/i18n/translate'
 import { formatMoney } from '@/lib/money'
 
 /**
@@ -21,51 +23,90 @@ export type BriefFacts = {
   dueRecurring: number
 }
 
-export function buildDailyBrief(f: BriefFacts): string[] {
+export function buildDailyBrief(f: BriefFacts, locale: Locale = 'en'): string[] {
+  const t = makeT(locale)
   const out: string[] = []
   if (f.tasksToday === 0 && f.overdueTasks === 0)
-    out.push('No tasks due today — a good day to get ahead.')
+    out.push(t('No tasks due today — a good day to get ahead.'))
   else {
-    const important = f.importantTasks > 0 ? ` (${f.importantTasks} high priority)` : ''
-    out.push(`Today you have ${f.tasksToday} task${f.tasksToday === 1 ? '' : 's'}${important}.`)
+    out.push(
+      f.importantTasks > 0
+        ? t.plural(
+            f.tasksToday,
+            'Today you have {n} task ({important} high priority).',
+            'Today you have {n} tasks ({important} high priority).',
+            { important: f.importantTasks },
+          )
+        : t.plural(f.tasksToday, 'Today you have {n} task.', 'Today you have {n} tasks.'),
+    )
     if (f.overdueTasks > 0)
       out.push(
-        `${f.overdueTasks} task${f.overdueTasks === 1 ? ' is' : 's are'} overdue — reschedule or finish ${f.overdueTasks === 1 ? 'it' : 'them'} first.`,
+        t.plural(
+          f.overdueTasks,
+          '{n} task is overdue — reschedule or finish it first.',
+          '{n} tasks are overdue — reschedule or finish them first.',
+        ),
       )
   }
-  if (f.nextEvent) out.push(`Next on your calendar: ${f.nextEvent.title} at ${f.nextEvent.time}.`)
+  if (f.nextEvent)
+    out.push(
+      t('Next on your calendar: {title} at {time}.', {
+        title: f.nextEvent.title,
+        time: f.nextEvent.time,
+      }),
+    )
   if (f.workoutToday)
     out.push(
       f.workoutToday.time
-        ? `You have a workout at ${f.workoutToday.time}: ${f.workoutToday.title}.`
-        : `Planned workout today: ${f.workoutToday.title}.`,
+        ? t('You have a workout at {time}: {title}.', {
+            time: f.workoutToday.time,
+            title: f.workoutToday.title,
+          })
+        : t('Planned workout today: {title}.', { title: f.workoutToday.title }),
     )
   if (f.habitsDue > 0) {
     const left = f.habitsDue - f.habitsDone
     out.push(
       left === 0
-        ? `All ${f.habitsDue} habits done today. Great consistency!`
-        : `${left} of ${f.habitsDue} habits still open today.`,
+        ? t('All {n} habits done today. Great consistency!', { n: f.habitsDue })
+        : t('{left} of {n} habits still open today.', { left, n: f.habitsDue }),
     )
   }
   for (const c of f.categoryDeltas.filter((d) => d.delta > 0).slice(0, 1)) {
     out.push(
-      `You are ${formatMoney(c.delta, f.currency)} over your average weekly ${c.category.toLowerCase()} spending.`,
+      t('You are {amount} over your average weekly {category} spending.', {
+        amount: formatMoney(c.delta, f.currency),
+        category: c.category.toLowerCase(),
+      }),
     )
   }
-  if (f.budgetsOver.length) out.push(`Over budget: ${f.budgetsOver.join(', ')}.`)
-  else if (f.budgetsWarning.length) out.push(`Close to the limit: ${f.budgetsWarning.join(', ')}.`)
+  if (f.budgetsOver.length)
+    out.push(t('Over budget: {names}.', { names: f.budgetsOver.join(', ') }))
+  else if (f.budgetsWarning.length)
+    out.push(t('Close to the limit: {names}.', { names: f.budgetsWarning.join(', ') }))
   if (f.dueRecurring > 0)
     out.push(
-      `${f.dueRecurring} recurring payment${f.dueRecurring === 1 ? ' is' : 's are'} waiting to be recorded.`,
+      t.plural(
+        f.dueRecurring,
+        '{n} recurring payment is waiting to be recorded.',
+        '{n} recurring payments are waiting to be recorded.',
+      ),
     )
   const behind = f.goals.filter((g) => g.status === 'behind' || g.status === 'overdue')
   const onTrack = f.goals.filter((g) => g.status === 'on_track' || g.status === 'ahead')
   if (behind.length)
     out.push(
-      `${behind[0]!.title} is behind plan${behind.length > 1 ? ` (and ${behind.length - 1} more goal${behind.length > 2 ? 's' : ''})` : ''}.`,
+      behind.length > 1
+        ? t.plural(
+            behind.length - 1,
+            '{title} is behind plan (and {n} more goal).',
+            '{title} is behind plan (and {n} more goals).',
+            { title: behind[0]!.title },
+          )
+        : t('{title} is behind plan.', { title: behind[0]!.title }),
     )
-  else if (onTrack.length) out.push(`Your goal “${onTrack[0]!.title}” is on track.`)
+  else if (onTrack.length)
+    out.push(t('Your goal “{title}” is on track.', { title: onTrack[0]!.title }))
   return out
 }
 
@@ -78,16 +119,29 @@ export type FinanceSummaryFacts = {
   savingsRate: number
 }
 
-export function buildFinanceSummary(f: FinanceSummaryFacts): string | null {
+export function buildFinanceSummary(f: FinanceSummaryFacts, locale: Locale = 'en'): string | null {
+  const t = makeT(locale)
   if (f.previousExpenses <= 0 && f.expenses <= 0) return null
   if (f.previousExpenses <= 0)
-    return `You spent ${formatMoney(f.expenses, f.currency)} so far this month.`
+    return t('You spent {amount} so far this month.', {
+      amount: formatMoney(f.expenses, f.currency),
+    })
   const change = ((f.expenses - f.previousExpenses) / f.previousExpenses) * 100
-  const direction = change >= 0 ? 'increased' : 'decreased'
   const reasons = f.topIncreases
     .filter((c) => c.delta > 0)
     .slice(0, 2)
     .map((c) => c.category.toLowerCase())
-  const because = change > 0 && reasons.length ? `, mainly because of ${reasons.join(' and ')}` : ''
-  return `Your expenses ${direction} ${Math.abs(Math.round(change))}% compared with last month${because}. Savings rate: ${Math.round(f.savingsRate)}%.`
+  const vars = {
+    change: Math.abs(Math.round(change)),
+    reasons: reasons.join(` ${t('and')} `),
+    rate: Math.round(f.savingsRate),
+  }
+  if (change > 0 && reasons.length)
+    return t(
+      'Your expenses increased {change}% compared with last month, mainly because of {reasons}. Savings rate: {rate}%.',
+      vars,
+    )
+  return change >= 0
+    ? t('Your expenses increased {change}% compared with last month. Savings rate: {rate}%.', vars)
+    : t('Your expenses decreased {change}% compared with last month. Savings rate: {rate}%.', vars)
 }

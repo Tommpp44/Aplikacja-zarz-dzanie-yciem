@@ -10,10 +10,12 @@ import type { TaskListItem } from '@/lib/tasks/repository'
 import { TaskDetailSheet } from './task-detail-sheet'
 import { TaskItem } from './task-item'
 import type { TaskOptions } from './types'
+import { useT } from '@/lib/i18n/client'
+import type { T } from '@/lib/i18n/translate'
 
 type Grouping = 'none' | 'date' | 'today'
 
-function groupTasks(tasks: TaskListItem[], grouping: Grouping, today: ISODate) {
+function groupTasks(tasks: TaskListItem[], grouping: Grouping, today: ISODate, t: T) {
   if (grouping === 'none') return [{ key: 'all', label: null as string | null, tasks }]
   const groups = new Map<string, { key: string; label: string | null; tasks: TaskListItem[] }>()
   for (const task of tasks) {
@@ -22,10 +24,10 @@ function groupTasks(tasks: TaskListItem[], grouping: Grouping, today: ISODate) {
     if (grouping === 'today') {
       const overdue = task.due_date !== null && task.due_date < today
       key = overdue ? 'overdue' : 'today'
-      label = overdue ? 'Overdue' : 'Today'
+      label = overdue ? t('Overdue') : t('Today')
     } else {
       key = task.due_date ?? 'none'
-      label = task.due_date ? relativeDayLabel(task.due_date, today) : 'No date'
+      label = task.due_date ? relativeDayLabel(task.due_date, today, t.locale) : t('No date')
     }
     if (!groups.has(key)) groups.set(key, { key, label, tasks: [] })
     groups.get(key)!.tasks.push(task)
@@ -54,13 +56,14 @@ export function TaskList({
   emptyTitle?: string
   emptyDescription?: string
 }) {
+  const t = useT()
   const [openId, setOpenId] = useState<string | null>(null)
   const [, startTransition] = useTransition()
   const [optimistic, setOptimistic] = useOptimistic(
     tasks,
     (state, change: { id: string; completed: boolean }) =>
-      state.map((t) =>
-        t.id === change.id ? { ...t, status: change.completed ? 'completed' : 'todo' } : t,
+      state.map((it) =>
+        it.id === change.id ? { ...it, status: change.completed ? 'completed' : 'todo' } : it,
       ),
   )
 
@@ -69,19 +72,21 @@ export function TaskList({
       setOptimistic({ id: task.id, completed })
       const result = await toggleTaskCompleted({ id: task.id, completed })
       if (!result.ok) {
-        toast.error(result.error)
+        toast.error(t(result.error))
         return
       }
       if (completed) {
         toast.success(
           result.data.nextDueDate
-            ? `Done — next on ${relativeDayLabel(result.data.nextDueDate, today)}`
-            : 'Task completed',
+            ? t('Done — next on {date}', {
+                date: relativeDayLabel(result.data.nextDueDate, today, t.locale),
+              })
+            : t('Task completed'),
           result.data.nextDueDate
             ? undefined
             : {
                 action: {
-                  label: 'Undo',
+                  label: t('Undo'),
                   onClick: () => void toggleTaskCompleted({ id: task.id, completed: false }),
                 },
               },
@@ -96,8 +101,8 @@ export function TaskList({
   return (
     <>
       <div className="flex flex-col gap-5">
-        {groupTasks(optimistic, grouping, today).map((group) => (
-          <section key={group.key} aria-label={group.label ?? 'Tasks'}>
+        {groupTasks(optimistic, grouping, today, t).map((group) => (
+          <section key={group.key} aria-label={group.label ?? t('Tasks')}>
             {group.label && (
               <h2
                 className={`mb-1 px-2 text-xs font-semibold ${group.key === 'overdue' ? 'text-destructive' : 'text-muted-foreground'}`}

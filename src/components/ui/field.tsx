@@ -1,4 +1,7 @@
+'use client'
+
 import * as React from 'react'
+import { useT } from '@/lib/i18n/client'
 import { cn } from '@/lib/utils'
 import { Label } from './label'
 
@@ -20,12 +23,13 @@ function Field({
   children: React.ReactNode
   optional?: boolean
 }) {
+  const t = useT()
   const describedBy = htmlFor ? `${htmlFor}-${error ? 'error' : 'hint'}` : undefined
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
       <Label htmlFor={htmlFor}>
         {label}
-        {optional && <span className="text-muted-foreground font-normal"> (optional)</span>}
+        {optional && <span className="text-muted-foreground font-normal"> ({t('optional')})</span>}
       </Label>
       {React.isValidElement<{ 'aria-invalid'?: boolean; 'aria-describedby'?: string }>(children)
         ? React.cloneElement(children, {
@@ -35,7 +39,7 @@ function Field({
         : children}
       {error ? (
         <p id={describedBy} role="alert" className="text-destructive text-xs">
-          {error}
+          {t(error)}
         </p>
       ) : hint ? (
         <p id={describedBy} className="text-muted-foreground text-xs">

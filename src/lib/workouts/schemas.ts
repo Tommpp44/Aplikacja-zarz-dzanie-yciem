@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { optionalUuid } from '@/lib/validation'
+import { msg } from '@/lib/i18n/translate'
 
 export const WORKOUT_TYPES = [
   'strength',
@@ -14,22 +15,22 @@ export const WORKOUT_TYPES = [
 ] as const
 export type WorkoutType = (typeof WORKOUT_TYPES)[number]
 export const WORKOUT_TYPE_LABELS: Record<WorkoutType, string> = {
-  strength: 'Strength',
-  running: 'Running',
-  cycling: 'Cycling',
-  walking: 'Walking',
-  swimming: 'Swimming',
-  padel: 'Padel',
-  football: 'Football',
-  mobility: 'Mobility',
-  custom: 'Custom',
+  strength: msg('Strength'),
+  running: msg('Running'),
+  cycling: msg('Cycling'),
+  walking: msg('Walking'),
+  swimming: msg('Swimming'),
+  padel: msg('Padel'),
+  football: msg('Football'),
+  mobility: msg('Mobility'),
+  custom: msg('Custom'),
 }
 export const DISTANCE_TYPES: WorkoutType[] = ['running', 'cycling', 'walking', 'swimming']
 
 const num = (max: number) => z.number().min(0).max(max).nullable().optional()
 
 export const workoutSchema = z.object({
-  name: z.string().trim().min(1, 'Name the workout').max(120),
+  name: z.string().trim().min(1, msg('Name the workout')).max(120),
   workout_type: z.enum(WORKOUT_TYPES),
   performed_on: z.iso.date(),
   status: z.enum(['planned', 'in_progress', 'completed']).default('completed'),
@@ -52,7 +53,7 @@ export const startWorkoutSchema = z.object({
 })
 
 export const exerciseSchema = z.object({
-  name: z.string().trim().min(1, 'Name the exercise').max(120),
+  name: z.string().trim().min(1, msg('Name the exercise')).max(120),
   category: z.enum(['strength', 'cardio', 'mobility', 'other']),
   muscle_group: z.string().trim().max(60).nullable().optional(),
   equipment: z.string().trim().max(60).nullable().optional(),
@@ -73,7 +74,7 @@ export const updateSetSchema = setSchema
   .extend({ id: z.uuid() })
 
 export const templateSchema = z.object({
-  name: z.string().trim().min(1, 'Name the template').max(120),
+  name: z.string().trim().min(1, msg('Name the template')).max(120),
   workout_type: z.enum(WORKOUT_TYPES),
   description: z.string().trim().max(2000).nullable().optional(),
   exercises: z
@@ -89,7 +90,7 @@ export const templateSchema = z.object({
 })
 
 export const planSchema = z.object({
-  name: z.string().trim().min(1, 'Name the plan').max(120),
+  name: z.string().trim().min(1, msg('Name the plan')).max(120),
   description: z.string().trim().max(2000).nullable().optional(),
   start_date: z.iso.date(),
   weeks: z.number().int().min(1).max(52),

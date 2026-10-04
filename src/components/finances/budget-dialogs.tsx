@@ -27,6 +27,7 @@ import { useServerAction } from '@/hooks/use-server-action'
 import { createBudget, deleteBudget, updateBudget } from '@/lib/finance/actions'
 import { minorToInput } from '@/lib/money'
 import type { CategoryOption } from './types'
+import { useT } from '@/lib/i18n/client'
 
 type Budget = {
   id: string
@@ -45,6 +46,7 @@ function BudgetForm({
   categories: CategoryOption[]
   onDone: () => void
 }) {
+  const t = useT()
   const [name, setName] = useState(budget?.name ?? '')
   const [amount, setAmount] = useState(
     budget ? minorToInput(budget.amount_minor, budget.currency) : '',
@@ -70,13 +72,13 @@ function BudgetForm({
           category_ids: selected,
         }
         run(() => (budget ? updateBudget({ ...input, id: budget.id }) : createBudget(input)), {
-          success: budget ? 'Budget updated' : 'Budget created',
+          success: budget ? t('Budget updated') : t('Budget created'),
           onSuccess: onDone,
           onError: (r) => setErrors(r.fieldErrors ?? {}),
         })
       }}
     >
-      <Field label="Categories" error={errors.category_ids}>
+      <Field label={t('Categories')} error={errors.category_ids}>
         <div className="grid grid-cols-2 gap-2">
           {expenseCategories.map((c) => (
             <label key={c.id} className="flex items-center gap-2 text-sm">
@@ -92,7 +94,7 @@ function BudgetForm({
         </div>
       </Field>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Monthly limit" htmlFor="budget-amount" error={errors.amount}>
+        <Field label={t('Monthly limit')} htmlFor="budget-amount" error={errors.amount}>
           <Input
             id="budget-amount"
             inputMode="decimal"
@@ -101,35 +103,36 @@ function BudgetForm({
             onChange={(e) => setAmount(e.target.value)}
           />
         </Field>
-        <Field label="Name" htmlFor="budget-name" optional error={errors.name}>
+        <Field label={t('Name')} htmlFor="budget-name" optional error={errors.name}>
           <Input
             id="budget-name"
-            placeholder="Food"
+            placeholder={t('Food')}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </Field>
       </div>
       <DialogFooter>
-        <SubmitButton pending={pending}>{budget ? 'Save' : 'Create budget'}</SubmitButton>
+        <SubmitButton pending={pending}>{budget ? t('Save') : t('Create budget')}</SubmitButton>
       </DialogFooter>
     </form>
   )
 }
 
 export function NewBudgetButton({ categories }: { categories: CategoryOption[] }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   return (
     <>
       <Button onClick={() => setOpen(true)}>
-        <Plus /> New budget
+        <Plus /> {t('New budget')}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New monthly budget</DialogTitle>
+            <DialogTitle>{t('New monthly budget')}</DialogTitle>
             <DialogDescription>
-              Track spending in one or more categories against a monthly limit.
+              {t('Track spending in one or more categories against a monthly limit.')}
             </DialogDescription>
           </DialogHeader>
           {open && <BudgetForm categories={categories} onDone={() => setOpen(false)} />}
@@ -154,6 +157,7 @@ export function BudgetCard({
     status: 'ok' | 'warning' | 'over'
   }
 }) {
+  const t = useT()
   const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [, run] = useServerAction()
@@ -166,13 +170,17 @@ export function BudgetCard({
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon-sm" aria-label={`${budget.name} actions`}>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={t('{name} actions', { name: budget.name })}
+          >
             <MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={() => setEditing(true)}>
-            <Pencil /> Edit
+            <Pencil /> {t('Edit')}
           </DropdownMenuItem>
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirming(true)}>
             <Trash2 /> Delete
@@ -182,9 +190,9 @@ export function BudgetCard({
       <Dialog open={editing} onOpenChange={setEditing}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit budget</DialogTitle>
+            <DialogTitle>{t('Edit budget')}</DialogTitle>
             <DialogDescription className="sr-only">
-              Change the limit or categories.
+              {t('Change the limit or categories.')}
             </DialogDescription>
           </DialogHeader>
           {editing && (
@@ -195,9 +203,11 @@ export function BudgetCard({
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title="Delete this budget?"
-        description="Your transactions are not affected."
-        onConfirm={() => run(() => deleteBudget({ id: budget.id }), { success: 'Budget deleted' })}
+        title={t('Delete this budget?')}
+        description={t('Your transactions are not affected.')}
+        onConfirm={() =>
+          run(() => deleteBudget({ id: budget.id }), { success: t('Budget deleted') })
+        }
       />
     </li>
   )

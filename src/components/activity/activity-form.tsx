@@ -8,6 +8,7 @@ import { useServerAction } from '@/hooks/use-server-action'
 import type { ISODate } from '@/lib/dates'
 import { distanceUnit, metersToDisplay, type Units } from '@/lib/units'
 import { logActivity } from '@/lib/workouts/actions'
+import { useT } from '@/lib/i18n/client'
 
 type Record = {
   record_date: string
@@ -26,6 +27,7 @@ export function ActivityForm({
   units: Units
   records: Record[]
 }) {
+  const t = useT()
   const find = (d: string) => records.find((r) => r.record_date === d)
   const toState = (d: string) => {
     const r = find(d)
@@ -56,11 +58,11 @@ export function ActivityForm({
               active_minutes: n(state.active) === null ? null : Math.round(n(state.active)!),
               calories: n(state.calories) === null ? null : Math.round(n(state.calories)!),
             }),
-          { success: 'Activity saved' },
+          { success: t('Activity saved') },
         )
       }}
     >
-      <Field label="Date" htmlFor="act-date" className="col-span-2 sm:col-span-1">
+      <Field label={t('Date')} htmlFor="act-date" className="col-span-2 sm:col-span-1">
         <Input
           id="act-date"
           type="date"
@@ -69,7 +71,7 @@ export function ActivityForm({
           onChange={(e) => setState(toState(e.target.value))}
         />
       </Field>
-      <Field label="Steps" htmlFor="act-steps">
+      <Field label={t('Steps')} htmlFor="act-steps">
         <Input
           id="act-steps"
           inputMode="numeric"
@@ -77,7 +79,7 @@ export function ActivityForm({
           onChange={(e) => setState({ ...state, steps: e.target.value })}
         />
       </Field>
-      <Field label={`Distance (${distanceUnit(units)})`} htmlFor="act-distance">
+      <Field label={t('Distance ({unit})', { unit: distanceUnit(units) })} htmlFor="act-distance">
         <Input
           id="act-distance"
           inputMode="decimal"
@@ -85,7 +87,7 @@ export function ActivityForm({
           onChange={(e) => setState({ ...state, distance: e.target.value })}
         />
       </Field>
-      <Field label="Active min" htmlFor="act-active">
+      <Field label={t('Active min')} htmlFor="act-active">
         <Input
           id="act-active"
           inputMode="numeric"
@@ -93,7 +95,7 @@ export function ActivityForm({
           onChange={(e) => setState({ ...state, active: e.target.value })}
         />
       </Field>
-      <Field label="Calories" htmlFor="act-cal">
+      <Field label={t('Calories')} htmlFor="act-cal">
         <Input
           id="act-cal"
           inputMode="numeric"
@@ -101,7 +103,7 @@ export function ActivityForm({
           onChange={(e) => setState({ ...state, calories: e.target.value })}
         />
       </Field>
-      <SubmitButton pending={pending}>Save</SubmitButton>
+      <SubmitButton pending={pending}>{t('Save')}</SubmitButton>
     </form>
   )
 }

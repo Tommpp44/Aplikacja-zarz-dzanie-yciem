@@ -5,6 +5,7 @@ import { getUserContext } from '@/lib/settings/service'
 import { listNotesForEntity } from '@/lib/notes/repository'
 import type { NoteEntityType } from '@/lib/notes/schemas'
 import { truncate } from '@/lib/utils'
+import { getT } from '@/lib/i18n/server'
 
 /** Notes attached to any entity (project, goal, workout …). */
 export async function LinkedNotes({
@@ -14,23 +15,24 @@ export async function LinkedNotes({
   entityType: NoteEntityType
   entityId: string
 }) {
+  const t = await getT()
   const { supabase, user } = await getUserContext()
   const notes = await listNotesForEntity(supabase, user.id, entityType, entityId)
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Notes</CardTitle>
+        <CardTitle>{t('Notes')}</CardTitle>
         <Link
           href={`/notes/new?link=${entityType}:${entityId}`}
           className="text-primary inline-flex items-center gap-1 text-xs font-medium hover:underline"
         >
-          <Plus className="size-3.5" /> Add
+          <Plus className="size-3.5" /> {t('Add')}
         </Link>
       </CardHeader>
       <CardContent>
         {notes.length === 0 ? (
           <p className="text-muted-foreground text-sm">
-            No notes yet. Capture ideas, research and decisions here.
+            {t('No notes yet. Capture ideas, research and decisions here.')}
           </p>
         ) : (
           <ul className="flex flex-col gap-2">

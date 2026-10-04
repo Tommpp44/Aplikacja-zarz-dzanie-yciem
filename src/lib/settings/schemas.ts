@@ -1,16 +1,17 @@
 import { z } from 'zod'
 import { DATE_FORMATS, isValidTimeZone } from '@/lib/dates'
+import { msg } from '@/lib/i18n/translate'
 
 export const DASHBOARD_WIDGETS = [
-  { id: 'brief', label: 'Daily brief', priority: 'P0' },
-  { id: 'today', label: "Today's plan", priority: 'P0' },
-  { id: 'habits', label: 'Habits', priority: 'P0' },
-  { id: 'reminders', label: 'Reminders', priority: 'P0' },
-  { id: 'goals', label: 'Goals', priority: 'P1' },
-  { id: 'finance', label: 'Finances', priority: 'P1' },
-  { id: 'training', label: 'Training', priority: 'P1' },
-  { id: 'life_balance', label: 'Life balance', priority: 'P2' },
-  { id: 'notes', label: 'Recent notes', priority: 'P2' },
+  { id: 'brief', label: msg('Daily brief'), priority: 'P0' },
+  { id: 'today', label: msg("Today's plan"), priority: 'P0' },
+  { id: 'habits', label: msg('Habits'), priority: 'P0' },
+  { id: 'reminders', label: msg('Reminders'), priority: 'P0' },
+  { id: 'goals', label: msg('Goals'), priority: 'P1' },
+  { id: 'finance', label: msg('Finances'), priority: 'P1' },
+  { id: 'training', label: msg('Training'), priority: 'P1' },
+  { id: 'life_balance', label: msg('Life balance'), priority: 'P2' },
+  { id: 'notes', label: msg('Recent notes'), priority: 'P2' },
 ] as const
 
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGETS)[number]['id']
@@ -63,24 +64,33 @@ export const NOTIFICATION_LABELS: Record<
   keyof NotificationSettings,
   { label: string; description: string }
 > = {
-  task_reminders: { label: 'Task reminders', description: 'Tasks due today and overdue tasks.' },
+  task_reminders: {
+    label: msg('Task reminders'),
+    description: msg('Tasks due today and overdue tasks.'),
+  },
   habit_reminders: {
-    label: 'Habit reminders',
-    description: 'Habits with a reminder time that are still open.',
+    label: msg('Habit reminders'),
+    description: msg('Habits with a reminder time that are still open.'),
   },
   workout_reminders: {
-    label: 'Workout reminders',
-    description: 'Planned workouts from your training plan.',
+    label: msg('Workout reminders'),
+    description: msg('Planned workouts from your training plan.'),
   },
   budget_warnings: {
-    label: 'Budget warnings',
-    description: 'When a budget passes 80% or is exceeded.',
+    label: msg('Budget warnings'),
+    description: msg('When a budget passes 80% or is exceeded.'),
   },
-  deadlines: { label: 'Upcoming deadlines', description: 'Goals and projects due within 3 days.' },
-  goal_milestones: { label: 'Goal milestones', description: 'When you reach a goal or milestone.' },
+  deadlines: {
+    label: msg('Upcoming deadlines'),
+    description: msg('Goals and projects due within 3 days.'),
+  },
+  goal_milestones: {
+    label: msg('Goal milestones'),
+    description: msg('When you reach a goal or milestone.'),
+  },
   recurring_transactions: {
-    label: 'Recurring transactions',
-    description: 'Bills and income due to be recorded.',
+    label: msg('Recurring transactions'),
+    description: msg('Bills and income due to be recorded.'),
   },
 }
 
@@ -115,15 +125,15 @@ export const INTERESTS = [
   'everything',
 ] as const
 
-export const timezoneSchema = z.string().refine(isValidTimeZone, 'Choose a valid timezone')
+export const timezoneSchema = z.string().refine(isValidTimeZone, msg('Choose a valid timezone'))
 export const currencySchema = z
   .string()
   .trim()
   .toUpperCase()
-  .regex(/^[A-Z]{3}$/, 'Use a 3-letter ISO currency code')
+  .regex(/^[A-Z]{3}$/, msg('Use a 3-letter ISO currency code'))
 
 export const profileSchema = z.object({
-  display_name: z.string().trim().min(1, 'Enter your name').max(80),
+  display_name: z.string().trim().min(1, msg('Enter your name')).max(80),
 })
 
 export const preferencesSchema = z.object({

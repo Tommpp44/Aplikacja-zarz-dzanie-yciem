@@ -1,5 +1,4 @@
 import { NotebookPen, Pin, Plus } from 'lucide-react'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { NotesSearch } from '@/components/notes/notes-search'
@@ -11,10 +10,12 @@ import { formatISODate } from '@/lib/dates'
 import { listNotes } from '@/lib/notes/repository'
 import { getOnboardedUserContext } from '@/lib/settings/service'
 import { truncate } from '@/lib/utils'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Notes' }
+export const generateMetadata = pageTitle('Notes')
 
 export default async function NotesPage({ searchParams }: PageProps<'/notes'>) {
+  const t = await getT()
   const sp = await searchParams
   const { supabase, user } = await getOnboardedUserContext()
   const archived = sp.view === 'archived'
@@ -25,23 +26,25 @@ export default async function NotesPage({ searchParams }: PageProps<'/notes'>) {
   return (
     <>
       <PageHeader
-        title="Notes"
-        description="Ideas, research and decisions — linked to your projects, goals and workouts."
+        title={t('Notes')}
+        description={t(
+          'Ideas, research and decisions — linked to your projects, goals and workouts.',
+        )}
         actions={
           <Button asChild>
             <Link href="/notes/new">
-              <Plus /> New note
+              <Plus /> {t('New note')}
             </Link>
           </Button>
         }
       >
         <div className="flex flex-wrap items-center gap-3">
           <SegmentedLinks
-            label="Notes view"
+            label={t('Notes view')}
             active={archived ? 'archived' : 'all'}
             items={[
-              { value: 'all', label: 'All', href: '/notes' },
-              { value: 'archived', label: 'Archived', href: '/notes?view=archived' },
+              { value: 'all', label: t('All'), href: '/notes' },
+              { value: 'archived', label: t('Archived'), href: '/notes?view=archived' },
             ]}
           />
           <Suspense>
@@ -52,8 +55,10 @@ export default async function NotesPage({ searchParams }: PageProps<'/notes'>) {
       {notes.length === 0 ? (
         <EmptyState
           icon={NotebookPen}
-          title={sp.q ? 'No notes match your search' : 'No notes yet'}
-          description="Capture a thought, a plan or meeting notes. Link notes to projects and goals to find them in context."
+          title={sp.q ? t('No notes match your search') : t('No notes yet')}
+          description={t(
+            'Capture a thought, a plan or meeting notes. Link notes to projects and goals to find them in context.',
+          )}
         />
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -66,7 +71,7 @@ export default async function NotesPage({ searchParams }: PageProps<'/notes'>) {
                 <span className="flex items-start justify-between gap-2">
                   <span className="truncate font-medium">{n.title || 'Untitled'}</span>
                   {n.pinned && (
-                    <Pin className="text-primary size-3.5 shrink-0" aria-label="Pinned" />
+                    <Pin className="text-primary size-3.5 shrink-0" aria-label={t('Pinned')} />
                   )}
                 </span>
                 <span className="text-muted-foreground line-clamp-3 text-[13px]">

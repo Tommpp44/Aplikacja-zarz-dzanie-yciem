@@ -1,10 +1,11 @@
 import type { ISODate } from '@/lib/dates'
 import { bestMilestoneToday } from '@/lib/engagement/nudges'
 import type { HabitOverviewItem } from '@/lib/habits/service'
+import { getT } from '@/lib/i18n/server'
 import { Celebrate } from './celebrate'
 
 /** Streak milestones take precedence over the "all done today" celebration. */
-export function HabitCelebrations({
+export async function HabitCelebrations({
   items,
   dueCount,
   doneCount,
@@ -15,6 +16,7 @@ export function HabitCelebrations({
   doneCount: number
   today: ISODate
 }) {
+  const t = await getT()
   const milestone = bestMilestoneToday(
     items.map((i) => ({
       id: i.habit.id,
@@ -29,14 +31,24 @@ export function HabitCelebrations({
       <Celebrate
         when
         onceKey={`streak:${milestone.id}:${milestone.streak}`}
-        message={`${milestone.streak}-${milestone.unit === 'weeks' ? 'week' : 'day'} streak on “${milestone.name}” — keep it going! 🔥`}
+        message={
+          milestone.unit === 'weeks'
+            ? t('{n}-week streak on “{name}” — keep it going!', {
+                n: milestone.streak,
+                name: milestone.name,
+              }) + ' 🔥'
+            : t('{n}-day streak on “{name}” — keep it going!', {
+                n: milestone.streak,
+                name: milestone.name,
+              }) + ' 🔥'
+        }
       />
     )
   return (
     <Celebrate
       when={dueCount > 0 && doneCount >= dueCount}
       onceKey={`habits:${today}`}
-      message="All habits done today — great work!"
+      message={t('All habits done today — great work!')}
     />
   )
 }

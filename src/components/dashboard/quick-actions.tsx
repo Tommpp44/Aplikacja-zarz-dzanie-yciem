@@ -2,19 +2,22 @@
 
 import { CheckSquare, Dumbbell, Flame, NotebookPen, Wallet } from 'lucide-react'
 import { useUIStore, type CaptureKind } from '@/hooks/use-ui-store'
+import { useT } from '@/lib/i18n/client'
+import { msg } from '@/lib/i18n/translate'
 
 const ACTIONS: { kind: CaptureKind; label: string; icon: typeof Wallet }[] = [
-  { kind: 'task', label: 'Task', icon: CheckSquare },
-  { kind: 'expense', label: 'Expense', icon: Wallet },
-  { kind: 'workout', label: 'Workout', icon: Dumbbell },
-  { kind: 'habit', label: 'Habit', icon: Flame },
-  { kind: 'note', label: 'Note', icon: NotebookPen },
+  { kind: 'task', label: msg('Task'), icon: CheckSquare },
+  { kind: 'expense', label: msg('Expense'), icon: Wallet },
+  { kind: 'workout', label: msg('Workout'), icon: Dumbbell },
+  { kind: 'habit', label: msg('Habit'), icon: Flame },
+  { kind: 'note', label: msg('Note'), icon: NotebookPen },
 ]
 
 export function QuickActions() {
   const openCapture = useUIStore((s) => s.openCapture)
+  const t = useT()
   return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label="Quick actions">
+    <div className="flex flex-wrap gap-2" role="group" aria-label={t('Quick actions')}>
       {ACTIONS.map((a) => {
         const Icon = a.icon
         return (
@@ -26,7 +29,7 @@ export function QuickActions() {
           >
             <span className="text-primary">+</span>
             <Icon className="text-muted-foreground size-4" aria-hidden />
-            {a.label}
+            {t(a.label)}
           </button>
         )
       })}

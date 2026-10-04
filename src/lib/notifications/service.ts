@@ -12,6 +12,7 @@ import { budgetSpent, budgetStatus, type Txn } from '@/lib/finance/calculations'
 import { listBudgets, listTransactionsInRange } from '@/lib/finance/repository'
 import { listHabitLogs, listHabits } from '@/lib/habits/repository'
 import { isOpenToday } from '@/lib/habits/stats'
+import { isLocale } from '@/lib/i18n/config'
 import { normalizeNotificationSettings } from '@/lib/settings/schemas'
 import { listPlans, sessionsForDate } from '@/lib/workouts/repository'
 import { computeNotifications, type NotificationFacts } from './engine'
@@ -23,7 +24,7 @@ import { computeNotifications, type NotificationFacts } from './engine'
 export async function syncNotificationsForUser(db: DB, userId: string) {
   const { data: prefs } = await db
     .from('user_preferences')
-    .select('timezone, notification_settings, week_start')
+    .select('timezone, notification_settings, week_start, language')
     .eq('user_id', userId)
     .single()
   if (!prefs) return 0
@@ -180,7 +181,11 @@ export async function syncNotificationsForUser(db: DB, userId: string) {
     })),
   }
 
-  const drafts = computeNotifications(facts, settings)
+  const drafts = computeNotifications(
+    facts,
+    settings,
+    isLocale(prefs.language) ? prefs.language : 'en',
+  )
   if (drafts.length === 0) return 0
   const { data } = await db
     .from('notifications')

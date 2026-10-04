@@ -15,6 +15,7 @@ import {
   Strikethrough,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n/client'
 
 /** Tiptap editor (loaded lazily). Content is HTML constrained by the editor schema. */
 export default function RichTextEditor({
@@ -28,6 +29,7 @@ export default function RichTextEditor({
   placeholder?: string
   editable?: boolean
 }) {
+  const t = useT()
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -45,7 +47,7 @@ export default function RichTextEditor({
     editorProps: {
       attributes: {
         class: 'prose-lifeos min-h-[50vh] outline-none',
-        'aria-label': 'Note content',
+        'aria-label': t('Note content'),
         role: 'textbox',
         'aria-multiline': 'true',
       },
@@ -78,55 +80,55 @@ export default function RichTextEditor({
     {
       key: 'bold',
       icon: Bold,
-      label: 'Bold',
+      label: t('Bold'),
       run: () => editor.chain().focus().toggleBold().run(),
     },
     {
       key: 'italic',
       icon: Italic,
-      label: 'Italic',
+      label: t('Italic'),
       run: () => editor.chain().focus().toggleItalic().run(),
     },
     {
       key: 'strike',
       icon: Strikethrough,
-      label: 'Strikethrough',
+      label: t('Strikethrough'),
       run: () => editor.chain().focus().toggleStrike().run(),
     },
     {
       key: 'h2',
       icon: Heading2,
-      label: 'Heading',
+      label: t('Heading'),
       run: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
     },
     {
       key: 'h3',
       icon: Heading3,
-      label: 'Subheading',
+      label: t('Subheading'),
       run: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
     },
     {
       key: 'bullet',
       icon: List,
-      label: 'Bullet list',
+      label: t('Bullet list'),
       run: () => editor.chain().focus().toggleBulletList().run(),
     },
     {
       key: 'ordered',
       icon: ListOrdered,
-      label: 'Numbered list',
+      label: t('Numbered list'),
       run: () => editor.chain().focus().toggleOrderedList().run(),
     },
     {
       key: 'quote',
       icon: Quote,
-      label: 'Quote',
+      label: t('Quote'),
       run: () => editor.chain().focus().toggleBlockquote().run(),
     },
     {
       key: 'code',
       icon: Code,
-      label: 'Code block',
+      label: t('Code block'),
       run: () => editor.chain().focus().toggleCodeBlock().run(),
     },
   ] as const
@@ -136,19 +138,19 @@ export default function RichTextEditor({
       {editable && (
         <div
           role="toolbar"
-          aria-label="Formatting"
+          aria-label={t('Formatting')}
           className="bg-background/90 sticky top-14 z-10 -mx-1 flex flex-wrap gap-0.5 px-1 py-1 backdrop-blur"
         >
-          {tools.map((t) => {
-            const Icon = t.icon
-            const active = state?.[t.key as keyof NonNullable<typeof state>] ?? false
+          {tools.map((it) => {
+            const Icon = it.icon
+            const active = state?.[it.key as keyof NonNullable<typeof state>] ?? false
             return (
               <button
-                key={t.key}
+                key={it.key}
                 type="button"
-                aria-label={t.label}
+                aria-label={it.label}
                 aria-pressed={active}
-                onClick={t.run}
+                onClick={it.run}
                 className={cn(
                   'text-muted-foreground hover:bg-accent hover:text-foreground flex size-8 items-center justify-center rounded-md',
                   active && 'bg-accent text-foreground',

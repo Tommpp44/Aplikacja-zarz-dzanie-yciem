@@ -7,18 +7,19 @@ import { DataError } from '@/lib/db/errors'
 import { logger } from '@/lib/logger'
 import { createAdminClient, hasAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { msg } from '@/lib/i18n/translate'
 
 /**
  * Permanently deletes the account. All user data is removed by ON DELETE
  * CASCADE from auth.users. Requires typing "DELETE" (checked server-side).
  */
 export const deleteAccount = authedAction(
-  z.object({ confirmation: z.literal('DELETE', 'Type DELETE to confirm') }),
+  z.object({ confirmation: z.literal('DELETE', msg('Type DELETE to confirm')) }),
   { name: 'deleteAccount', revalidate: [] },
   async (_input, { user }) => {
     if (!hasAdminClient())
       throw new DataError(
-        'Account deletion is not configured on this server. Please contact support.',
+        msg('Account deletion is not configured on this server. Please contact support.'),
       )
     const admin = createAdminClient()
     const { error } = await admin.auth.admin.deleteUser(user.id)

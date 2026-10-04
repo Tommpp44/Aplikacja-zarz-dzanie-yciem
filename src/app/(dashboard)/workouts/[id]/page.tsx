@@ -1,5 +1,4 @@
 import { ArrowLeft } from 'lucide-react'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { LinkedNotes } from '@/components/notes/linked-notes'
@@ -14,10 +13,12 @@ import { formatDistance, formatPace, metersToDisplay, type Units } from '@/lib/u
 import { getWorkout, listExercises, listStrengthHistory } from '@/lib/workouts/repository'
 import { WORKOUT_TYPE_LABELS, type WorkoutInput, type WorkoutType } from '@/lib/workouts/schemas'
 import { personalRecords } from '@/lib/workouts/stats'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Workout' }
+export const generateMetadata = pageTitle('Workout')
 
 export default async function WorkoutPage({ params }: PageProps<'/workouts/[id]'>) {
+  const t = await getT()
   const { id } = await params
   const { supabase, user, today, prefs } = await getOnboardedUserContext()
   const units: Units = prefs.units === 'imperial' ? 'imperial' : 'metric'
@@ -60,7 +61,7 @@ export default async function WorkoutPage({ params }: PageProps<'/workouts/[id]'
         href="/workouts"
         className="text-muted-foreground hover:text-foreground mb-3 inline-flex items-center gap-1 text-sm"
       >
-        <ArrowLeft className="size-4" /> Workouts
+        <ArrowLeft className="size-4" /> {t('Workouts')}
       </Link>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -71,11 +72,15 @@ export default async function WorkoutPage({ params }: PageProps<'/workouts/[id]'
                 inProgress ? 'warning' : workout.status === 'planned' ? 'secondary' : 'success'
               }
             >
-              {inProgress ? 'In progress' : workout.status === 'planned' ? 'Planned' : 'Completed'}
+              {inProgress
+                ? t('In progress')
+                : workout.status === 'planned'
+                  ? t('Planned')
+                  : t('Completed')}
             </Badge>
           </div>
           <p className="text-muted-foreground mt-1 flex items-center gap-2 text-sm">
-            {WORKOUT_TYPE_LABELS[workout.workout_type as WorkoutType]} ·{' '}
+            {t(WORKOUT_TYPE_LABELS[workout.workout_type as WorkoutType])} ·{' '}
             {formatISODate(workout.performed_on, 'EEEE, d MMM yyyy')}
             {inProgress && workout.started_at && (
               <>
@@ -97,24 +102,26 @@ export default async function WorkoutPage({ params }: PageProps<'/workouts/[id]'
       {(workout.duration_minutes || workout.distance_m || workout.calories) && (
         <div className="bg-card mb-6 grid grid-cols-2 gap-4 rounded-xl border p-5 sm:grid-cols-4">
           <Stat
-            label="Duration"
+            label={t('Duration')}
             value={workout.duration_minutes ? minutesToLabel(workout.duration_minutes) : '—'}
           />
           {workout.distance_m ? (
-            <Stat label="Distance" value={formatDistance(Number(workout.distance_m), units)} />
+            <Stat label={t('Distance')} value={formatDistance(Number(workout.distance_m), units)} />
           ) : null}
           {workout.distance_m && workout.duration_minutes ? (
             <Stat
-              label="Pace"
+              label={t('Pace')}
               value={formatPace(Number(workout.distance_m), workout.duration_minutes, units) ?? '—'}
             />
           ) : null}
-          {workout.calories ? <Stat label="Calories" value={`${workout.calories} kcal`} /> : null}
+          {workout.calories ? (
+            <Stat label={t('Calories')} value={`${workout.calories} kcal`} />
+          ) : null}
           {workout.avg_heart_rate ? (
-            <Stat label="Avg heart rate" value={`${workout.avg_heart_rate} bpm`} />
+            <Stat label={t('Avg heart rate')} value={`${workout.avg_heart_rate} bpm`} />
           ) : null}
           {workout.elevation_m ? (
-            <Stat label="Elevation" value={`${Number(workout.elevation_m)} m`} />
+            <Stat label={t('Elevation')} value={`${Number(workout.elevation_m)} m`} />
           ) : null}
         </div>
       )}
@@ -135,7 +142,7 @@ export default async function WorkoutPage({ params }: PageProps<'/workouts/[id]'
             />
           ) : (
             <p className="bg-card text-muted-foreground rounded-xl border p-4 text-sm">
-              Use Edit to update duration, distance and notes for this session.
+              {t('Use Edit to update duration, distance and notes for this session.')}
             </p>
           )}
           {workout.notes && (

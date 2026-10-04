@@ -1,5 +1,4 @@
 import { Landmark } from 'lucide-react'
-import type { Metadata } from 'next'
 import { AccountMenu, NewAccountButton } from '@/components/finances/account-dialogs'
 import { Money } from '@/components/finances/money'
 import { Badge } from '@/components/ui/badge'
@@ -11,10 +10,12 @@ import { isLiability, netWorth } from '@/lib/finance/calculations'
 import { ACCOUNT_TYPE_LABELS, type AccountType } from '@/lib/finance/schemas'
 import { formatMoney } from '@/lib/money'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Accounts' }
+export const generateMetadata = pageTitle('Accounts')
 
 export default async function AccountsPage({ searchParams }: PageProps<'/finances/accounts'>) {
+  const t = await getT()
   const params = await searchParams
   const { supabase, user, today, currency } = await getOnboardedUserContext()
   const accounts = await listAccounts(supabase, user.id, true)
@@ -37,10 +38,10 @@ export default async function AccountsPage({ searchParams }: PageProps<'/finance
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="grid grid-cols-3 gap-6">
-          <Stat label="Assets" value={formatMoney(nw.assets, currency)} />
-          <Stat label="Liabilities" value={formatMoney(nw.liabilities, currency)} />
+          <Stat label={t('Assets')} value={formatMoney(nw.assets, currency)} />
+          <Stat label={t('Liabilities')} value={formatMoney(nw.liabilities, currency)} />
           <Stat
-            label="Net worth"
+            label={t('Net worth')}
             value={formatMoney(nw.net, currency)}
             tone={nw.net < 0 ? 'negative' : undefined}
           />
@@ -50,8 +51,10 @@ export default async function AccountsPage({ searchParams }: PageProps<'/finance
       {accounts.length === 0 ? (
         <EmptyState
           icon={Landmark}
-          title="No accounts yet"
-          description="Add your bank account, savings, cash, cards and loans to see your full picture."
+          title={t('No accounts yet')}
+          description={t(
+            'Add your bank account, savings, cash, cards and loans to see your full picture.',
+          )}
         />
       ) : (
         <>
@@ -62,7 +65,7 @@ export default async function AccountsPage({ searchParams }: PageProps<'/finance
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{a.name}</p>
                   <p className="text-muted-foreground truncate text-xs">
-                    {ACCOUNT_TYPE_LABELS[a.account_type as AccountType]}
+                    {t(ACCOUNT_TYPE_LABELS[a.account_type as AccountType])}
                     {a.institution ? ` · ${a.institution}` : ''} · {a.currency}
                     {!a.include_in_net_worth && ' · not in net worth'}
                   </p>
@@ -74,7 +77,7 @@ export default async function AccountsPage({ searchParams }: PageProps<'/finance
                     className={`text-sm font-semibold ${a.balance_minor < 0 ? 'text-destructive' : ''}`}
                   />
                   {isLiability(a.account_type) && a.balance_minor < 0 && (
-                    <p className="text-muted-foreground text-xs">owed</p>
+                    <p className="text-muted-foreground text-xs">{t('owed')}</p>
                   )}
                 </div>
                 <AccountMenu account={a} today={today} transactionCount={countMap.get(a.id) ?? 0} />
@@ -83,13 +86,13 @@ export default async function AccountsPage({ searchParams }: PageProps<'/finance
           </ul>
           {archived.length > 0 && (
             <section>
-              <h2 className="text-muted-foreground mb-2 text-sm font-semibold">Archived</h2>
+              <h2 className="text-muted-foreground mb-2 text-sm font-semibold">{t('Archived')}</h2>
               <ul className="bg-card divide-y rounded-xl border opacity-80">
                 {archived.map((a) => (
                   <li key={a.id} className="flex items-center gap-3 px-4 py-3">
                     <ColorDot color={a.color} />
                     <span className="flex-1 truncate text-sm">{a.name}</span>
-                    <Badge variant="secondary">Archived</Badge>
+                    <Badge variant="secondary">{t('Archived')}</Badge>
                     <Money minor={a.balance_minor} currency={a.currency} className="text-sm" />
                     <AccountMenu
                       account={a}
@@ -103,8 +106,13 @@ export default async function AccountsPage({ searchParams }: PageProps<'/finance
           )}
           {nw.otherCurrencies.length > 0 && (
             <p className="text-muted-foreground text-xs">
-              Accounts in {nw.otherCurrencies.map((o) => o.currency).join(', ')} are shown
-              separately and not converted into {currency}.
+              {t(
+                'Accounts in {currencies} are shown separately and not converted into {currency}.',
+                {
+                  currencies: nw.otherCurrencies.map((o) => o.currency).join(', '),
+                  currency,
+                },
+              )}
             </p>
           )}
         </>

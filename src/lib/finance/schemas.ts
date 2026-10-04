@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { optionalDate, optionalUuid } from '@/lib/validation'
 import { ENTITY_COLORS } from '@/lib/colors'
 import { repeatRuleSchema } from '@/lib/recurrence'
+import { msg } from '@/lib/i18n/translate'
 
 export const ACCOUNT_TYPES = [
   'checking',
@@ -15,29 +16,29 @@ export const ACCOUNT_TYPES = [
 export type AccountType = (typeof ACCOUNT_TYPES)[number]
 
 export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
-  checking: 'Bank account',
-  savings: 'Savings',
-  cash: 'Cash',
-  credit_card: 'Credit card',
-  investment: 'Investment',
-  loan: 'Loan',
-  other: 'Other',
+  checking: msg('Bank account'),
+  savings: msg('Savings'),
+  cash: msg('Cash'),
+  credit_card: msg('Credit card'),
+  investment: msg('Investment'),
+  loan: msg('Loan'),
+  other: msg('Other'),
 }
 
 export const TXN_TYPES = ['expense', 'income', 'transfer', 'adjustment'] as const
 export type TransactionType = (typeof TXN_TYPES)[number]
 
 /** Amounts arrive as text ("54,50") and are parsed to minor units on the server. */
-const amountText = z.string().trim().min(1, 'Enter an amount').max(30)
+const amountText = z.string().trim().min(1, msg('Enter an amount')).max(30)
 
 export const accountSchema = z.object({
-  name: z.string().trim().min(1, 'Name the account').max(80),
+  name: z.string().trim().min(1, msg('Name the account')).max(80),
   account_type: z.enum(ACCOUNT_TYPES),
   currency: z
     .string()
     .trim()
     .toUpperCase()
-    .regex(/^[A-Z]{3}$/, 'Use a 3-letter currency code'),
+    .regex(/^[A-Z]{3}$/, msg('Use a 3-letter currency code')),
   opening_balance: z.string().trim().max(30).default('0'),
   institution: z.string().trim().max(80).nullable().optional(),
   color: z.enum(ENTITY_COLORS).default('slate'),
@@ -59,7 +60,7 @@ export const reconcileSchema = z.object({
 })
 
 export const categorySchema = z.object({
-  name: z.string().trim().min(1, 'Name the category').max(60),
+  name: z.string().trim().min(1, msg('Name the category')).max(60),
   kind: z.enum(['expense', 'income']),
   color: z.enum(ENTITY_COLORS).default('slate'),
 })
@@ -70,7 +71,7 @@ export const transactionSchema = z
     amount: amountText,
     /** Destination amount for cross-currency transfers. */
     transfer_amount: z.string().trim().max(30).optional(),
-    account_id: z.uuid('Choose an account'),
+    account_id: z.uuid(msg('Choose an account')),
     transfer_account_id: optionalUuid,
     category_id: optionalUuid,
     occurred_on: z.iso.date(),
@@ -83,28 +84,28 @@ export const transactionSchema = z
       ctx.addIssue({
         code: 'custom',
         path: ['transfer_account_id'],
-        message: 'Choose the destination account',
+        message: msg('Choose the destination account'),
       })
     if (v.txn_type === 'transfer' && v.transfer_account_id === v.account_id)
       ctx.addIssue({
         code: 'custom',
         path: ['transfer_account_id'],
-        message: 'Choose a different account',
+        message: msg('Choose a different account'),
       })
   })
 export type TransactionInput = z.input<typeof transactionSchema>
 
 export const budgetSchema = z.object({
-  name: z.string().trim().min(1, 'Name the budget').max(80),
+  name: z.string().trim().min(1, msg('Name the budget')).max(80),
   amount: amountText,
-  category_ids: z.array(z.uuid()).min(1, 'Pick at least one category').max(50),
+  category_ids: z.array(z.uuid()).min(1, msg('Pick at least one category')).max(50),
 })
 
 export const recurringSchema = z
   .object({
     txn_type: z.enum(['expense', 'income', 'transfer']),
     amount: amountText,
-    account_id: z.uuid('Choose an account'),
+    account_id: z.uuid(msg('Choose an account')),
     transfer_account_id: optionalUuid,
     category_id: optionalUuid,
     merchant: z.string().trim().max(120).nullable().optional(),
@@ -119,7 +120,7 @@ export const recurringSchema = z
       ctx.addIssue({
         code: 'custom',
         path: ['transfer_account_id'],
-        message: 'Choose the destination account',
+        message: msg('Choose the destination account'),
       })
   })
 export type RecurringInput = z.input<typeof recurringSchema>

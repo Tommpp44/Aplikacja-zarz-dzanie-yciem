@@ -1,14 +1,16 @@
 import { SubNav } from '@/components/shared/sub-nav'
+import { getT } from '@/lib/i18n/server'
 
-export default function WorkoutsLayout({ children }: { children: React.ReactNode }) {
+export default async function WorkoutsLayout({ children }: { children: React.ReactNode }) {
+  const t = await getT()
   return (
     <>
       <SubNav
-        label="Workout sections"
+        label={t('Workout sections')}
         links={[
-          { href: '/workouts', label: 'Overview', exact: true },
-          { href: '/workouts/exercises', label: 'Exercises' },
-          { href: '/workouts/plans', label: 'Plans & templates' },
+          { href: '/workouts', label: t('Overview'), exact: true },
+          { href: '/workouts/exercises', label: t('Exercises') },
+          { href: '/workouts/plans', label: t('Plans & templates') },
         ]}
       />
       {children}

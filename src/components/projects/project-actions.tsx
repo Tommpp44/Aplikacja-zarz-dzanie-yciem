@@ -16,6 +16,7 @@ import { useServerAction } from '@/hooks/use-server-action'
 import { deleteProject } from '@/lib/projects/actions'
 import type { ProjectInput } from '@/lib/projects/schemas'
 import { ProjectFormDialog } from './project-form-dialog'
+import { useT } from '@/lib/i18n/client'
 
 export function ProjectActions({
   project,
@@ -26,6 +27,7 @@ export function ProjectActions({
   goals: { id: string; title: string }[]
   taskCount: number
 }) {
+  const t = useT()
   const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [, run] = useServerAction()
@@ -33,17 +35,17 @@ export function ProjectActions({
   return (
     <>
       <Button variant="outline" onClick={() => setEditing(true)}>
-        <Pencil /> Edit
+        <Pencil /> {t('Edit')}
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="More project actions">
+          <Button variant="ghost" size="icon" aria-label={t('More project actions')}>
             <MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={() => setEditing(true)}>
-            <Pencil /> Edit project
+            <Pencil /> {t('Edit project')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirming(true)}>
@@ -55,11 +57,14 @@ export function ProjectActions({
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title="Delete this project?"
-        description={`Its ${taskCount} task(s) are kept and moved out of the project. This cannot be undone.`}
+        title={t('Delete this project?')}
+        description={t(
+          'Its {n} task(s) are kept and moved out of the project. This cannot be undone.',
+          { n: taskCount },
+        )}
         onConfirm={() =>
           run(() => deleteProject({ id: project.id }), {
-            success: 'Project deleted',
+            success: t('Project deleted'),
             onSuccess: () => router.push('/projects'),
           })
         }

@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import { HabitCheck } from './habit-check'
 import { HabitFormDialog } from './habit-form-dialog'
 import { WeekGrid } from './week-grid'
+import { useT } from '@/lib/i18n/client'
 
 export function HabitsBoard({
   items,
@@ -28,22 +29,25 @@ export function HabitsBoard({
   weekStartsOn: 0 | 1
   openNew?: boolean
 }) {
+  const t = useT()
   const [creating, setCreating] = useState(openNew)
   return (
     <>
       <div className="mb-4 flex justify-end">
         <Button onClick={() => setCreating(true)}>
-          <Plus /> New habit
+          <Plus /> {t('New habit')}
         </Button>
       </div>
       {items.length === 0 ? (
         <EmptyState
           icon={Flame}
-          title="No habits yet"
-          description="Start with one tiny habit you can do every day — like drinking water or reading 10 pages."
+          title={t('No habits yet')}
+          description={t(
+            'Start with one tiny habit you can do every day — like drinking water or reading 10 pages.',
+          )}
           action={
             <Button onClick={() => setCreating(true)}>
-              <Plus /> Create habit
+              <Plus /> {t('Create habit')}
             </Button>
           }
         />
@@ -57,7 +61,7 @@ export function HabitsBoard({
                 ) : (
                   <span
                     className="text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-dashed text-[10px]"
-                    title="Not scheduled today"
+                    title={t('Not scheduled today')}
                   >
                     off
                   </span>
@@ -66,10 +70,11 @@ export function HabitsBoard({
                   <p className={cn('truncate text-sm font-medium')}>{habit.name}</p>
                   <p className="text-muted-foreground truncate text-xs">
                     {week
-                      ? `${week.count}/${week.target} this week`
-                      : FREQUENCY_LABELS[habit.frequency as keyof typeof FREQUENCY_LABELS]}
+                      ? t('{count}/{target} this week', { count: week.count, target: week.target })
+                      : t(FREQUENCY_LABELS[habit.frequency as keyof typeof FREQUENCY_LABELS])}
                     {' · '}
-                    <span className="tabular">{Math.round(stats.consistency)}%</span> last 30 days
+                    <span className="tabular">{Math.round(stats.consistency)}%</span>{' '}
+                    {t('last 30 days')}
                     {stats.currentStreak > 0 && (
                       <>
                         {' · '}

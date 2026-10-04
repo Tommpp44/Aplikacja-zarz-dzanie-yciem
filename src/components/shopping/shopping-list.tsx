@@ -17,6 +17,7 @@ import {
   toggleShoppingItem,
 } from '@/lib/shopping/actions'
 import { cn, groupBy } from '@/lib/utils'
+import { useT } from '@/lib/i18n/client'
 
 type Item = {
   id: string
@@ -34,6 +35,7 @@ export function ShoppingListView({
   list: { id: string; name: string }
   items: Item[]
 }) {
+  const t = useT()
   const [text, setText] = useState('')
   const [confirming, setConfirming] = useState(false)
   const [pending, run] = useServerAction()
@@ -45,18 +47,18 @@ export function ShoppingListView({
   )
   const open = optimistic.filter((i) => !i.purchased)
   const done = optimistic.filter((i) => i.purchased)
-  const groups = groupBy(open, (i) => i.category ?? 'Other')
+  const groups = groupBy(open, (i) => i.category ?? t('Other'))
 
   const row = (i: Item) => (
     <li key={i.id} className="group flex items-center gap-3 py-2">
       <Checkbox
         checked={i.purchased}
-        aria-label={`${i.purchased ? 'Unmark' : 'Mark'} ${i.name}`}
+        aria-label={`${i.purchased ? t('Unmark') : t('Mark')} ${i.name}`}
         onCheckedChange={(v) =>
           startTransition(async () => {
             setOptimistic({ id: i.id, purchased: v === true })
             const r = await toggleShoppingItem({ id: i.id, purchased: v === true })
-            if (!r.ok) toast.error(r.error)
+            if (!r.ok) toast.error(t(r.error))
           })
         }
       />
@@ -71,7 +73,7 @@ export function ShoppingListView({
       </span>
       <button
         type="button"
-        aria-label={`Remove ${i.name}`}
+        aria-label={t('Remove {name}', { name: i.name })}
         onClick={() => run(() => deleteShoppingItem({ id: i.id }))}
         className="text-muted-foreground opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
       >
@@ -91,17 +93,17 @@ export function ShoppingListView({
               size="sm"
               onClick={() =>
                 run(() => clearPurchased({ list_id: list.id }), {
-                  success: 'Cleared purchased items',
+                  success: t('Cleared purchased items'),
                 })
               }
             >
-              Clear purchased
+              {t('Clear purchased')}
             </Button>
           )}
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Delete list"
+            aria-label={t('Delete list')}
             onClick={() => setConfirming(true)}
           >
             <Trash2 />
@@ -119,19 +121,19 @@ export function ShoppingListView({
         <Input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder='Add item — e.g. "2 l milk", "Eggs x12"'
-          aria-label="Add item"
+          placeholder={t('Add item — e.g. "2 l milk", "Eggs x12"')}
+          aria-label={t('Add item')}
           autoFocus
         />
-        <Button type="submit" disabled={pending} aria-label="Add item">
+        <Button type="submit" disabled={pending} aria-label={t('Add item')}>
           <Plus />
         </Button>
       </form>
       {optimistic.length === 0 ? (
         <EmptyState
           compact
-          title="This list is empty"
-          description="Add what you need — quantities like “2 kg” are recognised."
+          title={t('This list is empty')}
+          description={t('Add what you need — quantities like “2 kg” are recognised.')}
         />
       ) : (
         <>
@@ -142,9 +144,9 @@ export function ShoppingListView({
             </section>
           ))}
           {done.length > 0 && (
-            <section aria-label="Purchased">
+            <section aria-label={t('Purchased')}>
               <h3 className="text-muted-foreground text-xs font-semibold">
-                Purchased ({done.length})
+                {t('Purchased')} ({done.length})
               </h3>
               <ul className="divide-y">{done.map(row)}</ul>
             </section>
@@ -154,10 +156,10 @@ export function ShoppingListView({
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title={`Delete “${list.name}”?`}
-        description="The list and its items will be removed."
+        title={t('Delete “{name}”?', { name: list.name })}
+        description={t('The list and its items will be removed.')}
         onConfirm={() =>
-          run(() => deleteShoppingList({ id: list.id }), { success: 'List deleted' })
+          run(() => deleteShoppingList({ id: list.id }), { success: t('List deleted') })
         }
       />
     </div>

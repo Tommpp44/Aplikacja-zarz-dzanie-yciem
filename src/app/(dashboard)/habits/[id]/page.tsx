@@ -1,5 +1,4 @@
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { BarsChart } from '@/components/charts/lazy'
@@ -17,10 +16,12 @@ import { getHabit, listHabitLogs } from '@/lib/habits/repository'
 import { FREQUENCY_LABELS, type HabitInput } from '@/lib/habits/schemas'
 import { computeHabitStats, isActiveOn } from '@/lib/habits/stats'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Habit' }
+export const generateMetadata = pageTitle('Habit')
 
 export default async function HabitPage({ params, searchParams }: PageProps<'/habits/[id]'>) {
+  const t = await getT()
   const { id } = await params
   const sp = await searchParams
   const { supabase, user, today, prefs } = await getOnboardedUserContext()
@@ -42,7 +43,8 @@ export default async function HabitPage({ params, searchParams }: PageProps<'/ha
     weekStartsOn: prefs.week_start,
   })
   const todayValue = logs.find((l) => l.log_date === today)?.value ?? 0
-  const unitLabel = all.streakUnit === 'weeks' ? 'weeks' : 'days'
+  const unitLabel = (n: number) =>
+    all.streakUnit === 'weeks' ? t.plural(n, 'week', 'weeks') : t.plural(n, 'day', 'days')
   const prevMonth = addMonthsISO(month, -1).slice(0, 7)
   const nextMonth = addMonthsISO(month, 1).slice(0, 7)
 
@@ -52,7 +54,7 @@ export default async function HabitPage({ params, searchParams }: PageProps<'/ha
         href="/habits"
         className="text-muted-foreground hover:text-foreground mb-3 inline-flex items-center gap-1 text-sm"
       >
-        <ArrowLeft className="size-4" /> Habits
+        <ArrowLeft className="size-4" /> {t('Habits')}
       </Link>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -62,13 +64,13 @@ export default async function HabitPage({ params, searchParams }: PageProps<'/ha
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-semibold tracking-tight">{habit.name}</h1>
-              {!habit.active && <Badge variant="secondary">Archived</Badge>}
+              {!habit.active && <Badge variant="secondary">{t('Archived')}</Badge>}
             </div>
             <p className="text-muted-foreground text-sm">
-              {FREQUENCY_LABELS[habit.frequency as keyof typeof FREQUENCY_LABELS]}
+              {t(FREQUENCY_LABELS[habit.frequency as keyof typeof FREQUENCY_LABELS])}
               {habit.habit_type !== 'boolean' &&
                 ` · target ${habit.target}${habit.unit ? ` ${habit.unit}` : ''}`}
-              {` · since ${formatISODate(habit.start_date, 'd MMM yyyy')}`}
+              {` · ${t('since {date}', { date: formatISODate(habit.start_date, 'd MMM yyyy') })}`}
             </p>
           </div>
         </div>
@@ -85,25 +87,29 @@ export default async function HabitPage({ params, searchParams }: PageProps<'/ha
       </div>
 
       <div className="bg-card mb-6 grid grid-cols-2 gap-4 rounded-xl border p-5 sm:grid-cols-3 lg:grid-cols-6">
-        <Stat label="Current streak" value={all.currentStreak} hint={unitLabel} />
-        <Stat label="Best streak" value={all.bestStreak} hint={unitLabel} />
         <Stat
-          label="Completion rate"
+          label={t('Current streak')}
+          value={all.currentStreak}
+          hint={unitLabel(all.currentStreak)}
+        />
+        <Stat label={t('Best streak')} value={all.bestStreak} hint={unitLabel(all.bestStreak)} />
+        <Stat
+          label={t('Completion rate')}
           value={`${Math.round(all.completionRate)}%`}
-          hint="all time"
+          hint={t('all time')}
         />
         <Stat
-          label="Consistency"
+          label={t('Consistency')}
           value={`${Math.round(last30.consistency)}%`}
-          hint="last 30 days"
+          hint={t('last 30 days')}
         />
         <Stat
-          label="Missed"
+          label={t('Missed')}
           value={last30.missedDays}
-          hint="days, last 30"
+          hint={t('days, last 30')}
           tone={last30.missedDays > 5 ? 'warning' : undefined}
         />
-        <Stat label="Completions" value={all.totalCompletions} hint="total" />
+        <Stat label={t('Completions')} value={all.totalCompletions} hint={t('total')} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -112,12 +118,12 @@ export default async function HabitPage({ params, searchParams }: PageProps<'/ha
             <CardTitle>{formatISODate(month, 'MMMM yyyy')}</CardTitle>
             <div className="flex gap-1">
               <Button variant="ghost" size="icon-sm" asChild>
-                <Link href={`/habits/${id}?month=${prevMonth}`} aria-label="Previous month">
+                <Link href={`/habits/${id}?month=${prevMonth}`} aria-label={t('Previous month')}>
                   <ChevronLeft />
                 </Link>
               </Button>
               <Button variant="ghost" size="icon-sm" asChild>
-                <Link href={`/habits/${id}?month=${nextMonth}`} aria-label="Next month">
+                <Link href={`/habits/${id}?month=${nextMonth}`} aria-label={t('Next month')}>
                   <ChevronRight />
                 </Link>
               </Button>
@@ -135,18 +141,18 @@ export default async function HabitPage({ params, searchParams }: PageProps<'/ha
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Weekly trend</CardTitle>
+            <CardTitle>{t('Weekly trend')}</CardTitle>
           </CardHeader>
           <CardContent>
             <BarsChart
-              ariaLabel="Weekly completion rate"
+              ariaLabel={t('Weekly completion rate')}
               format="percent"
               height={200}
               data={all.weeklyTrend.map((w) => ({
                 label: formatISODate(w.weekStart, 'd MMM'),
                 rate: Math.round(w.rate),
               }))}
-              series={[{ key: 'rate', label: 'Completion' }]}
+              series={[{ key: 'rate', label: t('Completion') }]}
             />
             {all.monthly.length > 0 && (
               <ul className="mt-4 flex flex-col gap-1 text-sm">

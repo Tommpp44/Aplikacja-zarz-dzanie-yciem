@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useServerAction } from '@/hooks/use-server-action'
 import type { ISODate } from '@/lib/dates'
+import { useT } from '@/lib/i18n/client'
 import { setFocus } from '@/lib/settings/actions'
 import { cn } from '@/lib/utils'
 
@@ -19,6 +20,7 @@ export function FocusEditor({
   today: ISODate
   size?: 'md' | 'lg'
 }) {
+  const t = useT()
   const [editing, setEditing] = useState(!focus)
   const [value, setValue] = useState(focus ?? '')
   const [pending, run] = useServerAction()
@@ -28,7 +30,7 @@ export function FocusEditor({
         type="button"
         onClick={() => setEditing(true)}
         className="group flex w-full items-start gap-3 text-left"
-        aria-label="Edit today's focus"
+        aria-label={t("Edit today's focus")}
       >
         <Crosshair className="text-primary mt-1 size-4 shrink-0" aria-hidden />
         <span
@@ -59,12 +61,12 @@ export function FocusEditor({
       <Input
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="What is the one thing that matters most today?"
-        aria-label="Today's focus"
+        placeholder={t('What is the one thing that matters most today?')}
+        aria-label={t("Today's focus")}
         maxLength={200}
       />
       <Button type="submit" disabled={pending}>
-        Set focus
+        {t('Set focus')}
       </Button>
     </form>
   )

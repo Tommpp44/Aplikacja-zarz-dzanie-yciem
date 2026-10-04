@@ -31,29 +31,32 @@ import { useUIStore, type CaptureKind } from '@/hooks/use-ui-store'
 import { ALL_NAV_ITEMS } from '@/lib/navigation'
 import { searchEverything, type SearchResult } from '@/lib/search/actions'
 import { startWorkout } from '@/lib/workouts/actions'
+import { useT } from '@/lib/i18n/client'
+import { msg } from '@/lib/i18n/translate'
 
 const TYPE_META: Record<SearchResult['type'], { label: string; icon: LucideIcon }> = {
-  project: { label: 'Projects', icon: FolderKanban },
-  task: { label: 'Tasks', icon: CheckSquare },
-  note: { label: 'Notes', icon: FileText },
-  goal: { label: 'Goals', icon: Target },
-  habit: { label: 'Habits', icon: Flame },
-  transaction: { label: 'Transactions', icon: Receipt },
-  workout: { label: 'Workouts', icon: Dumbbell },
-  event: { label: 'Events', icon: CalendarDays },
+  project: { label: msg('Projects'), icon: FolderKanban },
+  task: { label: msg('Tasks'), icon: CheckSquare },
+  note: { label: msg('Notes'), icon: FileText },
+  goal: { label: msg('Goals'), icon: Target },
+  habit: { label: msg('Habits'), icon: Flame },
+  transaction: { label: msg('Transactions'), icon: Receipt },
+  workout: { label: msg('Workouts'), icon: Dumbbell },
+  event: { label: msg('Events'), icon: CalendarDays },
 }
 
 const CREATE: { kind: CaptureKind; label: string; icon: LucideIcon }[] = [
-  { kind: 'task', label: 'Create task', icon: CheckSquare },
-  { kind: 'expense', label: 'Create expense', icon: Wallet },
-  { kind: 'habit', label: 'Create habit', icon: Flame },
-  { kind: 'event', label: 'Create event', icon: CalendarDays },
-  { kind: 'goal', label: 'Create goal', icon: Target },
-  { kind: 'note', label: 'Create note', icon: FileText },
+  { kind: 'task', label: msg('Create task'), icon: CheckSquare },
+  { kind: 'expense', label: msg('Create expense'), icon: Wallet },
+  { kind: 'habit', label: msg('Create habit'), icon: Flame },
+  { kind: 'event', label: msg('Create event'), icon: CalendarDays },
+  { kind: 'goal', label: msg('Create goal'), icon: Target },
+  { kind: 'note', label: msg('Create note'), icon: FileText },
 ]
 
 /** ⌘K / Ctrl+K: search everything and run commands. */
 export function CommandPalette() {
+  const t = useT()
   const open = useUIStore((s) => s.commandOpen)
   const setOpen = useUIStore((s) => s.setCommandOpen)
   const openCapture = useUIStore((s) => s.openCapture)
@@ -129,19 +132,19 @@ export function CommandPalette() {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent hideClose className="overflow-hidden p-0 sm:max-w-xl">
-        <DialogTitle className="sr-only">Search and commands</DialogTitle>
+        <DialogTitle className="sr-only">{t('Search and commands')}</DialogTitle>
         <Command shouldFilter={!query || query.trim().length < 2} loop>
           <CommandInput
             value={query}
             onValueChange={setQuery}
-            placeholder="Search everything or type a command…"
+            placeholder={t('Search everything or type a command…')}
           />
           <CommandList>
-            <CommandEmpty>{loading ? 'Searching…' : 'No results found.'}</CommandEmpty>
+            <CommandEmpty>{loading ? t('Searching…') : t('No results found.')}</CommandEmpty>
             {grouped.map((g) => {
               const Icon = g.meta.icon
               return (
-                <CommandGroup key={g.type} heading={g.meta.label}>
+                <CommandGroup key={g.type} heading={t(g.meta.label)}>
                   {g.items.map((r) => (
                     <CommandItem
                       key={`${r.type}:${r.id}`}
@@ -169,7 +172,7 @@ export function CommandPalette() {
                       <CommandItem key={c.kind} onSelect={() => openCapture(c.kind)}>
                         <Plus className="size-3" />
                         <Icon />
-                        {c.label}
+                        {t(c.label)}
                       </CommandItem>
                     )
                   })}
@@ -180,15 +183,15 @@ export function CommandPalette() {
                       if (r.ok) router.push(`/workouts/${r.data.id}`)
                     }}
                   >
-                    <Dumbbell /> Start workout
+                    <Dumbbell /> {t('Start workout')}
                   </CommandItem>
                   <CommandItem onSelect={() => go('/routines')}>
-                    <Repeat /> Start morning routine
+                    <Repeat /> {t('Start morning routine')}
                   </CommandItem>
                 </CommandGroup>
                 <CommandGroup heading="Go to">
                   <CommandItem onSelect={() => go('/today')}>
-                    <Sun /> Go to today
+                    <Sun /> {t('Go to today')}
                   </CommandItem>
                   {ALL_NAV_ITEMS.filter((i) => i.href !== '/today').map((item) => {
                     const Icon = item.icon
@@ -201,7 +204,8 @@ export function CommandPalette() {
                 </CommandGroup>
                 <CommandGroup heading="Tip">
                   <CommandItem disabled>
-                    <Search /> Type at least 2 characters to search tasks, notes, transactions…
+                    <Search />{' '}
+                    {t('Type at least 2 characters to search tasks, notes, transactions…')}
                   </CommandItem>
                 </CommandGroup>
               </>

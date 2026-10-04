@@ -28,6 +28,7 @@ import {
   workoutSchema,
   type WorkoutInput,
 } from '@/lib/workouts/schemas'
+import { useT } from '@/lib/i18n/client'
 
 export function LogWorkoutDialog({
   open,
@@ -46,10 +47,11 @@ export function LogWorkoutDialog({
   workout?: WorkoutInput & { id: string }
   defaultType?: WorkoutInput['workout_type']
 }) {
+  const t = useT()
   const router = useRouter()
   const [pending, run] = useServerAction()
   const empty: WorkoutInput = {
-    name: WORKOUT_TYPE_LABELS[defaultType],
+    name: t(WORKOUT_TYPE_LABELS[defaultType]),
     workout_type: defaultType,
     performed_on: today,
     status: 'completed',
@@ -76,9 +78,9 @@ export function LogWorkoutDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{workout ? 'Edit workout' : 'Log workout'}</DialogTitle>
+          <DialogTitle>{workout ? t('Edit workout') : t('Log workout')}</DialogTitle>
           <DialogDescription>
-            Record a run, ride, match or any session in seconds.
+            {t('Record a run, ride, match or any session in seconds.')}
           </DialogDescription>
         </DialogHeader>
         <form
@@ -89,7 +91,7 @@ export function LogWorkoutDialog({
               () =>
                 workout ? updateWorkout({ ...values, id: workout.id }) : createWorkout(values),
               {
-                success: workout ? 'Workout updated' : 'Workout logged',
+                success: workout ? t('Workout updated') : t('Workout logged'),
                 onSuccess: (d) => {
                   onOpenChange(false)
                   if (!workout) router.push(`/workouts/${d.id}`)
@@ -99,7 +101,7 @@ export function LogWorkoutDialog({
           )}
         >
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Type" htmlFor="w-type">
+            <Field label={t('Type')} htmlFor="w-type">
               <NativeSelect
                 id="w-type"
                 {...form.register('workout_type', {
@@ -108,33 +110,34 @@ export function LogWorkoutDialog({
                     if (
                       !name ||
                       (WORKOUT_TYPES as readonly string[]).some(
-                        (t) => WORKOUT_TYPE_LABELS[t as keyof typeof WORKOUT_TYPE_LABELS] === name,
+                        (wt) =>
+                          t(WORKOUT_TYPE_LABELS[wt as keyof typeof WORKOUT_TYPE_LABELS]) === name,
                       )
                     ) {
                       form.setValue(
                         'name',
-                        WORKOUT_TYPE_LABELS[e.target.value as keyof typeof WORKOUT_TYPE_LABELS],
+                        t(WORKOUT_TYPE_LABELS[e.target.value as keyof typeof WORKOUT_TYPE_LABELS]),
                       )
                     }
                   },
                 })}
               >
-                {WORKOUT_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {WORKOUT_TYPE_LABELS[t]}
+                {WORKOUT_TYPES.map((it) => (
+                  <option key={it} value={it}>
+                    {t(WORKOUT_TYPE_LABELS[it])}
                   </option>
                 ))}
               </NativeSelect>
             </Field>
-            <Field label="Date" htmlFor="w-date">
+            <Field label={t('Date')} htmlFor="w-date">
               <Input id="w-date" type="date" {...form.register('performed_on')} />
             </Field>
           </div>
-          <Field label="Name" htmlFor="w-name" error={errors.name?.message}>
+          <Field label={t('Name')} htmlFor="w-name" error={errors.name?.message}>
             <Input id="w-name" {...form.register('name')} />
           </Field>
           <div className="grid grid-cols-3 gap-3">
-            <Field label="Duration (min)" htmlFor="w-duration">
+            <Field label={t('Duration (min)')} htmlFor="w-duration">
               <Input
                 id="w-duration"
                 inputMode="numeric"
@@ -146,24 +149,24 @@ export function LogWorkoutDialog({
                 <Input id="w-distance" inputMode="decimal" {...form.register('distance', num)} />
               </Field>
             )}
-            <Field label="Calories" htmlFor="w-cal" optional>
+            <Field label={t('Calories')} htmlFor="w-cal" optional>
               <Input id="w-cal" inputMode="numeric" {...form.register('calories', num)} />
             </Field>
             {DISTANCE_TYPES.includes(type) && (
               <>
-                <Field label="Elevation (m)" htmlFor="w-elev" optional>
+                <Field label={t('Elevation (m)')} htmlFor="w-elev" optional>
                   <Input id="w-elev" inputMode="numeric" {...form.register('elevation_m', num)} />
                 </Field>
-                <Field label="Avg HR" htmlFor="w-hr" optional>
+                <Field label={t('Avg HR')} htmlFor="w-hr" optional>
                   <Input id="w-hr" inputMode="numeric" {...form.register('avg_heart_rate', num)} />
                 </Field>
               </>
             )}
           </div>
           {goals.length > 0 && (
-            <Field label="Towards goal" htmlFor="w-goal" optional>
+            <Field label={t('Towards goal')} htmlFor="w-goal" optional>
               <NativeSelect id="w-goal" {...form.register('goal_id')}>
-                <option value="">None</option>
+                <option value="">{t('None')}</option>
                 {goals.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.title}
@@ -172,11 +175,11 @@ export function LogWorkoutDialog({
               </NativeSelect>
             </Field>
           )}
-          <Field label="Notes" htmlFor="w-notes" optional>
+          <Field label={t('Notes')} htmlFor="w-notes" optional>
             <Textarea id="w-notes" rows={2} {...form.register('notes')} />
           </Field>
           <DialogFooter>
-            <SubmitButton pending={pending}>{workout ? 'Save' : 'Log workout'}</SubmitButton>
+            <SubmitButton pending={pending}>{workout ? t('Save') : t('Log workout')}</SubmitButton>
           </DialogFooter>
         </form>
       </DialogContent>

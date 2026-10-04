@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input'
 import { NativeSelect } from '@/components/ui/native-select'
 import { SubmitButton } from '@/components/ui/submit-button'
 import { useServerAction } from '@/hooks/use-server-action'
-import { WEEKDAY_SHORT, orderedWeekdays } from '@/lib/dates'
+import { weekdayShort, orderedWeekdays } from '@/lib/dates'
 import { createRoutine, updateRoutine } from '@/lib/routines/actions'
 import {
   ROUTINE_TYPES,
@@ -27,6 +27,7 @@ import {
   type RoutineInput,
 } from '@/lib/routines/schemas'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n/client'
 
 const EMPTY: RoutineInput = {
   name: '',
@@ -49,6 +50,7 @@ export function RoutineFormDialog({
   habits: { id: string; name: string }[]
   weekStartsOn: 0 | 1
 }) {
+  const t = useT()
   const [pending, run] = useServerAction()
   const form = useForm<RoutineInput>({
     resolver: zodResolver(routineSchema),
@@ -73,7 +75,7 @@ export function RoutineFormDialog({
         })),
     }
     run(() => (routine ? updateRoutine({ ...clean, id: routine.id }) : createRoutine(clean)), {
-      success: routine ? 'Routine updated' : 'Routine created',
+      success: routine ? t('Routine updated') : t('Routine created'),
       onSuccess: () => onOpenChange(false),
     })
   })
@@ -82,16 +84,17 @@ export function RoutineFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>{routine ? 'Edit routine' : 'New routine'}</DialogTitle>
+          <DialogTitle>{routine ? t('Edit routine') : t('New routine')}</DialogTitle>
           <DialogDescription>
-            A routine is an ordered checklist you repeat. Link steps to habits to log them
-            automatically.
+            {t(
+              'A routine is an ordered checklist you repeat. Link steps to habits to log them automatically.',
+            )}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} noValidate className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3">
             <Field
-              label="Name"
+              label={t('Name')}
               htmlFor="routine-name"
               error={errors.name?.message}
               className="col-span-2"
@@ -99,29 +102,29 @@ export function RoutineFormDialog({
               <Input
                 id="routine-name"
                 autoFocus
-                placeholder="Morning routine"
+                placeholder={t('Morning routine')}
                 {...form.register('name')}
               />
             </Field>
-            <Field label="Type" htmlFor="routine-type">
+            <Field label={t('Type')} htmlFor="routine-type">
               <NativeSelect id="routine-type" {...form.register('routine_type')}>
-                {ROUTINE_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {ROUTINE_TYPE_LABELS[t]}
+                {ROUTINE_TYPES.map((it) => (
+                  <option key={it} value={it}>
+                    {t(ROUTINE_TYPE_LABELS[it])}
                   </option>
                 ))}
               </NativeSelect>
             </Field>
-            <Field label="Start time" htmlFor="routine-time" optional>
+            <Field label={t('Start time')} htmlFor="routine-time" optional>
               <Input id="routine-time" type="time" {...form.register('start_time')} />
             </Field>
           </div>
-          <Field label="Days" error={errors.weekdays?.message}>
+          <Field label={t('Days')} error={errors.weekdays?.message}>
             <Controller
               control={form.control}
               name="weekdays"
               render={({ field }) => (
-                <div className="flex flex-wrap gap-1" role="group" aria-label="Days">
+                <div className="flex flex-wrap gap-1" role="group" aria-label={t('Days')}>
                   {orderedWeekdays(weekStartsOn).map((d) => {
                     const active = field.value.includes(d)
                     return (
@@ -143,7 +146,7 @@ export function RoutineFormDialog({
                             : 'bg-card text-muted-foreground',
                         )}
                       >
-                        {WEEKDAY_SHORT[d]}
+                        {weekdayShort(d, t.locale)}
                       </button>
                     )
                   })}
@@ -152,34 +155,34 @@ export function RoutineFormDialog({
             />
           </Field>
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-[13px] font-medium">Steps</legend>
+            <legend className="mb-1 text-[13px] font-medium">{t('Steps')}</legend>
             {items.fields.map((field, index) => (
               <div key={field.id} className="flex items-center gap-2">
                 <span className="text-muted-foreground tabular w-4 text-right text-xs">
                   {index + 1}
                 </span>
                 <Input
-                  aria-label={`Step ${index + 1}`}
-                  placeholder="Drink water"
+                  aria-label={t('Step {n}', { n: index + 1 })}
+                  placeholder={t('Drink water')}
                   {...form.register(`items.${index}.title`)}
                 />
                 <Input
-                  aria-label={`Step ${index + 1} minutes`}
+                  aria-label={t('Step {n} minutes', { n: index + 1 })}
                   type="number"
                   min={1}
                   className="w-20"
-                  placeholder="min"
+                  placeholder={t('min')}
                   {...form.register(`items.${index}.duration_minutes`, {
                     setValueAs: (v) => (v === '' || v === null ? null : Number(v)),
                   })}
                 />
                 {habits.length > 0 && (
                   <NativeSelect
-                    aria-label={`Step ${index + 1} habit`}
+                    aria-label={t('Step {n} habit', { n: index + 1 })}
                     className="w-36"
                     {...form.register(`items.${index}.habit_id`)}
                   >
-                    <option value="">No habit</option>
+                    <option value="">{t('No habit')}</option>
                     {habits.map((h) => (
                       <option key={h.id} value={h.id}>
                         {h.name}
@@ -192,7 +195,7 @@ export function RoutineFormDialog({
                     type="button"
                     variant="ghost"
                     size="icon-xs"
-                    aria-label="Move up"
+                    aria-label={t('Move up')}
                     disabled={index === 0}
                     onClick={() => items.move(index, index - 1)}
                   >
@@ -202,7 +205,7 @@ export function RoutineFormDialog({
                     type="button"
                     variant="ghost"
                     size="icon-xs"
-                    aria-label="Move down"
+                    aria-label={t('Move down')}
                     disabled={index === items.fields.length - 1}
                     onClick={() => items.move(index, index + 1)}
                   >
@@ -212,7 +215,7 @@ export function RoutineFormDialog({
                     type="button"
                     variant="ghost"
                     size="icon-xs"
-                    aria-label="Remove step"
+                    aria-label={t('Remove step')}
                     onClick={() => items.remove(index)}
                   >
                     <X />
@@ -227,11 +230,13 @@ export function RoutineFormDialog({
               className="self-start"
               onClick={() => items.append({ title: '', duration_minutes: 5, habit_id: null })}
             >
-              <Plus /> Add step
+              <Plus /> {t('Add step')}
             </Button>
           </fieldset>
           <DialogFooter>
-            <SubmitButton pending={pending}>{routine ? 'Save' : 'Create routine'}</SubmitButton>
+            <SubmitButton pending={pending}>
+              {routine ? t('Save') : t('Create routine')}
+            </SubmitButton>
           </DialogFooter>
         </form>
       </DialogContent>

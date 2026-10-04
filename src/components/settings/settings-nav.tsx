@@ -4,11 +4,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { SETTINGS_SECTIONS } from '@/lib/settings/sections'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n/client'
 
 export function SettingsNav() {
+  const t = useT()
   const pathname = usePathname()
   return (
-    <nav aria-label="Settings sections" className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
+    <nav aria-label={t('Settings sections')} className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
       <ul className="flex gap-1 md:flex-col">
         {SETTINGS_SECTIONS.map((s) => {
           const href = `/settings/${s.id}`
@@ -23,7 +25,7 @@ export function SettingsNav() {
                   active && 'bg-accent text-foreground font-medium',
                 )}
               >
-                {s.label}
+                {t(s.label)}
               </Link>
             </li>
           )

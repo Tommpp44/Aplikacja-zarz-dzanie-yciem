@@ -20,17 +20,19 @@ import { Progress } from '@/components/ui/progress'
 import { Stat } from '@/components/ui/stat'
 import type { DashboardData } from '@/lib/dashboard/service'
 import { formatISODate, minutesToLabel, relativeDayLabel } from '@/lib/dates'
+import { goalCategoryLabel } from '@/lib/goals/schemas'
+import type { T } from '@/lib/i18n/translate'
 import { formatGoalValue } from '@/lib/goals/format'
 import { formatMoney } from '@/lib/money'
 import { formatDistance, type Units } from '@/lib/units'
 import { percent, truncate } from '@/lib/utils'
 import { Widget } from './widget'
 
-type P = { data: DashboardData; today: string; currency: string; units: Units }
+type P = { data: DashboardData; today: string; currency: string; units: Units; t: T }
 
-export function BriefWidget({ data }: P) {
+export function BriefWidget({ data, t }: P) {
   return (
-    <Widget title="Daily brief">
+    <Widget title={t('Daily brief')}>
       <ul className="flex flex-col gap-2 text-sm">
         {data.brief.map((line, i) => (
           <li key={i} className="flex gap-2">
@@ -43,22 +45,22 @@ export function BriefWidget({ data }: P) {
   )
 }
 
-export function TodayWidget({ data }: P) {
-  const open = data.day.tasks.filter((t) => !['completed', 'cancelled'].includes(t.status))
+export function TodayWidget({ data, t }: P) {
+  const open = data.day.tasks.filter((it) => !['completed', 'cancelled'].includes(it.status))
   return (
-    <Widget title="Today" href="/today" linkLabel="Open Today">
+    <Widget title={t('Today')} href="/today" linkLabel={t('Open Today')}>
       <div className="mb-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
         <span className="inline-flex items-center gap-1.5">
           <CheckSquare className="text-muted-foreground size-4" />{' '}
-          <strong className="tabular">{open.length}</strong> tasks
+          {t.plural(open.length, '{n} task', '{n} tasks')}
         </span>
         <span className="inline-flex items-center gap-1.5">
           <CalendarClock className="text-muted-foreground size-4" />{' '}
-          <strong className="tabular">{data.day.events.length}</strong> events
+          {t.plural(data.day.events.length, '{n} event', '{n} events')}
         </span>
         {data.day.overdue.length > 0 && (
           <span className="text-destructive inline-flex items-center gap-1.5">
-            <AlertTriangle className="size-4" /> {data.day.overdue.length} overdue
+            <AlertTriangle className="size-4" /> {t('{n} overdue', { n: data.day.overdue.length })}
           </span>
         )}
       </div>
@@ -71,17 +73,17 @@ export function TodayWidget({ data }: P) {
   )
 }
 
-export function HabitsWidget({ data, today }: P) {
+export function HabitsWidget({ data, today, t }: P) {
   const items = data.day.habits.items.filter((i) => i.relevantToday)
   const { doneCount, dueCount } = data.day.habits
   return (
-    <Widget title="Habits" href="/habits">
+    <Widget title={t('Habits')} href="/habits">
       {items.length === 0 ? (
         <EmptyState
           compact
           icon={Flame}
-          title="No habits yet"
-          description="Track one small habit to start."
+          title={t('No habits yet')}
+          description={t('Track one small habit to start.')}
         />
       ) : (
         <div className="flex flex-col gap-3">
@@ -90,7 +92,7 @@ export function HabitsWidget({ data, today }: P) {
               <strong className="tabular text-lg">
                 {doneCount} / {dueCount}
               </strong>{' '}
-              habits completed
+              {t('habits completed')}
             </span>
             <span className="tabular text-sm font-semibold">
               {Math.round(percent(doneCount, dueCount))}%
@@ -99,7 +101,7 @@ export function HabitsWidget({ data, today }: P) {
           <Progress
             value={percent(doneCount, dueCount)}
             tone="success"
-            label="Habits completed today"
+            label={t('Habits completed today')}
           />
           <ul className="flex flex-col gap-2">
             {items.slice(0, 6).map((i) => (
@@ -115,7 +117,7 @@ export function HabitsWidget({ data, today }: P) {
   )
 }
 
-export function RemindersWidget({ data, today }: P) {
+export function RemindersWidget({ data, today, t }: P) {
   const deadlines = data.goals.filter(
     (g) => g.pace.daysLeft !== null && g.pace.daysLeft >= 0 && g.pace.daysLeft <= 7,
   )
@@ -126,9 +128,9 @@ export function RemindersWidget({ data, today }: P) {
     deadlines.length === 0 &&
     budgets.length === 0
   return (
-    <Widget title="Reminders">
+    <Widget title={t('Reminders')}>
       {empty ? (
-        <p className="text-muted-foreground text-sm">Nothing needs your attention. 🎉</p>
+        <p className="text-muted-foreground text-sm">{t('Nothing needs your attention.')} 🎉</p>
       ) : (
         <div className="flex flex-col gap-3 text-sm">
           {data.day.overdue.length > 0 && (
@@ -136,8 +138,8 @@ export function RemindersWidget({ data, today }: P) {
               href="/tasks?view=today"
               className="text-destructive flex items-center gap-2 hover:underline"
             >
-              <AlertTriangle className="size-4" /> {data.day.overdue.length} overdue task
-              {data.day.overdue.length === 1 ? '' : 's'}
+              <AlertTriangle className="size-4" />{' '}
+              {t.plural(data.day.overdue.length, '{n} overdue task', '{n} overdue tasks')}
             </Link>
           )}
           {deadlines.map((g) => (
@@ -146,8 +148,11 @@ export function RemindersWidget({ data, today }: P) {
               href={`/goals/${g.id}`}
               className="flex items-center gap-2 hover:underline"
             >
-              <Target className="text-muted-foreground size-4" /> {g.title} — due{' '}
-              {relativeDayLabel(g.deadline!, today).toLowerCase()}
+              <Target className="text-muted-foreground size-4" />{' '}
+              {t('{title} — due {when}', {
+                title: g.title,
+                when: relativeDayLabel(g.deadline!, today).toLowerCase(),
+              })}
             </Link>
           ))}
           {budgets.map((b) => (
@@ -156,7 +161,11 @@ export function RemindersWidget({ data, today }: P) {
               href="/finances/budgets"
               className={`flex items-center gap-2 hover:underline ${b.status === 'over' ? 'text-destructive' : 'text-warning'}`}
             >
-              <Receipt className="size-4" /> {b.name}: {Math.round(b.percent)}% of budget used
+              <Receipt className="size-4" />{' '}
+              {t('{name}: {percent}% of budget used', {
+                name: b.name,
+                percent: Math.round(b.percent),
+              })}
             </Link>
           ))}
           {data.finance.dueRecurring.length > 0 && (
@@ -168,15 +177,15 @@ export function RemindersWidget({ data, today }: P) {
   )
 }
 
-export function GoalsWidget({ data }: P) {
+export function GoalsWidget({ data, t }: P) {
   return (
-    <Widget title="Goals" href="/goals">
+    <Widget title={t('Goals')} href="/goals">
       {data.goals.length === 0 ? (
         <EmptyState
           compact
           icon={Target}
-          title="No goals yet"
-          description="Create your first goal and start tracking progress."
+          title={t('No goals yet')}
+          description={t('Create your first goal and start tracking progress.')}
         />
       ) : (
         <ul className="flex flex-col gap-4">
@@ -192,7 +201,7 @@ export function GoalsWidget({ data }: P) {
                 <GoalProgressBar
                   percent={g.progress.percent}
                   pace={g.pace}
-                  label={`${g.title} progress`}
+                  label={t('{title} progress', { title: g.title })}
                 />
                 {g.target_type === 'numeric' &&
                   g.progress_source !== 'tasks' &&
@@ -211,39 +220,39 @@ export function GoalsWidget({ data }: P) {
   )
 }
 
-export function FinanceWidget({ data, currency }: P) {
+export function FinanceWidget({ data, currency, t }: P) {
   const f = data.finance
   const p = data.financePeriod.summary
   if (f.accounts.length === 0) {
     return (
-      <Widget title="Finances" href="/finances/accounts?new=1" linkLabel="Add account">
+      <Widget title={t('Finances')} href="/finances/accounts?new=1" linkLabel={t('Add account')}>
         <EmptyState
           compact
           icon={Receipt}
-          title="No accounts yet"
-          description="Add your main account to see your money at a glance."
+          title={t('No accounts yet')}
+          description={t('Add your main account to see your money at a glance.')}
         />
       </Widget>
     )
   }
   return (
-    <Widget title="Finances" href="/finances">
+    <Widget title={t('Finances')} href="/finances">
       <div className="flex flex-col gap-4">
-        <Stat label="Net worth" value={formatMoney(f.netWorth.net, currency)} size="lg" />
+        <Stat label={t('Net worth')} value={formatMoney(f.netWorth.net, currency)} size="lg" />
         <div className="grid grid-cols-3 gap-3">
           <Stat
-            label="Income"
+            label={t('Income')}
             value={<Money minor={p.income} currency={currency} compact />}
             size="sm"
             tone="positive"
           />
           <Stat
-            label="Expenses"
+            label={t('Expenses')}
             value={<Money minor={p.expenses} currency={currency} compact />}
             size="sm"
           />
           <Stat
-            label="Savings"
+            label={t('Savings')}
             value={<Money minor={p.savings} currency={currency} compact />}
             size="sm"
             tone={p.savings < 0 ? 'negative' : undefined}
@@ -251,49 +260,53 @@ export function FinanceWidget({ data, currency }: P) {
         </div>
         <p className="text-muted-foreground text-xs">
           {data.financePeriod.range === 'month'
-            ? 'This month'
+            ? t('This month')
             : data.financePeriod.range === 'quarter'
-              ? 'Last 3 months'
-              : 'Year to date'}{' '}
-          · savings rate {Math.round(p.savingsRate)}% · forecast end balance{' '}
-          {formatMoney(f.forecast.expectedEndBalance, currency, { compact: true })}
+              ? t('Last 3 months')
+              : t('Year to date')}{' '}
+          ·{' '}
+          {t('savings rate {rate}% · forecast end balance {amount}', {
+            rate: Math.round(p.savingsRate),
+            amount: formatMoney(f.forecast.expectedEndBalance, currency, { compact: true }),
+          })}
         </p>
       </div>
     </Widget>
   )
 }
 
-export function TrainingWidget({ data, units }: P) {
-  const t = data.day.training
+export function TrainingWidget({ data, units, t }: P) {
+  const tw = data.day.training
   return (
-    <Widget title="Training" href="/workouts">
+    <Widget title={t('Training')} href="/workouts">
       <div className="flex flex-col gap-3">
         <div className="grid grid-cols-2 gap-3">
           <Stat
-            label="This week"
+            label={t('This week')}
             value={
-              t.thisWeek.target ? `${t.thisWeek.count} / ${t.thisWeek.target}` : t.thisWeek.count
+              tw.thisWeek.target
+                ? `${tw.thisWeek.count} / ${tw.thisWeek.target}`
+                : tw.thisWeek.count
             }
-            hint="workouts"
+            hint={t('workouts')}
           />
           <Stat
-            label="Training time"
-            value={minutesToLabel(t.thisWeek.minutes)}
-            hint={t.thisWeek.distance ? formatDistance(t.thisWeek.distance, units) : undefined}
+            label={t('Training time')}
+            value={minutesToLabel(tw.thisWeek.minutes)}
+            hint={tw.thisWeek.distance ? formatDistance(tw.thisWeek.distance, units) : undefined}
           />
         </div>
         <p className="inline-flex items-center gap-1.5 text-sm">
           <Footprints className="text-muted-foreground size-4" />
-          <strong className="tabular">
-            {(t.activityToday?.steps ?? 0).toLocaleString('pl-PL')}
-          </strong>{' '}
-          steps today
+          {t('{steps} steps today', {
+            steps: (tw.activityToday?.steps ?? 0).toLocaleString('pl-PL'),
+          })}
         </p>
-        {t.todaysSessions
+        {tw.todaysSessions
           .filter((s) => s.workout_type !== 'rest')
           .map((s) => (
             <p key={s.id} className="text-sm">
-              Planned: <strong>{s.title}</strong> {s.done && '✓'}
+              {t('Planned:')} <strong>{s.title}</strong> {s.done && '✓'}
             </p>
           ))}
       </div>
@@ -301,21 +314,21 @@ export function TrainingWidget({ data, units }: P) {
   )
 }
 
-export function LifeBalanceWidget({ data }: P) {
+export function LifeBalanceWidget({ data, t }: P) {
   return (
-    <Widget title="Life balance" href="/analytics">
+    <Widget title={t('Life balance')} href="/analytics">
       {data.lifeBalance.length === 0 ? (
         <p className="text-muted-foreground text-sm">
-          Add goals in different areas of life to see how balanced your progress is.
+          {t('Add goals in different areas of life to see how balanced your progress is.')}
         </p>
       ) : (
         <ul className="flex flex-col gap-2.5">
           {data.lifeBalance.map((r) => (
             <li key={r.area} className="grid grid-cols-[100px_1fr_40px] items-center gap-3 text-sm">
-              <span className="capitalize">{r.area}</span>
+              <span>{t(goalCategoryLabel(r.area))}</span>
               <Progress
                 value={r.avgProgress ?? 0}
-                label={`${r.area} goal progress`}
+                label={t('{area} goal progress', { area: t(goalCategoryLabel(r.area)) })}
                 tone={r.behind ? 'warning' : 'primary'}
               />
               <span className="tabular text-muted-foreground text-right text-xs">
@@ -324,7 +337,7 @@ export function LifeBalanceWidget({ data }: P) {
             </li>
           ))}
           <li className="text-muted-foreground text-xs">
-            Average progress of active goals per area.
+            {t('Average progress of active goals per area.')}
           </li>
         </ul>
       )}
@@ -332,17 +345,19 @@ export function LifeBalanceWidget({ data }: P) {
   )
 }
 
-export function NotesWidget({ data }: P) {
+export function NotesWidget({ data, t }: P) {
   return (
-    <Widget title="Recent notes" href="/notes">
+    <Widget title={t('Recent notes')} href="/notes">
       {data.notes.length === 0 ? (
-        <EmptyState compact icon={NotebookPen} title="No notes yet" />
+        <EmptyState compact icon={NotebookPen} title={t('No notes yet')} />
       ) : (
         <ul className="flex flex-col gap-2">
           {data.notes.map((n) => (
             <li key={n.id}>
               <Link href={`/notes/${n.id}`} className="hover:bg-accent block rounded-md p-1">
-                <span className="block truncate text-sm font-medium">{n.title || 'Untitled'}</span>
+                <span className="block truncate text-sm font-medium">
+                  {n.title || t('Untitled')}
+                </span>
                 <span className="text-muted-foreground block truncate text-xs">
                   {formatISODate(n.updated_at.slice(0, 10), 'd MMM')} ·{' '}
                   {truncate(n.content_text, 60)}

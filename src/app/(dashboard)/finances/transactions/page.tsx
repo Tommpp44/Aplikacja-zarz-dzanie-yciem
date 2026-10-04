@@ -1,5 +1,4 @@
 import { Download } from 'lucide-react'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { ImportDialog } from '@/components/finances/import-dialog'
@@ -11,14 +10,16 @@ import { listAccountOptions } from '@/lib/finance/accounts-repository'
 import { listCategories, listTransactions } from '@/lib/finance/repository'
 import { transactionFiltersSchema } from '@/lib/finance/schemas'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Transactions' }
+export const generateMetadata = pageTitle('Transactions')
 
 const PAGE_SIZE = 50
 
 export default async function TransactionsPage({
   searchParams,
 }: PageProps<'/finances/transactions'>) {
+  const t = await getT()
   const raw = await searchParams
   const params = Object.fromEntries(
     Object.entries(raw).filter(([, v]) => typeof v === 'string' && v),
@@ -47,7 +48,7 @@ export default async function TransactionsPage({
         <div className="flex gap-2">
           <Button variant="outline" asChild>
             <a href={`/api/finances/transactions/export?${query.toString()}`} download>
-              <Download /> Export CSV
+              <Download /> {t('Export CSV')}
             </a>
           </Button>
           <ImportDialog accounts={accounts} />
@@ -70,20 +71,20 @@ export default async function TransactionsPage({
         perspectiveAccount={filters.account}
       />
       {total > PAGE_SIZE && (
-        <nav aria-label="Pagination" className="flex items-center justify-between">
+        <nav aria-label={t('Pagination')} className="flex items-center justify-between">
           {page > 0 ? (
             <Button variant="outline" size="sm" asChild>
-              <Link href={pageHref(page - 1)}>Newer</Link>
+              <Link href={pageHref(page - 1)}>{t('Newer')}</Link>
             </Button>
           ) : (
             <span />
           )}
           <span className="text-muted-foreground text-xs">
-            Page {page + 1} of {Math.ceil(total / PAGE_SIZE)}
+            {t('Page {page} of {pages}', { page: page + 1, pages: Math.ceil(total / PAGE_SIZE) })}
           </span>
           {(page + 1) * PAGE_SIZE < total ? (
             <Button variant="outline" size="sm" asChild>
-              <Link href={pageHref(page + 1)}>Older</Link>
+              <Link href={pageHref(page + 1)}>{t('Older')}</Link>
             </Button>
           ) : (
             <span />

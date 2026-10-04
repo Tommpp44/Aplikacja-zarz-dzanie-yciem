@@ -1,4 +1,6 @@
 import 'server-only'
+import { currentLocale } from '@/lib/i18n/locale-state'
+import { translate } from '@/lib/i18n/translate'
 import { getCalendarItems } from '@/lib/calendar/service'
 import { nowTimeHHmm, shortTime, weekdayOf } from '@/lib/dates'
 import { getHabitsOverview } from '@/lib/habits/service'
@@ -55,7 +57,11 @@ export async function getTodayData(ctx: UserContext) {
       done: r.items.length > 0 && (r.run?.completed_item_ids.length ?? 0) >= r.items.length,
       href: '/routines',
       meta: r.items.length
-        ? `${r.run?.completed_item_ids.length ?? 0}/${r.items.length} steps · ~${routineDuration(r.items)} min`
+        ? translate(currentLocale(), '{done}/{total} steps · ~{min} min', {
+            done: r.run?.completed_item_ids.length ?? 0,
+            total: r.items.length,
+            min: routineDuration(r.items),
+          })
         : undefined,
     })),
     ...training.todaysSessions

@@ -24,6 +24,8 @@ import { COMMON_CURRENCIES } from '@/lib/money'
 import { completeOnboarding } from '@/lib/settings/actions'
 import { INTERESTS } from '@/lib/settings/schemas'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n/client'
+import { msg } from '@/lib/i18n/translate'
 
 type Interest = (typeof INTERESTS)[number]
 type Defaults = {
@@ -34,13 +36,13 @@ type Defaults = {
 }
 
 const INTEREST_META: Record<Interest, { label: string; icon: typeof Wallet }> = {
-  finances: { label: 'Finances', icon: Wallet },
-  productivity: { label: 'Productivity', icon: ListChecks },
-  habits: { label: 'Habits', icon: Flame },
-  fitness: { label: 'Fitness', icon: Footprints },
-  goals: { label: 'Goals', icon: Target },
-  planning: { label: 'Planning', icon: CalendarDays },
-  everything: { label: 'Everything', icon: Sparkles },
+  finances: { label: msg('Finances'), icon: Wallet },
+  productivity: { label: msg('Productivity'), icon: ListChecks },
+  habits: { label: msg('Habits'), icon: Flame },
+  fitness: { label: msg('Fitness'), icon: Footprints },
+  goals: { label: msg('Goals'), icon: Target },
+  planning: { label: msg('Planning'), icon: CalendarDays },
+  everything: { label: msg('Everything'), icon: Sparkles },
 }
 
 function timezones(current: string) {
@@ -52,6 +54,7 @@ function timezones(current: string) {
 }
 
 export function OnboardingFlow({ name, defaults }: { name: string; defaults: Defaults }) {
+  const t = useT()
   const [step, setStep] = useState(1)
   const [interests, setInterests] = useState<Interest[]>([])
   const [settings, setSettings] = useState(defaults)
@@ -80,7 +83,7 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
     startTransition(async () => {
       const result = await completeOnboarding({ interests, ...settings, notifications: notify })
       if (!result.ok) {
-        toast.error(result.error)
+        toast.error(t(result.error))
         return
       }
       router.replace(target)
@@ -89,12 +92,12 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
 
   return (
     <div className="flex flex-col gap-8">
-      <ol className="flex gap-2" aria-label="Progress">
+      <ol className="flex gap-2" aria-label={t('Progress')}>
         {[1, 2, 3].map((n) => (
           <li key={n} className={cn('bg-muted h-1 flex-1 rounded-full', n <= step && 'bg-primary')}>
             <span className="sr-only">
-              Step {n}
-              {n === step ? ' (current)' : ''}
+              {t('Step {n}', { n })}
+              {n === step ? ` (${t('current')})` : ''}
             </span>
           </li>
         ))}
@@ -104,10 +107,10 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
         <section className="flex flex-col gap-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              Welcome{name ? `, ${name}` : ''}.
+              {name ? t('Welcome, {name}.', { name }) : t('Welcome.')}
             </h1>
             <p className="text-muted-foreground mt-1">
-              What do you want to manage? Pick as many as you like.
+              {t('What do you want to manage? Pick as many as you like.')}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -127,7 +130,7 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
                   )}
                 >
                   <Icon className="size-4" aria-hidden />
-                  {meta.label}
+                  {t(meta.label)}
                   {active && <Check className="ml-auto size-4" aria-hidden />}
                 </button>
               )
@@ -135,7 +138,7 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
           </div>
           <div className="flex justify-between">
             <Button variant="ghost" onClick={goToSettings}>
-              Skip
+              {t('Skip')}
             </Button>
             <Button onClick={goToSettings}>
               Continue <ArrowRight />
@@ -147,11 +150,13 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
       {step === 2 && (
         <section className="flex flex-col gap-6">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">The basics</h1>
-            <p className="text-muted-foreground mt-1">You can change these anytime in Settings.</p>
+            <h1 className="text-2xl font-semibold tracking-tight">{t('The basics')}</h1>
+            <p className="text-muted-foreground mt-1">
+              {t('You can change these anytime in Settings.')}
+            </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Currency" htmlFor="currency">
+            <Field label={t('Currency')} htmlFor="currency">
               <NativeSelect
                 id="currency"
                 value={settings.currency}
@@ -162,7 +167,7 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
                 ))}
               </NativeSelect>
             </Field>
-            <Field label="Timezone" htmlFor="timezone">
+            <Field label={t('Timezone')} htmlFor="timezone">
               <NativeSelect
                 id="timezone"
                 value={settings.timezone}
@@ -173,7 +178,7 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
                 ))}
               </NativeSelect>
             </Field>
-            <Field label="First day of week" htmlFor="week_start">
+            <Field label={t('First day of week')} htmlFor="week_start">
               <NativeSelect
                 id="week_start"
                 value={settings.week_start}
@@ -181,11 +186,11 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
                   setSettings({ ...settings, week_start: e.target.value === '0' ? 0 : 1 })
                 }
               >
-                <option value={1}>Monday</option>
-                <option value={0}>Sunday</option>
+                <option value={1}>{t('Monday')}</option>
+                <option value={0}>{t('Sunday')}</option>
               </NativeSelect>
             </Field>
-            <Field label="Units" htmlFor="units">
+            <Field label={t('Units')} htmlFor="units">
               <NativeSelect
                 id="units"
                 value={settings.units}
@@ -193,25 +198,25 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
                   setSettings({ ...settings, units: e.target.value as 'metric' | 'imperial' })
                 }
               >
-                <option value="metric">Metric (kg, km)</option>
-                <option value="imperial">Imperial (lb, mi)</option>
+                <option value="metric">{t('Metric (kg, km)')}</option>
+                <option value="imperial">{t('Imperial (lb, mi)')}</option>
               </NativeSelect>
             </Field>
           </div>
           <div className="bg-card flex flex-col gap-3 rounded-xl border p-4">
-            <p className="text-sm font-medium">Notifications</p>
+            <p className="text-sm font-medium">{t('Notifications')}</p>
             <p className="text-muted-foreground -mt-2 text-xs">
-              Fewer, more valuable notifications. Off by default for habits.
+              {t('Fewer, more valuable notifications. Off by default for habits.')}
             </p>
             {(
               [
-                ['task_reminders', 'Tasks due and overdue'],
-                ['budget_warnings', 'Budget warnings'],
-                ['habit_reminders', 'Habit reminders'],
+                ['task_reminders', msg('Tasks due and overdue')],
+                ['budget_warnings', msg('Budget warnings')],
+                ['habit_reminders', msg('Habit reminders')],
               ] as const
             ).map(([key, label]) => (
               <label key={key} className="flex items-center justify-between text-sm">
-                {label}
+                {t(label)}
                 <Switch
                   checked={notify[key]}
                   onCheckedChange={(v) => setNotify({ ...notify, [key]: v })}
@@ -221,7 +226,7 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
           </div>
           <div className="flex justify-between">
             <Button variant="ghost" onClick={() => setStep(1)}>
-              Back
+              {t('Back')}
             </Button>
             <Button onClick={() => setStep(3)}>
               Continue <ArrowRight />
@@ -233,21 +238,21 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
       {step === 3 && (
         <section className="flex flex-col gap-6">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">You&apos;re ready</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{t("You're ready")}</h1>
             <p className="text-muted-foreground mt-1">
-              Start with one small step — or explore on your own.
+              {t('Start with one small step — or explore on your own.')}
             </p>
           </div>
           <div className="flex flex-col gap-2">
             {[
-              { label: 'Add your first goal', href: '/goals?new=1', icon: Target },
-              { label: 'Create your first habit', href: '/habits?new=1', icon: Flame },
+              { label: t('Add your first goal'), href: '/goals?new=1', icon: Target },
+              { label: t('Create your first habit'), href: '/habits?new=1', icon: Flame },
               {
-                label: 'Add your main financial account',
+                label: t('Add your main financial account'),
                 href: '/finances/accounts?new=1',
                 icon: Landmark,
               },
-              { label: 'Plan tomorrow', href: '/tasks?view=upcoming', icon: CalendarDays },
+              { label: t('Plan tomorrow'), href: '/tasks?view=upcoming', icon: CalendarDays },
             ].map((item) => {
               const Icon = item.icon
               return (
@@ -259,7 +264,7 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
                   className="bg-card hover:border-primary/50 flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition-colors disabled:opacity-60"
                 >
                   <Icon className="text-primary size-4" aria-hidden />
-                  {item.label}
+                  {t(item.label)}
                   <ArrowRight className="text-muted-foreground ml-auto size-4" aria-hidden />
                 </button>
               )
@@ -267,18 +272,18 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
           </div>
           <div className="flex justify-between">
             <Button variant="ghost" onClick={() => setStep(2)}>
-              Back
+              {t('Back')}
             </Button>
             <Button disabled={pending} onClick={() => finish('/dashboard')}>
-              Go to dashboard
+              {t('Go to dashboard')}
             </Button>
           </div>
           <p className="text-muted-foreground text-center text-xs">
-            Changed your mind?{' '}
+            {t('Changed your mind?')}{' '}
             <Link href="/settings" className="underline">
-              Settings
+              {t('Settings')}
             </Link>{' '}
-            has everything.
+            {t('has everything.')}
           </p>
         </section>
       )}

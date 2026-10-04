@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { Money } from './money'
 import { TransactionDialog } from './transaction-dialog'
 import type { AccountOption, CategoryOption, TransactionLike } from './types'
+import { useT } from '@/lib/i18n/client'
 
 function signedAmount(t: TransactionLike, perspectiveAccount?: string) {
   if (t.txn_type === 'income') return t.amount_minor
@@ -35,6 +36,7 @@ export function TransactionList({
   perspectiveAccount?: string
   emptyAction?: React.ReactNode
 }) {
+  const t = useT()
   const [editing, setEditing] = useState<TransactionLike | null>(null)
   const accountMap = new Map(accounts.map((a) => [a.id, a]))
   const categoryMap = new Map(categories.map((c) => [c.id, c]))
@@ -43,8 +45,8 @@ export function TransactionList({
     return (
       <EmptyState
         icon={Receipt}
-        title="No transactions"
-        description="Record income and expenses to see where your money goes."
+        title={t('No transactions')}
+        description={t('Record income and expenses to see where your money goes.')}
         action={emptyAction}
       />
     )
@@ -63,40 +65,42 @@ export function TransactionList({
         {groups.map((g) => (
           <section key={g.date} aria-label={g.date}>
             <h3 className="text-muted-foreground mb-1 px-2 text-xs font-semibold">
-              {relativeDayLabel(g.date, today)}
+              {relativeDayLabel(g.date, today, t.locale)}
             </h3>
             <ul className="bg-card divide-y rounded-xl border">
-              {g.items.map((t) => {
-                const category = t.category_id ? categoryMap.get(t.category_id) : null
-                const account = accountMap.get(t.account_id)
-                const to = t.transfer_account_id ? accountMap.get(t.transfer_account_id) : null
+              {g.items.map((txn) => {
+                const category = txn.category_id ? categoryMap.get(txn.category_id) : null
+                const account = accountMap.get(txn.account_id)
+                const to = txn.transfer_account_id ? accountMap.get(txn.transfer_account_id) : null
                 const title =
-                  t.txn_type === 'transfer'
-                    ? `${account?.name ?? 'Account'} → ${to?.name ?? 'Account'}`
-                    : t.txn_type === 'adjustment'
-                      ? 'Balance correction'
-                      : t.merchant ||
+                  txn.txn_type === 'transfer'
+                    ? `${account?.name ?? t('Account')} → ${to?.name ?? t('Account')}`
+                    : txn.txn_type === 'adjustment'
+                      ? t('Balance correction')
+                      : txn.merchant ||
                         category?.name ||
-                        (t.txn_type === 'income' ? 'Income' : 'Expense')
+                        (txn.txn_type === 'income' ? t('Income') : t('Expense'))
                 const subtitle = [
-                  t.txn_type === 'transfer' || t.txn_type === 'adjustment' ? null : category?.name,
-                  t.description,
-                  t.txn_type !== 'transfer' ? account?.name : null,
+                  txn.txn_type === 'transfer' || txn.txn_type === 'adjustment'
+                    ? null
+                    : category?.name,
+                  txn.description,
+                  txn.txn_type !== 'transfer' ? account?.name : null,
                 ]
                   .filter(Boolean)
                   .join(' · ')
-                const amount = signedAmount(t, perspectiveAccount)
+                const amount = signedAmount(txn, perspectiveAccount)
                 return (
-                  <li key={t.id}>
+                  <li key={txn.id}>
                     <button
                       type="button"
-                      onClick={() => setEditing(t)}
+                      onClick={() => setEditing(txn)}
                       className="hover:bg-accent/60 flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors"
                     >
                       <span
                         className={cn(
                           'flex size-8 shrink-0 items-center justify-center rounded-full',
-                          t.txn_type === 'transfer' || t.txn_type === 'adjustment'
+                          txn.txn_type === 'transfer' || txn.txn_type === 'adjustment'
                             ? 'bg-muted text-muted-foreground'
                             : cn(
                                 colorClass(category?.color, 'soft'),
@@ -105,9 +109,9 @@ export function TransactionList({
                         )}
                         aria-hidden
                       >
-                        {t.txn_type === 'transfer' ? (
+                        {txn.txn_type === 'transfer' ? (
                           <ArrowLeftRight className="size-4" />
-                        ) : t.txn_type === 'adjustment' ? (
+                        ) : txn.txn_type === 'adjustment' ? (
                           <Scale className="size-4" />
                         ) : (
                           <span className="text-xs font-semibold">
@@ -118,10 +122,10 @@ export function TransactionList({
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-1.5 truncate text-sm font-medium">
                           {title}
-                          {t.source === 'recurring' && (
+                          {txn.source === 'recurring' && (
                             <Repeat
                               className="text-muted-foreground size-3"
-                              aria-label="Recurring"
+                              aria-label={t('Recurring')}
                             />
                           )}
                         </span>
@@ -134,15 +138,15 @@ export function TransactionList({
                       <Money
                         minor={amount}
                         currency={
-                          perspectiveAccount && t.transfer_account_id === perspectiveAccount
-                            ? (to?.currency ?? t.currency)
-                            : t.currency
+                          perspectiveAccount && txn.transfer_account_id === perspectiveAccount
+                            ? (to?.currency ?? txn.currency)
+                            : txn.currency
                         }
                         signed
                         className={cn(
                           'text-sm font-medium',
-                          t.txn_type === 'income' && 'text-success',
-                          t.txn_type === 'transfer' && 'text-muted-foreground',
+                          txn.txn_type === 'income' && 'text-success',
+                          txn.txn_type === 'transfer' && 'text-muted-foreground',
                         )}
                       />
                     </button>

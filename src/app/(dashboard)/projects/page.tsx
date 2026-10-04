@@ -1,5 +1,4 @@
 import { FolderKanban } from 'lucide-react'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { NewProjectButton } from '@/components/projects/new-project-button'
 import { Badge } from '@/components/ui/badge'
@@ -13,12 +12,21 @@ import { listGoalOptions } from '@/lib/goals/options'
 import { listProjects } from '@/lib/projects/repository'
 import { PROJECT_STATUS_LABELS, projectProgress, type ProjectStatus } from '@/lib/projects/schemas'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
+import { msg } from '@/lib/i18n/translate'
 
-export const metadata: Metadata = { title: 'Projects' }
+export const generateMetadata = pageTitle('Projects')
 
 const FILTERS = ['active', 'all', 'completed', 'archived'] as const
+const FILTER_LABELS = {
+  active: msg('Active'),
+  all: msg('All'),
+  completed: msg('Completed'),
+  archived: msg('Archived'),
+} as const
 
 export default async function ProjectsPage({ searchParams }: PageProps<'/projects'>) {
+  const t = await getT()
   const params = await searchParams
   const filter = FILTERS.includes(params.filter as (typeof FILTERS)[number])
     ? (params.filter as (typeof FILTERS)[number])
@@ -39,16 +47,16 @@ export default async function ProjectsPage({ searchParams }: PageProps<'/project
   return (
     <>
       <PageHeader
-        title="Projects"
-        description="Groups of tasks that lead to a result."
+        title={t('Projects')}
+        description={t('Groups of tasks that lead to a result.')}
         actions={<NewProjectButton goals={goals} defaultOpen={params.new === '1'} />}
       >
         <SegmentedLinks
-          label="Project filter"
+          label={t('Project filter')}
           active={filter}
           items={FILTERS.map((f) => ({
             value: f,
-            label: f[0]!.toUpperCase() + f.slice(1),
+            label: t(FILTER_LABELS[f]),
             href: `/projects?filter=${f}`,
           }))}
         />
@@ -56,8 +64,10 @@ export default async function ProjectsPage({ searchParams }: PageProps<'/project
       {projects.length === 0 ? (
         <EmptyState
           icon={FolderKanban}
-          title="No projects here"
-          description="Create a project to group related tasks — like “Move to Berlin” or “Launch website”."
+          title={t('No projects here')}
+          description={t(
+            'Create a project to group related tasks — like “Move to Berlin” or “Launch website”.',
+          )}
         />
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -84,7 +94,7 @@ export default async function ProjectsPage({ searchParams }: PageProps<'/project
                             : 'secondary'
                       }
                     >
-                      {PROJECT_STATUS_LABELS[p.status as ProjectStatus]}
+                      {t(PROJECT_STATUS_LABELS[p.status as ProjectStatus])}
                     </Badge>
                   </div>
                   {p.description && (
@@ -95,11 +105,14 @@ export default async function ProjectsPage({ searchParams }: PageProps<'/project
                   <div className="mt-auto flex flex-col gap-1.5">
                     <div className="text-muted-foreground flex justify-between text-xs">
                       <span className="tabular">
-                        {progress.done}/{progress.total} tasks
+                        {t('{done}/{total} tasks', { done: progress.done, total: progress.total })}
                       </span>
                       <span className="tabular">{Math.round(progress.percent)}%</span>
                     </div>
-                    <Progress value={progress.percent} label={`${p.name} progress`} />
+                    <Progress
+                      value={progress.percent}
+                      label={t('{name} progress', { name: p.name })}
+                    />
                     <div className="text-muted-foreground flex justify-between text-xs">
                       <span className="truncate">{p.goal ? `→ ${p.goal.title}` : ''}</span>
                       {p.deadline && (
@@ -110,7 +123,7 @@ export default async function ProjectsPage({ searchParams }: PageProps<'/project
                               : ''
                           }
                         >
-                          Due {formatISODate(p.deadline, 'd MMM')}
+                          {t('Due {date}', { date: formatISODate(p.deadline, 'd MMM') })}
                         </span>
                       )}
                     </div>

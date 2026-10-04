@@ -4,6 +4,7 @@ import { Bell, CheckCheck } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useT } from '@/lib/i18n/client'
 import { getNotifications, markNotificationsRead } from '@/lib/notifications/actions'
 import { cn } from '@/lib/utils'
 
@@ -20,6 +21,7 @@ type Item = {
 const SYNC_INTERVAL = 10 * 60 * 1000
 
 export function NotificationBell() {
+  const t = useT()
   const [items, setItems] = useState<Item[]>([])
   const [unread, setUnread] = useState(0)
   const [open, setOpen] = useState(false)
@@ -47,10 +49,10 @@ export function NotificationBell() {
       // storage unavailable
     }
     void load(Date.now() - last > SYNC_INTERVAL)
-    const t = setInterval(() => void load(true), SYNC_INTERVAL)
+    const timer = setInterval(() => void load(true), SYNC_INTERVAL)
     return () => {
       cancelled = true
-      clearInterval(t)
+      clearInterval(timer)
     }
   }, [])
 
@@ -63,7 +65,7 @@ export function NotificationBell() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        aria-label={unread ? `Notifications (${unread} unread)` : 'Notifications'}
+        aria-label={unread ? t('Notifications ({n} unread)', { n: unread }) : t('Notifications')}
         className="text-muted-foreground hover:bg-accent hover:text-foreground relative flex size-9 items-center justify-center rounded-md"
       >
         <Bell className="size-4" />
@@ -75,19 +77,19 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between border-b px-4 py-3">
-          <p className="text-sm font-semibold">Notifications</p>
+          <p className="text-sm font-semibold">{t('Notifications')}</p>
           {unread > 0 && (
             <button
               onClick={markAll}
               className="text-primary inline-flex items-center gap-1 text-xs hover:underline"
             >
-              <CheckCheck className="size-3.5" /> Mark all read
+              <CheckCheck className="size-3.5" /> {t('Mark all read')}
             </button>
           )}
         </div>
         {items.length === 0 ? (
           <p className="text-muted-foreground px-4 py-8 text-center text-sm">
-            You&apos;re all caught up.
+            {t('You’re all caught up.')}
           </p>
         ) : (
           <ul className="max-h-96 overflow-y-auto">
@@ -115,7 +117,7 @@ export function NotificationBell() {
                   {!n.read_at && (
                     <span
                       className="bg-primary mt-1.5 size-1.5 shrink-0 rounded-full"
-                      aria-label="Unread"
+                      aria-label={t('Unread')}
                     />
                   )}
                   <span className="min-w-0">
@@ -135,7 +137,7 @@ export function NotificationBell() {
             onClick={() => setOpen(false)}
             className="text-muted-foreground hover:text-foreground text-xs"
           >
-            Notification settings
+            {t('Notification settings')}
           </Link>
         </div>
       </PopoverContent>

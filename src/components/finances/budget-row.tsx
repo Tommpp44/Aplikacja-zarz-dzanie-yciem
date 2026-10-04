@@ -1,5 +1,8 @@
+'use client'
+
 import { Progress } from '@/components/ui/progress'
 import { formatMoney } from '@/lib/money'
+import { useT } from '@/lib/i18n/client'
 
 export function BudgetRow({
   name,
@@ -18,6 +21,7 @@ export function BudgetRow({
   status: 'ok' | 'warning' | 'over'
   currency: string
 }) {
+  const t = useT()
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-baseline justify-between gap-2 text-sm">
@@ -29,12 +33,12 @@ export function BudgetRow({
       <Progress
         value={percent}
         tone={status === 'over' ? 'destructive' : status === 'warning' ? 'warning' : 'success'}
-        label={`${name} budget used`}
+        label={t('{name} budget used', { name })}
       />
       <p className={`text-xs ${status === 'over' ? 'text-destructive' : 'text-muted-foreground'}`}>
         {remaining >= 0
-          ? `${formatMoney(remaining, currency)} left`
-          : `${formatMoney(-remaining, currency)} over budget`}
+          ? t('{amount} left', { amount: formatMoney(remaining, currency) })
+          : t('{amount} over budget', { amount: formatMoney(-remaining, currency) })}
       </p>
     </div>
   )

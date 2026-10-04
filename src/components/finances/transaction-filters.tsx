@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect } from '@/components/ui/native-select'
 import type { AccountOption, CategoryOption } from './types'
+import { useT } from '@/lib/i18n/client'
 
 export function TransactionFilters({
   accounts,
@@ -15,6 +16,7 @@ export function TransactionFilters({
   accounts: AccountOption[]
   categories: CategoryOption[]
 }) {
+  const t = useT()
   const router = useRouter()
   const pathname = usePathname()
   const params = useSearchParams()
@@ -49,45 +51,45 @@ export function TransactionFilters({
         />
         <Input
           className="pl-8"
-          placeholder="Merchant or description"
-          aria-label="Search transactions"
+          placeholder={t('Merchant or description')}
+          aria-label={t('Search transactions')}
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
       </div>
       <Input
         type="date"
-        aria-label="From date"
+        aria-label={t('From date')}
         className="w-40"
         value={params.get('from') ?? ''}
         onChange={(e) => update({ from: e.target.value })}
       />
       <Input
         type="date"
-        aria-label="To date"
+        aria-label={t('To date')}
         className="w-40"
         value={params.get('to') ?? ''}
         onChange={(e) => update({ to: e.target.value })}
       />
       <NativeSelect
-        aria-label="Type"
+        aria-label={t('Type')}
         className="w-32"
         value={params.get('type') ?? ''}
         onChange={(e) => update({ type: e.target.value })}
       >
-        <option value="">All types</option>
-        <option value="expense">Expenses</option>
-        <option value="income">Income</option>
-        <option value="transfer">Transfers</option>
-        <option value="adjustment">Corrections</option>
+        <option value="">{t('All types')}</option>
+        <option value="expense">{t('Expenses')}</option>
+        <option value="income">{t('Income')}</option>
+        <option value="transfer">{t('Transfers')}</option>
+        <option value="adjustment">{t('Corrections')}</option>
       </NativeSelect>
       <NativeSelect
-        aria-label="Account"
+        aria-label={t('Account')}
         className="w-40"
         value={params.get('account') ?? ''}
         onChange={(e) => update({ account: e.target.value })}
       >
-        <option value="">All accounts</option>
+        <option value="">{t('All accounts')}</option>
         {accounts.map((a) => (
           <option key={a.id} value={a.id}>
             {a.name}
@@ -95,12 +97,12 @@ export function TransactionFilters({
         ))}
       </NativeSelect>
       <NativeSelect
-        aria-label="Category"
+        aria-label={t('Category')}
         className="w-40"
         value={params.get('category') ?? ''}
         onChange={(e) => update({ category: e.target.value })}
       >
-        <option value="">All categories</option>
+        <option value="">{t('All categories')}</option>
         {categories.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}
@@ -116,7 +118,7 @@ export function TransactionFilters({
             router.replace(pathname)
           }}
         >
-          <X /> Clear
+          <X /> {t('Clear')}
         </Button>
       )}
     </div>

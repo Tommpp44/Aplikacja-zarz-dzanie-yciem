@@ -16,6 +16,7 @@ import {
 } from '@/lib/workouts/actions'
 import { estimatedOneRepMax, totalVolume } from '@/lib/workouts/stats'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n/client'
 
 type SetRow = {
   id: string
@@ -44,6 +45,7 @@ function SetLine({
   units: Units
   previousBest?: number
 }) {
+  const t = useT()
   const [state, setState] = useState({
     weight: set.weight_kg === null ? '' : String(round(kgToDisplay(set.weight_kg, units))),
     reps: set.reps === null ? '' : String(set.reps),
@@ -63,7 +65,7 @@ function SetLine({
         rpe: next.rpe === '' ? null : Number(next.rpe.replace(',', '.')),
         completed: next.completed,
       })
-      if (!r.ok) toast.error(r.error)
+      if (!r.ok) toast.error(t(r.error))
     })
   }
   const weightKg = state.weight ? Number(state.weight.replace(',', '.')) : 0
@@ -83,7 +85,7 @@ function SetLine({
       </td>
       <td className="px-1 py-1">
         <input
-          aria-label={`Set ${set.set_number} weight`}
+          aria-label={t('Set {n} weight', { n: set.set_number })}
           inputMode="decimal"
           className={inputCls}
           value={state.weight}
@@ -93,7 +95,7 @@ function SetLine({
       </td>
       <td className="px-1 py-1">
         <input
-          aria-label={`Set ${set.set_number} reps`}
+          aria-label={t('Set {n} reps', { n: set.set_number })}
           inputMode="numeric"
           className={inputCls}
           value={state.reps}
@@ -103,7 +105,7 @@ function SetLine({
       </td>
       <td className="hidden px-1 py-1 sm:table-cell">
         <input
-          aria-label={`Set ${set.set_number} RPE`}
+          aria-label={t('Set {n} RPE', { n: set.set_number })}
           inputMode="decimal"
           className={inputCls}
           value={state.rpe}
@@ -117,7 +119,9 @@ function SetLine({
           type="button"
           aria-pressed={state.completed}
           aria-label={
-            state.completed ? `Set ${set.set_number} done` : `Mark set ${set.set_number} done`
+            state.completed
+              ? t('Set {n} done', { n: set.set_number })
+              : t('Mark set {n} done', { n: set.set_number })
           }
           onClick={() => save({ completed: !state.completed })}
           className={cn(
@@ -133,7 +137,7 @@ function SetLine({
       <td className="pl-1 text-center">
         <button
           type="button"
-          aria-label={`Delete set ${set.set_number}`}
+          aria-label={t('Delete set {n}', { n: set.set_number })}
           onClick={() => run(() => deleteSet({ id: set.id }))}
           className="text-muted-foreground hover:text-foreground rounded p-1"
         >
@@ -157,6 +161,7 @@ export function SessionLogger({
   units: Units
   bests: Record<string, number>
 }) {
+  const t = useT()
   const [pending, run] = useServerAction()
   const [selected, setSelected] = useState('')
   const volume = useMemo(() => totalVolume(blocks.flatMap((b) => b.sets)), [blocks])
@@ -166,7 +171,7 @@ export function SessionLogger({
         <section
           key={b.id}
           className="bg-card rounded-xl border p-4"
-          aria-label={b.exercise?.name ?? 'Exercise'}
+          aria-label={b.exercise?.name ?? t('Exercise')}
         >
           <header className="mb-2 flex items-center justify-between gap-2">
             <div>
@@ -181,7 +186,7 @@ export function SessionLogger({
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label={`Remove ${b.exercise?.name}`}
+              aria-label={t('Remove {name}', { name: b.exercise?.name ?? '' })}
               onClick={() => run(() => removeWorkoutExercise({ id: b.id }))}
             >
               <X />
@@ -190,11 +195,11 @@ export function SessionLogger({
           <table className="w-full">
             <thead>
               <tr className="text-muted-foreground text-[11px]">
-                <th className="w-8 font-medium">Set</th>
+                <th className="w-8 font-medium">{t('Set')}</th>
                 <th className="font-medium">{weightUnit(units)}</th>
-                <th className="font-medium">Reps</th>
-                <th className="hidden font-medium sm:table-cell">RPE</th>
-                <th className="w-12 font-medium">Done</th>
+                <th className="font-medium">{t('Reps')}</th>
+                <th className="hidden font-medium sm:table-cell">{t('RPE')}</th>
+                <th className="w-12 font-medium">{t('Done')}</th>
                 <th className="w-6" />
               </tr>
             </thead>
@@ -216,18 +221,18 @@ export function SessionLogger({
             disabled={pending}
             onClick={() => run(() => addSet({ workout_exercise_id: b.id }))}
           >
-            <Plus /> Add set
+            <Plus /> {t('Add set')}
           </Button>
         </section>
       ))}
       <div className="flex flex-col gap-2 rounded-xl border border-dashed p-4 sm:flex-row">
         <NativeSelect
-          aria-label="Exercise"
+          aria-label={t('Exercise')}
           className="flex-1"
           value={selected}
           onChange={(e) => setSelected(e.target.value)}
         >
-          <option value="">Choose an exercise…</option>
+          <option value="">{t('Choose an exercise…')}</option>
           {exercises.map((e) => (
             <option key={e.id} value={e.id}>
               {e.name}
@@ -244,12 +249,12 @@ export function SessionLogger({
             })
           }
         >
-          <Plus /> Add exercise
+          <Plus /> {t('Add exercise')}
         </Button>
       </div>
       {volume > 0 && (
         <p className="text-muted-foreground text-right text-xs">
-          Total volume:{' '}
+          {t('Total volume:')}{' '}
           <span className="tabular text-foreground font-medium">
             {Math.round(kgToDisplay(volume, units)).toLocaleString('pl-PL')} {weightUnit(units)}
           </span>

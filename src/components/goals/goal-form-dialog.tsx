@@ -26,6 +26,7 @@ import {
   goalSchema,
   type GoalInput,
 } from '@/lib/goals/schemas'
+import { useT } from '@/lib/i18n/client'
 
 const EMPTY: GoalInput = {
   title: '',
@@ -53,6 +54,7 @@ export function GoalFormDialog({
   goal?: GoalInput & { id: string }
   accounts: GoalFormAccount[]
 }) {
+  const t = useT()
   const router = useRouter()
   const [pending, run] = useServerAction()
   const form = useForm<GoalInput>({
@@ -76,7 +78,7 @@ export function GoalFormDialog({
       target_value: values.target_value ?? null,
     }
     run(() => (goal ? updateGoal({ ...clean, id: goal.id }) : createGoal(clean)), {
-      success: goal ? 'Goal updated' : 'Goal created',
+      success: goal ? t('Goal updated') : t('Goal created'),
       onSuccess: (data) => {
         onOpenChange(false)
         if (!goal && data) router.push(`/goals/${data.id}`)
@@ -97,23 +99,24 @@ export function GoalFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>{goal ? 'Edit goal' : 'New goal'}</DialogTitle>
+          <DialogTitle>{goal ? t('Edit goal') : t('New goal')}</DialogTitle>
           <DialogDescription>
-            Make it measurable. Link it to an account, tasks or milestones to track it
-            automatically.
+            {t(
+              'Make it measurable. Link it to an account, tasks or milestones to track it automatically.',
+            )}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-          <Field label="Goal" htmlFor="goal-title" error={errors.title?.message}>
+          <Field label={t('Goal')} htmlFor="goal-title" error={errors.title?.message}>
             <Input
               id="goal-title"
               autoFocus
-              placeholder="Build emergency fund"
+              placeholder={t('Build emergency fund')}
               {...form.register('title')}
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Category" htmlFor="goal-category">
+            <Field label={t('Category')} htmlFor="goal-category">
               <NativeSelect id="goal-category" {...form.register('category')}>
                 {GOAL_CATEGORIES.map((c) => (
                   <option key={c} value={c}>
@@ -123,7 +126,7 @@ export function GoalFormDialog({
               </NativeSelect>
             </Field>
             <Field
-              label="Deadline"
+              label={t('Deadline')}
               htmlFor="goal-deadline"
               optional
               error={errors.deadline?.message}
@@ -131,20 +134,26 @@ export function GoalFormDialog({
               <Input id="goal-deadline" type="date" {...form.register('deadline')} />
             </Field>
           </div>
-          <Field label="Measure progress by" htmlFor="goal-source">
+          <Field label={t('Measure progress by')} htmlFor="goal-source">
             <NativeSelect id="goal-source" {...form.register('progress_source')}>
               {PROGRESS_SOURCES.map((s) => (
                 <option key={s} value={s} disabled={s === 'account' && accounts.length === 0}>
-                  {PROGRESS_SOURCE_LABELS[s]}
-                  {s === 'account' && accounts.length === 0 ? ' (add an account first)' : ''}
+                  {t(PROGRESS_SOURCE_LABELS[s])}
+                  {s === 'account' && accounts.length === 0
+                    ? ` (${t('add an account first')})`
+                    : ''}
                 </option>
               ))}
             </NativeSelect>
           </Field>
           {source === 'account' && (
-            <Field label="Account" htmlFor="goal-account" error={errors.linked_account_id?.message}>
+            <Field
+              label={t('Account')}
+              htmlFor="goal-account"
+              error={errors.linked_account_id?.message}
+            >
               <NativeSelect id="goal-account" {...form.register('linked_account_id')}>
-                <option value="">Choose…</option>
+                <option value="">{t('Choose…')}</option>
                 {accounts.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.name} ({a.currency})
@@ -154,18 +163,20 @@ export function GoalFormDialog({
             </Field>
           )}
           {(source === 'manual' || source === 'account') && (
-            <Field label="Target type" htmlFor="goal-target-type">
+            <Field label={t('Target type')} htmlFor="goal-target-type">
               <NativeSelect id="goal-target-type" {...form.register('target_type')}>
-                <option value="numeric">Number (e.g. 30 000 PLN, 10 kg, 12 books)</option>
-                {source === 'manual' && <option value="percentage">Percentage (0–100%)</option>}
-                {source === 'manual' && <option value="boolean">Done / not done</option>}
+                <option value="numeric">{t('Number (e.g. 30 000 PLN, 10 kg, 12 books)')}</option>
+                {source === 'manual' && (
+                  <option value="percentage">{t('Percentage (0–100%)')}</option>
+                )}
+                {source === 'manual' && <option value="boolean">{t('Done / not done')}</option>}
               </NativeSelect>
             </Field>
           )}
           {numeric && (
             <div className="grid grid-cols-3 gap-3">
               {source === 'manual' && (
-                <Field label="Start" htmlFor="goal-start">
+                <Field label={t('Start')} htmlFor="goal-start">
                   <Input
                     id="goal-start"
                     inputMode="decimal"
@@ -173,7 +184,7 @@ export function GoalFormDialog({
                   />
                 </Field>
               )}
-              <Field label="Target" htmlFor="goal-target" error={errors.target_value?.message}>
+              <Field label={t('Target')} htmlFor="goal-target" error={errors.target_value?.message}>
                 <Input
                   id="goal-target"
                   inputMode="decimal"
@@ -181,13 +192,13 @@ export function GoalFormDialog({
                   {...form.register('target_value', num)}
                 />
               </Field>
-              <Field label="Unit" htmlFor="goal-unit" optional>
-                <Input id="goal-unit" placeholder="PLN" {...form.register('unit')} />
+              <Field label={t('Unit')} htmlFor="goal-unit" optional>
+                <Input id="goal-unit" placeholder={t('PLN')} {...form.register('unit')} />
               </Field>
             </div>
           )}
           {source === 'manual' && targetType !== 'boolean' && !goal && (
-            <Field label="Current value" htmlFor="goal-current">
+            <Field label={t('Current value')} htmlFor="goal-current">
               <Input
                 id="goal-current"
                 inputMode="decimal"
@@ -195,11 +206,11 @@ export function GoalFormDialog({
               />
             </Field>
           )}
-          <Field label="Why it matters" htmlFor="goal-description" optional>
+          <Field label={t('Why it matters')} htmlFor="goal-description" optional>
             <Textarea id="goal-description" rows={2} {...form.register('description')} />
           </Field>
           <DialogFooter>
-            <SubmitButton pending={pending}>{goal ? 'Save' : 'Create goal'}</SubmitButton>
+            <SubmitButton pending={pending}>{goal ? t('Save') : t('Create goal')}</SubmitButton>
           </DialogFooter>
         </form>
       </DialogContent>

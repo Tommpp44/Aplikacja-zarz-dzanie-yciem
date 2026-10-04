@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input'
 import { NativeSelect } from '@/components/ui/native-select'
 import { SubmitButton } from '@/components/ui/submit-button'
 import { useServerAction } from '@/hooks/use-server-action'
-import { WEEKDAY_SHORT, orderedWeekdays } from '@/lib/dates'
+import { weekdayShort, orderedWeekdays } from '@/lib/dates'
 import { createHabit, updateHabit } from '@/lib/habits/actions'
 import {
   FREQUENCY_LABELS,
@@ -28,6 +28,7 @@ import {
   type HabitInput,
 } from '@/lib/habits/schemas'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n/client'
 
 const EMPTY: HabitInput = {
   name: '',
@@ -56,6 +57,7 @@ export function HabitFormDialog({
   goals: { id: string; title: string }[]
   weekStartsOn?: 0 | 1
 }) {
+  const t = useT()
   const [pending, run] = useServerAction()
   const form = useForm<HabitInput>({
     resolver: zodResolver(habitSchema),
@@ -77,7 +79,7 @@ export function HabitFormDialog({
       target: values.habit_type === 'boolean' ? 1 : values.target,
     }
     run(() => (habit ? updateHabit({ ...clean, id: habit.id }) : createHabit(clean)), {
-      success: habit ? 'Habit updated' : 'Habit created',
+      success: habit ? t('Habit updated') : t('Habit created'),
       onSuccess: () => onOpenChange(false),
     })
   })
@@ -86,33 +88,33 @@ export function HabitFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{habit ? 'Edit habit' : 'New habit'}</DialogTitle>
-          <DialogDescription>Small, specific and repeatable works best.</DialogDescription>
+          <DialogTitle>{habit ? t('Edit habit') : t('New habit')}</DialogTitle>
+          <DialogDescription>{t('Small, specific and repeatable works best.')}</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-          <Field label="Habit" htmlFor="habit-name" error={errors.name?.message}>
+          <Field label={t('Habit')} htmlFor="habit-name" error={errors.name?.message}>
             <Input
               id="habit-name"
               autoFocus
-              placeholder="Read 20 minutes"
+              placeholder={t('Read 20 minutes')}
               {...form.register('name')}
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Type" htmlFor="habit-type">
+            <Field label={t('Type')} htmlFor="habit-type">
               <NativeSelect id="habit-type" {...form.register('habit_type')}>
-                {HABIT_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {HABIT_TYPE_LABELS[t]}
+                {HABIT_TYPES.map((it) => (
+                  <option key={it} value={it}>
+                    {t(HABIT_TYPE_LABELS[it])}
                   </option>
                 ))}
               </NativeSelect>
             </Field>
-            <Field label="How often" htmlFor="habit-frequency">
+            <Field label={t('How often')} htmlFor="habit-frequency">
               <NativeSelect id="habit-frequency" {...form.register('frequency')}>
                 {HABIT_FREQUENCIES.map((f) => (
                   <option key={f} value={f}>
-                    {FREQUENCY_LABELS[f]}
+                    {t(FREQUENCY_LABELS[f])}
                   </option>
                 ))}
               </NativeSelect>
@@ -121,14 +123,14 @@ export function HabitFormDialog({
           {type !== 'boolean' && (
             <div className="grid grid-cols-2 gap-3">
               <Field
-                label={type === 'duration' ? 'Daily target (minutes)' : 'Daily target'}
+                label={type === 'duration' ? t('Daily target (minutes)') : t('Daily target')}
                 htmlFor="habit-target"
                 error={errors.target?.message}
               >
                 <Input id="habit-target" inputMode="decimal" {...form.register('target', num)} />
               </Field>
               {type !== 'duration' && (
-                <Field label="Unit" htmlFor="habit-unit" optional>
+                <Field label={t('Unit')} htmlFor="habit-unit" optional>
                   <Input
                     id="habit-unit"
                     placeholder={type === 'numeric' ? 'L' : 'reps'}
@@ -139,12 +141,12 @@ export function HabitFormDialog({
             </div>
           )}
           {frequency === 'weekdays' && (
-            <Field label="Days" error={errors.weekdays?.message}>
+            <Field label={t('Days')} error={errors.weekdays?.message}>
               <Controller
                 control={form.control}
                 name="weekdays"
                 render={({ field }) => (
-                  <div className="flex flex-wrap gap-1" role="group" aria-label="Days">
+                  <div className="flex flex-wrap gap-1" role="group" aria-label={t('Days')}>
                     {orderedWeekdays(weekStartsOn).map((d) => {
                       const value = field.value ?? []
                       const active = value.includes(d)
@@ -165,7 +167,7 @@ export function HabitFormDialog({
                               : 'bg-card text-muted-foreground',
                           )}
                         >
-                          {WEEKDAY_SHORT[d]}
+                          {weekdayShort(d, t.locale)}
                         </button>
                       )
                     })}
@@ -176,7 +178,7 @@ export function HabitFormDialog({
           )}
           {frequency === 'times_per_week' && (
             <Field
-              label="Times per week"
+              label={t('Times per week')}
               htmlFor="habit-tpw"
               error={errors.times_per_week?.message}
             >
@@ -191,7 +193,7 @@ export function HabitFormDialog({
           )}
           {frequency === 'interval' && (
             <Field
-              label="Every N days"
+              label={t('Every N days')}
               htmlFor="habit-interval"
               error={errors.interval_days?.message}
             >
@@ -205,12 +207,12 @@ export function HabitFormDialog({
             </Field>
           )}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Reminder" htmlFor="habit-reminder" optional>
+            <Field label={t('Reminder')} htmlFor="habit-reminder" optional>
               <Input id="habit-reminder" type="time" {...form.register('reminder_time')} />
             </Field>
-            <Field label="Supports goal" htmlFor="habit-goal" optional>
+            <Field label={t('Supports goal')} htmlFor="habit-goal" optional>
               <NativeSelect id="habit-goal" {...form.register('goal_id')}>
-                <option value="">None</option>
+                <option value="">{t('None')}</option>
                 {goals.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.title}
@@ -219,7 +221,7 @@ export function HabitFormDialog({
               </NativeSelect>
             </Field>
           </div>
-          <Field label="Color">
+          <Field label={t('Color')}>
             <Controller
               control={form.control}
               name="color"
@@ -229,7 +231,7 @@ export function HabitFormDialog({
             />
           </Field>
           <DialogFooter>
-            <SubmitButton pending={pending}>{habit ? 'Save' : 'Create habit'}</SubmitButton>
+            <SubmitButton pending={pending}>{habit ? t('Save') : t('Create habit')}</SubmitButton>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -3,6 +3,7 @@
 import { X } from 'lucide-react'
 import { Dialog as SheetPrimitive } from 'radix-ui'
 import * as React from 'react'
+import { useT } from '@/lib/i18n/client'
 import { cn } from '@/lib/utils'
 
 const Sheet = SheetPrimitive.Root
@@ -15,6 +16,7 @@ function SheetContent({
   side = 'right',
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & { side?: 'right' | 'left' | 'bottom' }) {
+  const t = useT()
   return (
     <SheetPrimitive.Portal>
       <SheetPrimitive.Overlay className="data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/30 dark:bg-black/60" />
@@ -34,7 +36,7 @@ function SheetContent({
         {children}
         <SheetPrimitive.Close className="text-muted-foreground hover:bg-accent hover:text-foreground absolute top-3.5 right-3.5 rounded-md p-1 transition-colors">
           <X className="size-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">{t('Close')}</span>
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>
     </SheetPrimitive.Portal>

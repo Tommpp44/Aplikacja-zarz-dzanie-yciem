@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { NativeSelect } from '@/components/ui/native-select'
 import type { TaskOptions } from './types'
+import { useT } from '@/lib/i18n/client'
 
 /** URL-driven filters so filtered views are shareable and survive reloads. */
 export function TaskFilters({
@@ -15,6 +16,7 @@ export function TaskFilters({
   options: TaskOptions
   tags: { id: string; name: string }[]
 }) {
+  const t = useT()
   const router = useRouter()
   const pathname = usePathname()
   const params = useSearchParams()
@@ -45,18 +47,18 @@ export function TaskFilters({
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Filter tasks"
-          aria-label="Filter tasks"
+          placeholder={t('Filter tasks')}
+          aria-label={t('Filter tasks')}
           className="pl-8"
         />
       </div>
       <NativeSelect
-        aria-label="Priority"
+        aria-label={t('Priority')}
         className="w-32"
         value={params.get('priority') ?? ''}
         onChange={(e) => update('priority', e.target.value)}
       >
-        <option value="">Any priority</option>
+        <option value="">{t('Any priority')}</option>
         {[1, 2, 3, 4].map((p) => (
           <option key={p} value={p}>
             P{p}
@@ -64,12 +66,12 @@ export function TaskFilters({
         ))}
       </NativeSelect>
       <NativeSelect
-        aria-label="Project"
+        aria-label={t('Project')}
         className="w-40"
         value={params.get('project') ?? ''}
         onChange={(e) => update('project', e.target.value)}
       >
-        <option value="">All projects</option>
+        <option value="">{t('All projects')}</option>
         {options.projects.map((p) => (
           <option key={p.id} value={p.id}>
             {p.name}
@@ -78,15 +80,15 @@ export function TaskFilters({
       </NativeSelect>
       {tags.length > 0 && (
         <NativeSelect
-          aria-label="Tag"
+          aria-label={t('Tag')}
           className="w-32"
           value={params.get('tag') ?? ''}
           onChange={(e) => update('tag', e.target.value)}
         >
-          <option value="">All tags</option>
-          {tags.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
+          <option value="">{t('All tags')}</option>
+          {tags.map((it) => (
+            <option key={it.id} value={it.id}>
+              {it.name}
             </option>
           ))}
         </NativeSelect>

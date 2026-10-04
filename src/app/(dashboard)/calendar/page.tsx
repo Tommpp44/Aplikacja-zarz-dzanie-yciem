@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { CalendarView } from '@/components/calendar/calendar-view'
 import { getCalendarItems } from '@/lib/calendar/service'
 import { CALENDAR_VIEWS, type CalendarView as View } from '@/lib/calendar/schemas'
@@ -14,10 +13,12 @@ import {
 } from '@/lib/dates'
 import { listProjectOptions } from '@/lib/projects/repository'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Calendar' }
+export const generateMetadata = pageTitle('Calendar')
 
 export default async function CalendarPage({ searchParams }: PageProps<'/calendar'>) {
+  const t = await getT()
   const sp = await searchParams
   const { supabase, user, today, timezone, prefs } = await getOnboardedUserContext()
   const view: View = CALENDAR_VIEWS.includes(sp.view as View) ? (sp.view as View) : 'week'
@@ -66,7 +67,7 @@ export default async function CalendarPage({ searchParams }: PageProps<'/calenda
 
   return (
     <>
-      <h1 className="sr-only">Calendar</h1>
+      <h1 className="sr-only">{t('Calendar')}</h1>
       <CalendarView
         view={view}
         anchor={anchor}

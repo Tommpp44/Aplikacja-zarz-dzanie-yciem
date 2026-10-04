@@ -10,6 +10,8 @@ LifeOS answers three questions every day:
 
 Modules are linked, not isolated: a savings goal follows the balance of its account, a half-marathon goal collects milestones, workouts and a training plan, routines log habits, tasks and notes attach to projects and goals, and the dashboard pulls everything together.
 
+Available in **English and Polish** (switch in Settings → Appearance or on the sign-in page; new accounts follow the browser language).
+
 ## Tech stack
 
 Next.js 16 (App Router, Server Components, Server Actions) · React 19 · TypeScript (strict) · Tailwind CSS 4 · shadcn/ui-style components on Radix · Lucide · Supabase (PostgreSQL, Auth, RLS) · React Hook Form + Zod · Recharts · date-fns · Tiptap · Zustand (only for global overlays) · Vitest + Testing Library · Playwright · PWA.
@@ -83,6 +85,7 @@ npm run test:e2e     # Playwright E2E against a production build + local Supabas
 - **Component tests** cover Quick Add, the transaction form and task items.
 - **RLS tests** (`supabase/tests/rls.test.sql`) prove users can't read, modify or reference other users' data.
 - **E2E** runs `npm run build` output on port 3100 (`npm run build && npm run test:e2e`). Every run signs up brand-new users, so it never touches existing data. Use only the local stack (or a dedicated test project) — never production.
+- **Translations** — `src/lib/i18n/coverage.test.ts` checks every UI string has a Polish translation; `e2e/i18n.spec.ts` switches languages end to end.
 - **Accessibility** — `e2e/a11y.spec.ts` runs axe-core (WCAG 2.1 A/AA) over every main page in light and dark mode as part of the E2E suite.
 
 ## Deployment

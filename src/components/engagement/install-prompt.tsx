@@ -4,6 +4,7 @@ import { Download, Share, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { useT } from '@/lib/i18n/client'
 
 type InstallEvent = Event & {
   prompt: () => Promise<void>
@@ -25,6 +26,7 @@ function readDismissed() {
  * Add-to-Home-Screen hint on iOS Safari. Hidden once installed or dismissed.
  */
 export function InstallPrompt() {
+  const t = useT()
   const [event, setEvent] = useState<InstallEvent | null>(null)
   const [ios, setIos] = useState(false)
   const [hidden, setHidden] = useState(true)
@@ -70,15 +72,15 @@ export function InstallPrompt() {
           <Download className="size-5" aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-medium">Install LifeOS</p>
+          <p className="font-medium">{t('Install LifeOS')}</p>
           <p className="text-muted-foreground text-sm">
             {ios ? (
               <>
-                Tap <Share className="inline size-3.5" aria-label="Share" /> then “Add to Home
-                Screen” for one-tap access.
+                {t('Tap')} <Share className="inline size-3.5" aria-label={t('Share')} />{' '}
+                {t('then “Add to Home Screen” for one-tap access.')}
               </>
             ) : (
-              'One tap from your home screen or dock, works offline.'
+              t('One tap from your home screen or dock, works offline.')
             )}
           </p>
         </div>
@@ -92,10 +94,15 @@ export function InstallPrompt() {
               setEvent(null)
             }}
           >
-            Install
+            {t('Install')}
           </Button>
         )}
-        <Button variant="ghost" size="icon-sm" aria-label="Dismiss install hint" onClick={dismiss}>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={t('Dismiss install hint')}
+          onClick={dismiss}
+        >
           <X />
         </Button>
       </CardContent>

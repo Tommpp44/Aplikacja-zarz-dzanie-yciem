@@ -10,6 +10,10 @@ import {
   startOfMonth,
   startOfWeek,
 } from 'date-fns'
+import { enGB, pl as plLocale } from 'date-fns/locale'
+import type { Locale } from '@/lib/i18n/config'
+import { currentLocale } from '@/lib/i18n/locale-state'
+import { translate } from '@/lib/i18n/translate'
 
 /**
  * Date conventions
@@ -141,27 +145,56 @@ export function utcToZoned(instant: Date | string, timeZone: string) {
 export const DATE_FORMATS = ['dd.MM.yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd', 'd MMM yyyy'] as const
 export type DateFormat = (typeof DATE_FORMATS)[number]
 
-export function formatISODate(iso: ISODate, pattern: string = 'd MMM yyyy') {
-  return format(fromISODate(iso), pattern)
+const DATE_FNS_LOCALES = { en: enGB, pl: plLocale }
+
+/** date-fns locale for the given (or current request's) UI locale. */
+export function dateFnsLocale(locale: Locale = currentLocale()) {
+  return DATE_FNS_LOCALES[locale]
+}
+
+/**
+ * Formats with the UI locale. Polish month names need the nominative
+ * ("październik") when no day is shown, so MMMM/MMM become LLLL/LLL there.
+ */
+export function formatDate(date: Date, pattern: string, locale: Locale = currentLocale()) {
+  const p =
+    locale === 'pl' && !/d/.test(pattern)
+      ? pattern.replace(/M{3,4}/g, (m) => 'L'.repeat(m.length))
+      : pattern
+  return format(date, p, { locale: DATE_FNS_LOCALES[locale] })
+}
+
+export function formatISODate(
+  iso: ISODate,
+  pattern: string = 'd MMM yyyy',
+  locale: Locale = currentLocale(),
+) {
+  return formatDate(fromISODate(iso), pattern, locale)
 }
 
 /** Human friendly relative label: Today, Tomorrow, Yesterday, Mon 12 Oct. */
-export function relativeDayLabel(iso: ISODate, today: ISODate) {
+export function relativeDayLabel(iso: ISODate, today: ISODate, locale: Locale = currentLocale()) {
   const diff = diffDaysISO(iso, today)
-  if (diff === 0) return 'Today'
-  if (diff === 1) return 'Tomorrow'
-  if (diff === -1) return 'Yesterday'
+  if (diff === 0) return translate(locale, 'Today')
+  if (diff === 1) return translate(locale, 'Tomorrow')
+  if (diff === -1) return translate(locale, 'Yesterday')
   const date = fromISODate(iso)
-  if (diff > 1 && diff < 7) return format(date, 'EEEE')
-  if (date.getFullYear() === fromISODate(today).getFullYear()) return format(date, 'EEE d MMM')
-  return format(date, 'd MMM yyyy')
+  if (diff > 1 && diff < 7) return formatDate(date, 'EEEE', locale)
+  if (date.getFullYear() === fromISODate(today).getFullYear())
+    return formatDate(date, 'EEE d MMM', locale)
+  return formatDate(date, 'd MMM yyyy', locale)
 }
 
-export function greetingFor(hour: number) {
-  if (hour < 5) return 'Good night'
-  if (hour < 12) return 'Good morning'
-  if (hour < 18) return 'Good afternoon'
-  return 'Good evening'
+export function greetingFor(hour: number, locale: Locale = currentLocale()) {
+  const key =
+    hour < 5
+      ? 'Good night'
+      : hour < 12
+        ? 'Good morning'
+        : hour < 18
+          ? 'Good afternoon'
+          : 'Good evening'
+  return translate(locale, key)
 }
 
 /** "HH:mm:ss" (Postgres time) -> "HH:mm" */
@@ -177,6 +210,20 @@ export function minutesToLabel(minutes: number) {
 }
 
 export const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
+const WEEKDAY_SHORT_PL = ['Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So'] as const
+const WEEKDAY_LONG = {
+  en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+  pl: ['niedziela', 'poniedziałek', 'wtorek', 'środa', 'czwartek', 'piątek', 'sobota'],
+} as const
+
+/** Short weekday name (0 = Sunday) in the UI locale. */
+export function weekdayShort(day: number, locale: Locale = currentLocale()) {
+  return (locale === 'pl' ? WEEKDAY_SHORT_PL : WEEKDAY_SHORT)[day]!
+}
+
+export function weekdayLong(day: number, locale: Locale = currentLocale()) {
+  return WEEKDAY_LONG[locale][day]!
+}
 
 /** Weekday indexes ordered according to the user's first day of week. */
 export function orderedWeekdays(weekStartsOn: 0 | 1) {

@@ -7,8 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useServerAction } from '@/hooks/use-server-action'
 import { createShoppingList } from '@/lib/shopping/actions'
+import { useT } from '@/lib/i18n/client'
 
 export function NewListForm() {
+  const t = useT()
   const [name, setName] = useState('')
   const [pending, run] = useServerAction()
   const router = useRouter()
@@ -29,15 +31,15 @@ export function NewListForm() {
       <Input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="New list"
-        aria-label="New list name"
+        placeholder={t('New list')}
+        aria-label={t('New list name')}
       />
       <Button
         type="submit"
         variant="outline"
         size="icon"
         disabled={pending}
-        aria-label="Create list"
+        aria-label={t('Create list')}
       >
         <Plus />
       </Button>

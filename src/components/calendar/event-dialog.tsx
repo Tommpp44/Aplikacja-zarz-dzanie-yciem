@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useServerAction } from '@/hooks/use-server-action'
 import { createEvent, deleteEvent, updateEvent } from '@/lib/calendar/actions'
 import { eventSchema, type EventInput } from '@/lib/calendar/schemas'
+import { useT } from '@/lib/i18n/client'
 
 export type EventFormValues = EventInput & { id?: string }
 
@@ -40,6 +41,7 @@ export function EventDialog({
   projects?: { id: string; name: string }[]
   weekStartsOn?: 0 | 1
 }) {
+  const t = useT()
   const [pending, run] = useServerAction()
   const form = useForm<EventInput>({ resolver: zodResolver(eventSchema), defaultValues: initial })
   useEffect(() => {
@@ -57,7 +59,7 @@ export function EventDialog({
       repeat_until: values.repeat_until || null,
     }
     run(() => (initial.id ? updateEvent({ ...clean, id: initial.id }) : createEvent(clean)), {
-      success: initial.id ? 'Event updated' : 'Event created',
+      success: initial.id ? t('Event updated') : t('Event created'),
       onSuccess: () => onOpenChange(false),
     })
   })
@@ -66,19 +68,24 @@ export function EventDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{initial.id ? 'Edit event' : 'New event'}</DialogTitle>
+          <DialogTitle>{initial.id ? t('Edit event') : t('New event')}</DialogTitle>
           <DialogDescription>
             {initial.id && initial.repeat_rule
-              ? 'Changes apply to the whole series.'
-              : 'Times are in your timezone.'}
+              ? t('Changes apply to the whole series.')
+              : t('Times are in your timezone.')}
           </DialogDescription>
         </DialogHeader>
         <form noValidate onSubmit={submit} className="flex flex-col gap-4">
-          <Field label="Title" htmlFor="event-title" error={errors.title?.message}>
-            <Input id="event-title" autoFocus placeholder="Dentist" {...form.register('title')} />
+          <Field label={t('Title')} htmlFor="event-title" error={errors.title?.message}>
+            <Input
+              id="event-title"
+              autoFocus
+              placeholder={t('Dentist')}
+              {...form.register('title')}
+            />
           </Field>
           <label className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
-            All day
+            {t('All day')}
             <Controller
               control={form.control}
               name="all_day"
@@ -88,7 +95,11 @@ export function EventDialog({
             />
           </label>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Starts" htmlFor="event-start-date" error={errors.start_date?.message}>
+            <Field
+              label={t('Starts')}
+              htmlFor="event-start-date"
+              error={errors.start_date?.message}
+            >
               <Input
                 id="event-start-date"
                 type="date"
@@ -101,11 +112,15 @@ export function EventDialog({
               />
             </Field>
             {!allDay && (
-              <Field label="Time" htmlFor="event-start-time" error={errors.start_time?.message}>
+              <Field
+                label={t('Time')}
+                htmlFor="event-start-time"
+                error={errors.start_time?.message}
+              >
                 <Input id="event-start-time" type="time" {...form.register('start_time')} />
               </Field>
             )}
-            <Field label="Ends" htmlFor="event-end-date" error={errors.end_date?.message}>
+            <Field label={t('Ends')} htmlFor="event-end-date" error={errors.end_date?.message}>
               <Input
                 id="event-end-date"
                 type="date"
@@ -114,12 +129,12 @@ export function EventDialog({
               />
             </Field>
             {!allDay && (
-              <Field label="Time" htmlFor="event-end-time">
+              <Field label={t('Time')} htmlFor="event-end-time">
                 <Input id="event-end-time" type="time" {...form.register('end_time')} />
               </Field>
             )}
           </div>
-          <Field label="Repeat" htmlFor="event-repeat">
+          <Field label={t('Repeat')} htmlFor="event-repeat">
             <Controller
               control={form.control}
               name="repeat_rule"
@@ -136,20 +151,20 @@ export function EventDialog({
             />
           </Field>
           {repeat && (
-            <Field label="Repeat until" htmlFor="event-until" optional>
+            <Field label={t('Repeat until')} htmlFor="event-until" optional>
               <Input id="event-until" type="date" {...form.register('repeat_until')} />
             </Field>
           )}
-          <Field label="Location" htmlFor="event-location" optional>
+          <Field label={t('Location')} htmlFor="event-location" optional>
             <Input id="event-location" {...form.register('location')} />
           </Field>
-          <Field label="Description" htmlFor="event-description" optional>
+          <Field label={t('Description')} htmlFor="event-description" optional>
             <Textarea id="event-description" rows={2} {...form.register('description')} />
           </Field>
           {projects.length > 0 && (
-            <Field label="Project" htmlFor="event-project" optional>
+            <Field label={t('Project')} htmlFor="event-project" optional>
               <NativeSelect id="event-project" {...form.register('project_id')}>
-                <option value="">None</option>
+                <option value="">{t('None')}</option>
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -158,7 +173,7 @@ export function EventDialog({
               </NativeSelect>
             </Field>
           )}
-          <Field label="Color">
+          <Field label={t('Color')}>
             <Controller
               control={form.control}
               name="color"
@@ -175,7 +190,7 @@ export function EventDialog({
                 className="text-destructive hover:text-destructive"
                 onClick={() =>
                   run(() => deleteEvent({ id: initial.id! }), {
-                    success: 'Event deleted',
+                    success: t('Event deleted'),
                     onSuccess: () => onOpenChange(false),
                   })
                 }
@@ -185,7 +200,9 @@ export function EventDialog({
             ) : (
               <span />
             )}
-            <SubmitButton pending={pending}>{initial.id ? 'Save' : 'Create event'}</SubmitButton>
+            <SubmitButton pending={pending}>
+              {initial.id ? t('Save') : t('Create event')}
+            </SubmitButton>
           </DialogFooter>
         </form>
       </DialogContent>

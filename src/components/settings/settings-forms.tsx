@@ -28,8 +28,10 @@ import {
   type NotificationSettings,
 } from '@/lib/settings/schemas'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n/client'
 
 export function ProfileForm({ displayName, email }: { displayName: string; email: string | null }) {
+  const t = useT()
   const [name, setName] = useState(displayName)
   const [error, setError] = useState<string>()
   const [pending, run] = useServerAction()
@@ -39,16 +41,16 @@ export function ProfileForm({ displayName, email }: { displayName: string; email
       onSubmit={(e) => {
         e.preventDefault()
         run(() => updateProfile({ display_name: name }), {
-          success: 'Profile saved',
+          success: t('Profile saved'),
           onError: (r) => setError(r.fieldErrors?.display_name),
         })
       }}
     >
       <Field
-        label="Name"
+        label={t('Name')}
         htmlFor="profile-name"
         error={error}
-        hint="Used in greetings across the app."
+        hint={t('Used in greetings across the app.')}
       >
         <Input
           id="profile-name"
@@ -57,11 +59,11 @@ export function ProfileForm({ displayName, email }: { displayName: string; email
           autoComplete="name"
         />
       </Field>
-      <Field label="Email" htmlFor="profile-email" hint="Your sign-in email.">
+      <Field label={t('Email')} htmlFor="profile-email" hint={t('Your sign-in email.')}>
         <Input id="profile-email" value={email ?? ''} disabled readOnly />
       </Field>
       <SubmitButton pending={pending} className="self-start">
-        Save
+        {t('Save')}
       </SubmitButton>
     </form>
   )
@@ -76,6 +78,7 @@ type Prefs = {
 }
 
 export function PreferencesForm({ initial }: { initial: Prefs }) {
+  const t = useT()
   const [v, setV] = useState(initial)
   const [pending, run] = useServerAction()
   const zones =
@@ -87,13 +90,13 @@ export function PreferencesForm({ initial }: { initial: Prefs }) {
       className="grid max-w-xl gap-4 sm:grid-cols-2"
       onSubmit={(e) => {
         e.preventDefault()
-        run(() => updatePreferences(v), { success: 'Preferences saved' })
+        run(() => updatePreferences(v), { success: t('Preferences saved') })
       }}
     >
       <Field
-        label="Currency"
+        label={t('Currency')}
         htmlFor="pref-currency"
-        hint="Used for budgets, totals and net worth."
+        hint={t('Used for budgets, totals and net worth.')}
       >
         <NativeSelect
           id="pref-currency"
@@ -106,9 +109,9 @@ export function PreferencesForm({ initial }: { initial: Prefs }) {
         </NativeSelect>
       </Field>
       <Field
-        label="Timezone"
+        label={t('Timezone')}
         htmlFor="pref-tz"
-        hint="Defines “today” for tasks, habits and reviews."
+        hint={t('Defines “today” for tasks, habits and reviews.')}
       >
         <NativeSelect
           id="pref-tz"
@@ -120,17 +123,17 @@ export function PreferencesForm({ initial }: { initial: Prefs }) {
           ))}
         </NativeSelect>
       </Field>
-      <Field label="Week starts on" htmlFor="pref-week">
+      <Field label={t('Week starts on')} htmlFor="pref-week">
         <NativeSelect
           id="pref-week"
           value={v.week_start}
           onChange={(e) => setV({ ...v, week_start: e.target.value === '0' ? 0 : 1 })}
         >
-          <option value={1}>Monday</option>
-          <option value={0}>Sunday</option>
+          <option value={1}>{t('Monday')}</option>
+          <option value={0}>{t('Sunday')}</option>
         </NativeSelect>
       </Field>
-      <Field label="Date format" htmlFor="pref-date">
+      <Field label={t('Date format')} htmlFor="pref-date">
         <NativeSelect
           id="pref-date"
           value={v.date_format}
@@ -141,14 +144,14 @@ export function PreferencesForm({ initial }: { initial: Prefs }) {
           ))}
         </NativeSelect>
       </Field>
-      <Field label="Units" htmlFor="pref-units">
+      <Field label={t('Units')} htmlFor="pref-units">
         <NativeSelect
           id="pref-units"
           value={v.units}
           onChange={(e) => setV({ ...v, units: e.target.value as Prefs['units'] })}
         >
-          <option value="metric">Metric (kg, km)</option>
-          <option value="imperial">Imperial (lb, mi)</option>
+          <option value="metric">{t('Metric (kg, km)')}</option>
+          <option value="imperial">{t('Imperial (lb, mi)')}</option>
         </NativeSelect>
       </Field>
       <div className="flex items-end">
@@ -157,11 +160,11 @@ export function PreferencesForm({ initial }: { initial: Prefs }) {
           type="button"
           onClick={() => setV({ ...v, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
         >
-          Use this device&apos;s timezone
+          {t("Use this device's timezone")}
         </Button>
       </div>
       <SubmitButton pending={pending} className="self-start sm:col-span-2">
-        Save preferences
+        {t('Save preferences')}
       </SubmitButton>
     </form>
   )
@@ -189,27 +192,28 @@ export function AppearanceForm({
   theme: 'light' | 'dark' | 'system'
   accent: Accent
 }) {
+  const t = useT()
   const { setTheme } = useTheme()
   const [theme, setLocalTheme] = useState(initialTheme)
   const [accent, setAccent] = useState(initialAccent)
   const [, run] = useServerAction()
-  const save = (t: typeof theme, a: Accent) => {
-    setLocalTheme(t)
+  const save = (th: typeof theme, a: Accent) => {
+    setLocalTheme(th)
     setAccent(a)
-    setTheme(t)
+    setTheme(th)
     applyAccent(a)
-    run(() => updateAppearance({ theme: t, accent: a }), { success: 'Appearance updated' })
+    run(() => updateAppearance({ theme: th, accent: a }), { success: t('Appearance updated') })
   }
   return (
     <div className="flex flex-col gap-6">
       <fieldset>
-        <legend className="mb-2 text-sm font-medium">Theme</legend>
-        <div role="radiogroup" aria-label="Theme" className="grid max-w-md grid-cols-3 gap-2">
+        <legend className="mb-2 text-sm font-medium">{t('Theme')}</legend>
+        <div role="radiogroup" aria-label={t('Theme')} className="grid max-w-md grid-cols-3 gap-2">
           {(
             [
-              ['light', 'Light', Sun],
-              ['dark', 'Dark', Moon],
-              ['system', 'System', Monitor],
+              ['light', t('Light'), Sun],
+              ['dark', t('Dark'), Moon],
+              ['system', t('System'), Monitor],
             ] as const
           ).map(([value, label, Icon]) => (
             <button
@@ -230,8 +234,8 @@ export function AppearanceForm({
         </div>
       </fieldset>
       <fieldset>
-        <legend className="mb-2 text-sm font-medium">Accent color</legend>
-        <div role="radiogroup" aria-label="Accent color" className="flex flex-wrap gap-2">
+        <legend className="mb-2 text-sm font-medium">{t('Accent color')}</legend>
+        <div role="radiogroup" aria-label={t('Accent color')} className="flex flex-wrap gap-2">
           {ACCENTS.map((a) => (
             <button
               key={a}
@@ -256,6 +260,7 @@ export function AppearanceForm({
 }
 
 export function NotificationsForm({ initial }: { initial: NotificationSettings }) {
+  const t = useT()
   const [v, setV] = useState(initial)
   const [pending, run] = useServerAction()
   return (
@@ -263,11 +268,11 @@ export function NotificationsForm({ initial }: { initial: NotificationSettings }
       className="flex max-w-xl flex-col gap-2"
       onSubmit={(e) => {
         e.preventDefault()
-        run(() => updateNotificationSettings(v), { success: 'Notification settings saved' })
+        run(() => updateNotificationSettings(v), { success: t('Notification settings saved') })
       }}
     >
       <p className="text-muted-foreground mb-2 text-sm">
-        Fewer, more valuable notifications. Each topic is sent at most once per day.
+        {t('Fewer, more valuable notifications. Each topic is sent at most once per day.')}
       </p>
       {(Object.keys(NOTIFICATION_LABELS) as (keyof NotificationSettings)[]).map((key) => (
         <label
@@ -275,36 +280,37 @@ export function NotificationsForm({ initial }: { initial: NotificationSettings }
           className="bg-card flex items-center justify-between gap-4 rounded-lg border px-4 py-3"
         >
           <span>
-            <span className="block text-sm font-medium">{NOTIFICATION_LABELS[key].label}</span>
+            <span className="block text-sm font-medium">{t(NOTIFICATION_LABELS[key].label)}</span>
             <span className="text-muted-foreground block text-xs">
-              {NOTIFICATION_LABELS[key].description}
+              {t(NOTIFICATION_LABELS[key].description)}
             </span>
           </span>
           <Switch checked={v[key]} onCheckedChange={(c) => setV({ ...v, [key]: c })} />
         </label>
       ))}
       <SubmitButton pending={pending} className="mt-2 self-start">
-        Save
+        {t('Save')}
       </SubmitButton>
     </form>
   )
 }
 
 export function DeleteAccountSection() {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
   const [, run] = useServerAction()
   const router = useRouter()
   return (
     <div className="border-destructive/30 bg-destructive-soft/40 flex max-w-xl flex-col gap-3 rounded-xl border p-5">
-      <h3 className="text-destructive font-medium">Delete account</h3>
+      <h3 className="text-destructive font-medium">{t('Delete account')}</h3>
       <p className="text-muted-foreground text-sm">
-        Permanently deletes your account and all of your data: tasks, goals, habits, finances,
-        workouts, notes and journal. This cannot be undone. Export your data first if you want to
-        keep a copy.
+        {t(
+          'Permanently deletes your account and all of your data: tasks, goals, habits, finances, workouts, notes and journal. This cannot be undone. Export your data first if you want to keep a copy.',
+        )}
       </p>
       <Button variant="destructive" className="self-start" onClick={() => setOpen(true)}>
-        Delete my account
+        {t('Delete my account')}
       </Button>
       <ConfirmDialog
         open={open}
@@ -312,9 +318,9 @@ export function DeleteAccountSection() {
           setOpen(o)
           if (!o) setText('')
         }}
-        title="Delete your account permanently?"
-        description="All data will be erased immediately. Type DELETE to confirm."
-        confirmLabel="Delete account"
+        title={t('Delete your account permanently?')}
+        description={t('All data will be erased immediately. Type DELETE to confirm.')}
+        confirmLabel={t('Delete account')}
         confirmDisabled={text !== 'DELETE'}
         onConfirm={() =>
           run(() => deleteAccount({ confirmation: 'DELETE' }), {
@@ -326,10 +332,10 @@ export function DeleteAccountSection() {
         }
       >
         <Input
-          aria-label="Type DELETE to confirm"
+          aria-label={t('Type DELETE to confirm')}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="DELETE"
+          placeholder={t('DELETE')}
         />
       </ConfirmDialog>
     </div>
@@ -337,6 +343,7 @@ export function DeleteAccountSection() {
 }
 
 export function SignOutEverywhereButton() {
+  const t = useT()
   const [pending, setPending] = useState(false)
   return (
     <Button
@@ -347,7 +354,7 @@ export function SignOutEverywhereButton() {
         void signOutEverywhere()
       }}
     >
-      Sign out of all devices
+      {t('Sign out of all devices')}
     </Button>
   )
 }

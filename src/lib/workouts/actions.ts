@@ -1,5 +1,6 @@
 'use server'
 
+import { msg } from '@/lib/i18n/translate'
 import { z } from 'zod'
 import { authedAction, idSchema } from '@/lib/action'
 import { DataError, NotFoundError, unwrap } from '@/lib/db/errors'
@@ -379,7 +380,8 @@ export const deleteExercise = authedAction(
       .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id)
       .eq('exercise_id', id)
-    if (count) throw new DataError('This exercise is used in your workouts and cannot be deleted.')
+    if (count)
+      throw new DataError(msg('This exercise is used in your workouts and cannot be deleted.'))
     unwrap(
       await supabase.from('exercises').delete().eq('user_id', user.id).eq('id', id),
       'delete this exercise',

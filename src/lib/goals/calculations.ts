@@ -1,5 +1,6 @@
 import { addDaysISO, diffDaysISO, type ISODate } from '@/lib/dates'
 import { clamp } from '@/lib/utils'
+import { msg } from '@/lib/i18n/translate'
 
 export type GoalLike = {
   target_type: string
@@ -159,10 +160,10 @@ export function computeGoalPace(
 }
 
 export const PACE_LABELS: Record<PaceStatus, string> = {
-  done: 'Completed',
-  ahead: 'Ahead of plan',
-  on_track: 'On track',
-  behind: 'Behind plan',
-  no_deadline: 'No deadline',
-  overdue: 'Past deadline',
+  done: msg('Completed'),
+  ahead: msg('Ahead of plan'),
+  on_track: msg('On track'),
+  behind: msg('Behind plan'),
+  no_deadline: msg('No deadline'),
+  overdue: msg('Past deadline'),
 }

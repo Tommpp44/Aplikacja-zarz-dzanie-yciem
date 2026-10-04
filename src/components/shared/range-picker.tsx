@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n/client'
 
 /** Range selector (URL driven). Options are passed by the page. */
 export function RangePicker({
@@ -18,6 +19,7 @@ export function RangePicker({
   from?: string
   to?: string
 }) {
+  const t = useT()
   const router = useRouter()
   const pathname = usePathname()
   const params = useSearchParams()
@@ -34,7 +36,7 @@ export function RangePicker({
       <div
         className="bg-muted inline-flex h-9 items-center gap-0.5 rounded-lg p-[3px]"
         role="radiogroup"
-        aria-label="Range"
+        aria-label={t('Range')}
       >
         {options.map((o) => (
           <button
@@ -62,7 +64,7 @@ export function RangePicker({
               active === 'custom' && 'bg-card text-foreground shadow-xs',
             )}
           >
-            Custom
+            {t('Custom')}
           </button>
         )}
       </div>
@@ -70,7 +72,7 @@ export function RangePicker({
         <div className="flex items-center gap-2">
           <Input
             type="date"
-            aria-label="From"
+            aria-label={t('From')}
             className="w-40"
             defaultValue={from}
             onChange={(e) => go({ range: 'custom', from: e.target.value })}
@@ -78,7 +80,7 @@ export function RangePicker({
           <span className="text-muted-foreground">–</span>
           <Input
             type="date"
-            aria-label="To"
+            aria-label={t('To')}
             className="w-40"
             defaultValue={to}
             onChange={(e) => go({ range: 'custom', to: e.target.value })}

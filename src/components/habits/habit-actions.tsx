@@ -16,6 +16,7 @@ import { useServerAction } from '@/hooks/use-server-action'
 import { deleteHabit, setHabitActive } from '@/lib/habits/actions'
 import type { HabitInput } from '@/lib/habits/schemas'
 import { HabitFormDialog } from './habit-form-dialog'
+import { useT } from '@/lib/i18n/client'
 
 export function HabitActions({
   habit,
@@ -28,6 +29,7 @@ export function HabitActions({
   goals: { id: string; title: string }[]
   weekStartsOn: 0 | 1
 }) {
+  const t = useT()
   const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [, run] = useServerAction()
@@ -35,11 +37,11 @@ export function HabitActions({
   return (
     <div className="flex gap-2">
       <Button variant="outline" onClick={() => setEditing(true)}>
-        <Pencil /> Edit
+        <Pencil /> {t('Edit')}
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="More habit actions">
+          <Button variant="ghost" size="icon" aria-label={t('More habit actions')}>
             <MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
@@ -47,11 +49,11 @@ export function HabitActions({
           <DropdownMenuItem
             onSelect={() =>
               run(() => setHabitActive({ id: habit.id, active: !active }), {
-                success: active ? 'Habit archived' : 'Habit restored',
+                success: active ? t('Habit archived') : t('Habit restored'),
               })
             }
           >
-            {active ? <Archive /> : <ArchiveRestore />} {active ? 'Archive' : 'Restore'}
+            {active ? <Archive /> : <ArchiveRestore />} {active ? t('Archive') : t('Restore')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirming(true)}>
@@ -69,11 +71,13 @@ export function HabitActions({
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title="Delete this habit?"
-        description="All of its history will be permanently deleted. Archive it instead to keep your statistics."
+        title={t('Delete this habit?')}
+        description={t(
+          'All of its history will be permanently deleted. Archive it instead to keep your statistics.',
+        )}
         onConfirm={() =>
           run(() => deleteHabit({ id: habit.id }), {
-            success: 'Habit deleted',
+            success: t('Habit deleted'),
             onSuccess: () => router.push('/habits'),
           })
         }

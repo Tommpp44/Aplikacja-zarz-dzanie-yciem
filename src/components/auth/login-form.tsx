@@ -13,6 +13,7 @@ import { SubmitButton } from '@/components/ui/submit-button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { sendMagicLink, signIn } from '@/lib/auth/actions'
 import { emailSchema } from '@/lib/auth/schemas'
+import { useT } from '@/lib/i18n/client'
 
 const passwordForm = z.object({
   email: emailSchema,
@@ -21,6 +22,7 @@ const passwordForm = z.object({
 const magicForm = z.object({ email: emailSchema })
 
 export function LoginForm({ next, initialError }: { next?: string; initialError?: string }) {
+  const t = useT()
   const [mode, setMode] = useState<'password' | 'magic'>('password')
   const [error, setError] = useState<string | undefined>(initialError)
   const [sentTo, setSentTo] = useState<string | null>(null)
@@ -40,13 +42,12 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
     return (
       <div className="bg-card flex flex-col items-center gap-3 rounded-xl border p-6 text-center">
         <MailCheck className="text-primary size-8" aria-hidden />
-        <h1 className="text-lg font-semibold">Check your inbox</h1>
+        <h1 className="text-lg font-semibold">{t('Check your inbox')}</h1>
         <p className="text-muted-foreground text-sm">
-          We sent a sign-in link to <strong className="text-foreground">{sentTo}</strong>. It
-          expires in one hour.
+          {t('We sent a sign-in link to {email}. It expires in one hour.', { email: sentTo })}
         </p>
         <button className="text-primary text-sm hover:underline" onClick={() => setSentTo(null)}>
-          Use a different email
+          {t('Use a different email')}
         </button>
       </div>
     )
@@ -55,8 +56,10 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
   return (
     <div className="bg-card flex flex-col gap-5 rounded-xl border p-6 shadow-xs">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Welcome back</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Sign in to see what matters today.</p>
+        <h1 className="text-xl font-semibold tracking-tight">{t('Welcome back')}</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {t('Sign in to see what matters today.')}
+        </p>
       </div>
       <Tabs
         className="flex flex-col gap-5"
@@ -68,10 +71,10 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
       >
         <TabsList className="w-full">
           <TabsTrigger value="password" className="flex-1">
-            Password
+            {t('Password')}
           </TabsTrigger>
           <TabsTrigger value="magic" className="flex-1">
-            Magic link
+            {t('Magic link')}
           </TabsTrigger>
         </TabsList>
 
@@ -80,7 +83,7 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
             role="alert"
             className="bg-destructive-soft text-destructive rounded-md px-3 py-2 text-sm"
           >
-            {error}
+            {t(error)}
           </p>
         )}
 
@@ -97,7 +100,7 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
               }),
             )}
           >
-            <Field label="Email" htmlFor="email" error={pw.formState.errors.email?.message}>
+            <Field label={t('Email')} htmlFor="email" error={pw.formState.errors.email?.message}>
               <Input
                 id="email"
                 type="email"
@@ -107,7 +110,7 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
               />
             </Field>
             <Field
-              label="Password"
+              label={t('Password')}
               htmlFor="password"
               error={pw.formState.errors.password?.message}
             >
@@ -123,11 +126,11 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
                 href="/forgot-password"
                 className="text-muted-foreground hover:text-foreground text-xs"
               >
-                Forgot password?
+                {t('Forgot password?')}
               </Link>
             </div>
-            <SubmitButton pending={pending} pendingLabel="Signing in…">
-              Sign in
+            <SubmitButton pending={pending} pendingLabel={t('Signing in…')}>
+              {t('Sign in')}
             </SubmitButton>
           </form>
         </TabsContent>
@@ -144,10 +147,10 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
             )}
           >
             <Field
-              label="Email"
+              label={t('Email')}
               htmlFor="magic-email"
               error={magic.formState.errors.email?.message}
-              hint="We'll email you a one-time sign-in link."
+              hint={t("We'll email you a one-time sign-in link.")}
             >
               <Input
                 id="magic-email"
@@ -156,8 +159,8 @@ export function LoginForm({ next, initialError }: { next?: string; initialError?
                 {...magic.register('email')}
               />
             </Field>
-            <SubmitButton pending={pending} pendingLabel="Sending…">
-              Send magic link
+            <SubmitButton pending={pending} pendingLabel={t('Sending…')}>
+              {t('Send magic link')}
             </SubmitButton>
           </form>
         </TabsContent>

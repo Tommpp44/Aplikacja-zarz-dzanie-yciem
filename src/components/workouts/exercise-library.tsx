@@ -18,6 +18,7 @@ import { NativeSelect } from '@/components/ui/native-select'
 import { SubmitButton } from '@/components/ui/submit-button'
 import { useServerAction } from '@/hooks/use-server-action'
 import { createExercise, deleteExercise } from '@/lib/workouts/actions'
+import { useT } from '@/lib/i18n/client'
 
 type Exercise = {
   id: string
@@ -30,6 +31,7 @@ type Exercise = {
 }
 
 export function ExerciseLibrary({ exercises }: { exercises: Exercise[] }) {
+  const t = useT()
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({
@@ -59,13 +61,13 @@ export function ExerciseLibrary({ exercises }: { exercises: Exercise[] }) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search exercises"
-            aria-label="Search exercises"
+            placeholder={t('Search exercises')}
+            aria-label={t('Search exercises')}
             className="pl-8"
           />
         </div>
         <Button onClick={() => setOpen(true)}>
-          <Plus /> Custom exercise
+          <Plus /> {t('Custom exercise')}
         </Button>
       </div>
       <ul className="bg-card divide-y rounded-xl border">
@@ -85,9 +87,9 @@ export function ExerciseLibrary({ exercises }: { exercises: Exercise[] }) {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label={`Delete ${e.name}`}
+                aria-label={t('Delete {name}', { name: e.name })}
                 onClick={() =>
-                  run(() => deleteExercise({ id: e.id }), { success: 'Exercise deleted' })
+                  run(() => deleteExercise({ id: e.id }), { success: t('Exercise deleted') })
                 }
               >
                 <Trash2 />
@@ -99,15 +101,15 @@ export function ExerciseLibrary({ exercises }: { exercises: Exercise[] }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Custom exercise</DialogTitle>
-            <DialogDescription>Add movements that are not in the library.</DialogDescription>
+            <DialogTitle>{t('Custom exercise')}</DialogTitle>
+            <DialogDescription>{t('Add movements that are not in the library.')}</DialogDescription>
           </DialogHeader>
           <form
             className="flex flex-col gap-4"
             onSubmit={(e) => {
               e.preventDefault()
               run(() => createExercise(form), {
-                success: 'Exercise added',
+                success: t('Exercise added'),
                 onSuccess: () => {
                   setOpen(false)
                   setForm({ name: '', category: 'strength', muscle_group: '', equipment: '' })
@@ -115,7 +117,7 @@ export function ExerciseLibrary({ exercises }: { exercises: Exercise[] }) {
               })
             }}
           >
-            <Field label="Name" htmlFor="ex-name">
+            <Field label={t('Name')} htmlFor="ex-name">
               <Input
                 id="ex-name"
                 autoFocus
@@ -125,7 +127,7 @@ export function ExerciseLibrary({ exercises }: { exercises: Exercise[] }) {
               />
             </Field>
             <div className="grid grid-cols-3 gap-3">
-              <Field label="Category" htmlFor="ex-cat">
+              <Field label={t('Category')} htmlFor="ex-cat">
                 <NativeSelect
                   id="ex-cat"
                   value={form.category}
@@ -133,20 +135,20 @@ export function ExerciseLibrary({ exercises }: { exercises: Exercise[] }) {
                     setForm({ ...form, category: e.target.value as typeof form.category })
                   }
                 >
-                  <option value="strength">Strength</option>
-                  <option value="cardio">Cardio</option>
-                  <option value="mobility">Mobility</option>
-                  <option value="other">Other</option>
+                  <option value="strength">{t('Strength')}</option>
+                  <option value="cardio">{t('Cardio')}</option>
+                  <option value="mobility">{t('Mobility')}</option>
+                  <option value="other">{t('Other')}</option>
                 </NativeSelect>
               </Field>
-              <Field label="Muscle group" htmlFor="ex-muscle" optional>
+              <Field label={t('Muscle group')} htmlFor="ex-muscle" optional>
                 <Input
                   id="ex-muscle"
                   value={form.muscle_group}
                   onChange={(e) => setForm({ ...form, muscle_group: e.target.value })}
                 />
               </Field>
-              <Field label="Equipment" htmlFor="ex-eq" optional>
+              <Field label={t('Equipment')} htmlFor="ex-eq" optional>
                 <Input
                   id="ex-eq"
                   value={form.equipment}
@@ -155,7 +157,7 @@ export function ExerciseLibrary({ exercises }: { exercises: Exercise[] }) {
               </Field>
             </div>
             <DialogFooter>
-              <SubmitButton pending={pending}>Add exercise</SubmitButton>
+              <SubmitButton pending={pending}>{t('Add exercise')}</SubmitButton>
             </DialogFooter>
           </form>
         </DialogContent>

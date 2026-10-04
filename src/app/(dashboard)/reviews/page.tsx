@@ -1,5 +1,4 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { GoalProgressBar } from '@/components/goals/goal-progress-bar'
 import { PeriodSummaryView } from '@/components/reviews/period-summary'
@@ -14,10 +13,12 @@ import { listGoalsWithProgress } from '@/lib/goals/service'
 import { reviewPeriod, REVIEW_TYPES, type ReviewType } from '@/lib/reviews/period'
 import { getPeriodSummary } from '@/lib/reviews/summary'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Reviews' }
+export const generateMetadata = pageTitle('Reviews')
 
 export default async function ReviewsPage({ searchParams }: PageProps<'/reviews'>) {
+  const t = await getT()
   const sp = await searchParams
   const type: ReviewType = REVIEW_TYPES.includes(sp.type as ReviewType)
     ? (sp.type as ReviewType)
@@ -73,48 +74,59 @@ export default async function ReviewsPage({ searchParams }: PageProps<'/reviews'
         : { a: row.wins, b: row.challenges, c: row.next_focus }
   const financeLine =
     type === 'monthly' && previous
-      ? await getAIProvider().financeSummary({
-          currency,
-          expenses: summary.money.expenses,
-          previousExpenses: previous.money.expenses,
-          topIncreases: [],
-          savingsRate: summary.money.savingsRate,
-        })
+      ? await getAIProvider().financeSummary(
+          {
+            currency,
+            expenses: summary.money.expenses,
+            previousExpenses: previous.money.expenses,
+            topIncreases: [],
+            savingsRate: summary.money.savingsRate,
+          },
+          t.locale,
+        )
       : null
   const title =
     type === 'daily'
       ? formatISODate(period.from, 'EEEE, d MMMM yyyy')
       : type === 'weekly'
-        ? `Week of ${formatISODate(period.from, 'd MMM')} – ${formatISODate(period.to, 'd MMM yyyy')}`
+        ? t('Week of {from} – {to}', {
+            from: formatISODate(period.from, 'd MMM'),
+            to: formatISODate(period.to, 'd MMM yyyy'),
+          })
         : formatISODate(period.from, 'MMMM yyyy')
   const delta = (cur: number, prev: number | undefined) => (prev === undefined ? null : cur - prev)
 
   return (
     <>
       <PageHeader
-        title="Reviews"
-        description="Look back to steer forward: what happened, what improved, what matters next."
+        title={t('Reviews')}
+        description={t(
+          'Look back to steer forward: what happened, what improved, what matters next.',
+        )}
       >
         <SegmentedLinks
-          label="Review type"
+          label={t('Review type')}
           active={type}
           items={[
-            { value: 'daily', label: 'Daily', href: '/reviews?type=daily' },
-            { value: 'weekly', label: 'Weekly', href: '/reviews?type=weekly' },
-            { value: 'monthly', label: 'Monthly', href: '/reviews?type=monthly' },
+            { value: 'daily', label: t('Daily'), href: '/reviews?type=daily' },
+            { value: 'weekly', label: t('Weekly'), href: '/reviews?type=weekly' },
+            { value: 'monthly', label: t('Monthly'), href: '/reviews?type=monthly' },
           ]}
         />
       </PageHeader>
       <div className="mb-4 flex items-center gap-1">
         <Button variant="ghost" size="icon-sm" asChild>
-          <Link href={`/reviews?type=${type}&date=${period.prev}`} aria-label="Previous period">
+          <Link
+            href={`/reviews?type=${type}&date=${period.prev}`}
+            aria-label={t('Previous period')}
+          >
             <ChevronLeft />
           </Link>
         </Button>
         <h2 className="text-lg font-semibold">{title}</h2>
         {period.to < today && (
           <Button variant="ghost" size="icon-sm" asChild>
-            <Link href={`/reviews?type=${type}&date=${period.next}`} aria-label="Next period">
+            <Link href={`/reviews?type=${type}&date=${period.next}`} aria-label={t('Next period')}>
               <ChevronRight />
             </Link>
           </Button>
@@ -126,32 +138,47 @@ export default async function ReviewsPage({ searchParams }: PageProps<'/reviews'
             <CardHeader>
               <CardTitle>
                 {type === 'daily'
-                  ? 'Day overview'
+                  ? t('Day overview')
                   : type === 'weekly'
-                    ? 'Week overview'
-                    : 'Month overview'}
+                    ? t('Week overview')
+                    : t('Month overview')}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <PeriodSummaryView summary={summary} />
               {previous && (
                 <p className="text-muted-foreground text-xs">
-                  vs previous {type === 'weekly' ? 'week' : 'month'}: tasks{' '}
-                  {fmtDelta(delta(summary.tasks.completed, previous.tasks.completed))}, workouts{' '}
-                  {fmtDelta(delta(summary.workouts.count, previous.workouts.count))}, habits{' '}
-                  {fmtDelta(
-                    previous.habits.due
-                      ? Math.round(summary.habits.rate - previous.habits.rate)
-                      : null,
-                    '%',
-                  )}
+                  {(() => {
+                    const vars = {
+                      tasks: fmtDelta(delta(summary.tasks.completed, previous.tasks.completed)),
+                      workouts: fmtDelta(delta(summary.workouts.count, previous.workouts.count)),
+                      habits: fmtDelta(
+                        previous.habits.due
+                          ? Math.round(summary.habits.rate - previous.habits.rate)
+                          : null,
+                        '%',
+                      ),
+                    }
+                    return type === 'weekly'
+                      ? t(
+                          'vs previous week: tasks {tasks}, workouts {workouts}, habits {habits}',
+                          vars,
+                        )
+                      : t(
+                          'vs previous month: tasks {tasks}, workouts {workouts}, habits {habits}',
+                          vars,
+                        )
+                  })()}
                 </p>
               )}
               {financeLine && <p className="text-sm">{financeLine}</p>}
               {(summary.projectsCompleted > 0 || summary.goalsCompleted > 0) && (
                 <p className="text-sm">
-                  🎉 {summary.goalsCompleted} goal(s) and {summary.projectsCompleted} project(s)
-                  completed.
+                  🎉{' '}
+                  {t('{goals} goal(s) and {projects} project(s) completed.', {
+                    goals: summary.goalsCompleted,
+                    projects: summary.projectsCompleted,
+                  })}
                 </p>
               )}
             </CardContent>
@@ -159,7 +186,7 @@ export default async function ReviewsPage({ searchParams }: PageProps<'/reviews'
           {type === 'monthly' && goals.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Goals</CardTitle>
+                <CardTitle>{t('Goals')}</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 {goals.map((g) => (
@@ -179,7 +206,7 @@ export default async function ReviewsPage({ searchParams }: PageProps<'/reviews'
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Reflection</CardTitle>
+            <CardTitle>{t('Reflection')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ReviewForm

@@ -1,5 +1,4 @@
 import { CalendarRange, Copy } from 'lucide-react'
-import type { Metadata } from 'next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/ui/page-header'
@@ -9,16 +8,18 @@ import {
   NewTemplateButton,
   PlanControls,
 } from '@/components/workouts/plan-editors'
-import { addDaysISO, diffDaysISO, formatISODate, orderedWeekdays, WEEKDAY_SHORT } from '@/lib/dates'
+import { addDaysISO, diffDaysISO, formatISODate, orderedWeekdays, weekdayShort } from '@/lib/dates'
 import { listGoalOptions } from '@/lib/goals/options'
 import { getOnboardedUserContext } from '@/lib/settings/service'
 import { formatWeight, type Units } from '@/lib/units'
 import { listExercises, listPlans, listTemplates } from '@/lib/workouts/repository'
 import { WORKOUT_TYPE_LABELS, type WorkoutType } from '@/lib/workouts/schemas'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Plans & templates' }
+export const generateMetadata = pageTitle('Plans & templates')
 
 export default async function PlansPage() {
+  const t = await getT()
   const { supabase, user, today, prefs } = await getOnboardedUserContext()
   const units: Units = prefs.units === 'imperial' ? 'imperial' : 'metric'
   const [plans, templates, exercises, goals] = await Promise.all([
@@ -30,8 +31,8 @@ export default async function PlansPage() {
   return (
     <>
       <PageHeader
-        title="Plans & templates"
-        description="Structure your training: weekly plans and reusable sessions."
+        title={t('Plans & templates')}
+        description={t('Structure your training: weekly plans and reusable sessions.')}
         actions={
           <>
             <NewTemplateButton
@@ -50,13 +51,15 @@ export default async function PlansPage() {
       <div className="flex flex-col gap-8">
         <section aria-labelledby="plans">
           <h2 id="plans" className="text-muted-foreground mb-3 text-sm font-semibold">
-            Training plans
+            {t('Training plans')}
           </h2>
           {plans.length === 0 ? (
             <EmptyState
               icon={CalendarRange}
-              title="No training plans"
-              description="Create a plan like “Half Marathon — 12 weeks” and see today's session on your dashboard."
+              title={t('No training plans')}
+              description={t(
+                "Create a plan like “Half Marathon — 12 weeks” and see today's session on your dashboard.",
+              )}
             />
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
@@ -69,12 +72,14 @@ export default async function PlansPage() {
                       <div>
                         <CardTitle>{p.name}</CardTitle>
                         <p className="text-muted-foreground text-xs">
-                          {formatISODate(p.start_date, 'd MMM yyyy')} · {p.weeks} weeks
+                          {formatISODate(p.start_date, 'd MMM yyyy')} ·{' '}
+                          {t.plural(p.weeks, '{n} week', '{n} weeks')}
+                          {' · '}
                           {today < p.start_date
-                            ? ' · starts soon'
+                            ? t('starts soon')
                             : ended
-                              ? ' · finished'
-                              : ` · week ${week} of ${p.weeks}`}
+                              ? t('finished')
+                              : t('week {week} of {weeks}', { week, weeks: p.weeks })}
                         </p>
                       </div>
                       <PlanControls id={p.id} active={p.active} name={p.name} />
@@ -89,8 +94,8 @@ export default async function PlansPage() {
                               key={d}
                               className={`flex flex-col gap-0.5 rounded-md p-1.5 text-[11px] ${rest ? 'bg-muted/50 text-muted-foreground' : 'bg-primary-soft text-primary'}`}
                             >
-                              <span className="font-semibold">{WEEKDAY_SHORT[d]}</span>
-                              <span className="line-clamp-2">{rest ? 'Rest' : s!.title}</span>
+                              <span className="font-semibold">{weekdayShort(d)}</span>
+                              <span className="line-clamp-2">{rest ? t('Rest') : s!.title}</span>
                             </li>
                           )
                         })}
@@ -104,33 +109,33 @@ export default async function PlansPage() {
         </section>
         <section aria-labelledby="templates">
           <h2 id="templates" className="text-muted-foreground mb-3 text-sm font-semibold">
-            Templates
+            {t('Templates')}
           </h2>
           {templates.length === 0 ? (
             <EmptyState
               icon={Copy}
-              title="No templates"
-              description="Create one here or use “Save as template” on any finished workout."
+              title={t('No templates')}
+              description={t('Create one here or use “Save as template” on any finished workout.')}
             />
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {templates.map((t) => (
-                <Card key={t.id}>
+              {templates.map((tpl) => (
+                <Card key={tpl.id}>
                   <CardHeader>
                     <div>
-                      <CardTitle>{t.name}</CardTitle>
+                      <CardTitle>{tpl.name}</CardTitle>
                       <p className="text-muted-foreground text-xs">
-                        {WORKOUT_TYPE_LABELS[t.workout_type as WorkoutType]}
+                        {t(WORKOUT_TYPE_LABELS[tpl.workout_type as WorkoutType])}
                       </p>
                     </div>
-                    <DeleteTemplateButton id={t.id} name={t.name} />
+                    <DeleteTemplateButton id={tpl.id} name={tpl.name} />
                   </CardHeader>
                   <CardContent>
-                    {t.exercises.length === 0 ? (
-                      <p className="text-muted-foreground text-sm">No exercises.</p>
+                    {tpl.exercises.length === 0 ? (
+                      <p className="text-muted-foreground text-sm">{t('No exercises.')}</p>
                     ) : (
                       <ul className="flex flex-col gap-1 text-sm">
-                        {[...t.exercises]
+                        {[...tpl.exercises]
                           .sort((a, b) => a.position - b.position)
                           .map((e) => (
                             <li key={e.id} className="flex justify-between gap-2">

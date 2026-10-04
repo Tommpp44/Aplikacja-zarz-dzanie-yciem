@@ -1,5 +1,6 @@
 'use server'
 
+import { msg } from '@/lib/i18n/translate'
 import { z } from 'zod'
 import { authedAction, idSchema } from '@/lib/action'
 import { DataError, NotFoundError, unwrap } from '@/lib/db/errors'
@@ -28,10 +29,12 @@ function toMinor(
   { allowZero = false, allowNegative = false } = {},
 ) {
   const minor = parseAmountToMinor(text, currency)
-  if (minor === null) throw new DataError(`Enter a valid ${field}.`)
-  if (!allowNegative && minor < 0) throw new DataError(`The ${field} can't be negative.`)
-  if (!allowZero && minor === 0) throw new DataError(`The ${field} must be greater than zero.`)
-  if (Math.abs(minor) > 1e13) throw new DataError(`The ${field} is too large.`)
+  // `field` is kept for logs/debugging; messages stay generic so they can be translated.
+  void field
+  if (minor === null) throw new DataError(msg('Enter a valid amount.'))
+  if (!allowNegative && minor < 0) throw new DataError(msg('The amount can’t be negative.'))
+  if (!allowZero && minor === 0) throw new DataError(msg('The amount must be greater than zero.'))
+  if (Math.abs(minor) > 1e13) throw new DataError(msg('The amount is too large.'))
   return minor
 }
 
@@ -555,7 +558,7 @@ export const postRecurring = authedAction(
     )
     if (!item) throw new NotFoundError('recurring transaction')
     const rule = parseRepeatRule(item.repeat_rule)
-    if (!rule) throw new DataError('This recurring transaction has an invalid schedule.')
+    if (!rule) throw new DataError(msg('This recurring transaction has an invalid schedule.'))
     if (!skip) {
       unwrap(
         await supabase.from('transactions').insert({

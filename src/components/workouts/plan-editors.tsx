@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input'
 import { NativeSelect } from '@/components/ui/native-select'
 import { SubmitButton } from '@/components/ui/submit-button'
 import { useServerAction } from '@/hooks/use-server-action'
-import { WEEKDAY_SHORT, orderedWeekdays, type ISODate } from '@/lib/dates'
+import { weekdayShort, orderedWeekdays, type ISODate } from '@/lib/dates'
 import { weightUnit, type Units } from '@/lib/units'
 import {
   createPlan,
@@ -28,11 +28,13 @@ import {
   setPlanActive,
 } from '@/lib/workouts/actions'
 import { WORKOUT_TYPES, WORKOUT_TYPE_LABELS, type WorkoutType } from '@/lib/workouts/schemas'
+import { useT } from '@/lib/i18n/client'
 
 type Exercise = { id: string; name: string }
 type Template = { id: string; name: string; workout_type: string }
 
 export function NewTemplateButton({ exercises, units }: { exercises: Exercise[]; units: Units }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [type, setType] = useState<WorkoutType>('strength')
@@ -44,35 +46,35 @@ export function NewTemplateButton({ exercises, units }: { exercises: Exercise[];
   return (
     <>
       <Button variant="outline" onClick={() => setOpen(true)}>
-        <Plus /> New template
+        <Plus /> {t('New template')}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Workout template</DialogTitle>
+            <DialogTitle>{t('Workout template')}</DialogTitle>
             <DialogDescription>
-              Reusable session — start it in one tap with sets pre-filled.
+              {t('Reusable session — start it in one tap with sets pre-filled.')}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Name" htmlFor="tpl-name">
+              <Field label={t('Name')} htmlFor="tpl-name">
                 <Input
                   id="tpl-name"
-                  placeholder="Upper body A"
+                  placeholder={t('Upper body A')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </Field>
-              <Field label="Type" htmlFor="tpl-type">
+              <Field label={t('Type')} htmlFor="tpl-type">
                 <NativeSelect
                   id="tpl-type"
                   value={type}
                   onChange={(e) => setType(e.target.value as WorkoutType)}
                 >
-                  {WORKOUT_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {WORKOUT_TYPE_LABELS[t]}
+                  {WORKOUT_TYPES.map((it) => (
+                    <option key={it} value={it}>
+                      {t(WORKOUT_TYPE_LABELS[it])}
                     </option>
                   ))}
                 </NativeSelect>
@@ -82,9 +84,9 @@ export function NewTemplateButton({ exercises, units }: { exercises: Exercise[];
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-muted-foreground text-xs">
-                    <th className="text-left font-medium">Exercise</th>
-                    <th className="font-medium">Sets</th>
-                    <th className="font-medium">Reps</th>
+                    <th className="text-left font-medium">{t('Exercise')}</th>
+                    <th className="font-medium">{t('Sets')}</th>
+                    <th className="font-medium">{t('Reps')}</th>
                     <th className="font-medium">{weightUnit(units)}</th>
                     <th />
                   </tr>
@@ -132,7 +134,7 @@ export function NewTemplateButton({ exercises, units }: { exercises: Exercise[];
                         <Button
                           variant="ghost"
                           size="icon-xs"
-                          aria-label="Remove"
+                          aria-label={t('Remove')}
                           onClick={() => setRows(rows.filter((_, j) => j !== i))}
                         >
                           <X />
@@ -145,12 +147,12 @@ export function NewTemplateButton({ exercises, units }: { exercises: Exercise[];
             )}
             <div className="flex gap-2">
               <NativeSelect
-                aria-label="Add exercise"
+                aria-label={t('Add exercise')}
                 className="flex-1"
                 value={pick}
                 onChange={(e) => setPick(e.target.value)}
               >
-                <option value="">Add exercise…</option>
+                <option value="">{t('Add exercise…')}</option>
                 {exercises.map((e) => (
                   <option key={e.id} value={e.id}>
                     {e.name}
@@ -168,7 +170,7 @@ export function NewTemplateButton({ exercises, units }: { exercises: Exercise[];
                   setPick('')
                 }}
               >
-                Add
+                {t('Add')}
               </Button>
             </div>
           </div>
@@ -193,7 +195,7 @@ export function NewTemplateButton({ exercises, units }: { exercises: Exercise[];
                       })),
                     }),
                   {
-                    success: 'Template created',
+                    success: t('Template created'),
                     onSuccess: () => {
                       setOpen(false)
                       setName('')
@@ -203,7 +205,7 @@ export function NewTemplateButton({ exercises, units }: { exercises: Exercise[];
                 )
               }
             >
-              Create template
+              {t('Create template')}
             </SubmitButton>
           </DialogFooter>
         </DialogContent>
@@ -213,13 +215,14 @@ export function NewTemplateButton({ exercises, units }: { exercises: Exercise[];
 }
 
 export function DeleteTemplateButton({ id, name }: { id: string; name: string }) {
+  const t = useT()
   const [, run] = useServerAction()
   return (
     <Button
       variant="ghost"
       size="icon-sm"
-      aria-label={`Delete ${name}`}
-      onClick={() => run(() => deleteTemplate({ id }), { success: 'Template deleted' })}
+      aria-label={t('Delete {name}', { name })}
+      onClick={() => run(() => deleteTemplate({ id }), { success: t('Template deleted') })}
     >
       <Trash2 />
     </Button>
@@ -245,6 +248,7 @@ export function NewPlanButton({
   today: ISODate
   weekStartsOn: 0 | 1
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [plan, setPlan] = useState({ name: '', start_date: today, weeks: 12, goal_id: '' })
   const [sessions, setSessions] = useState<SessionDraft[]>(() =>
@@ -262,27 +266,29 @@ export function NewPlanButton({
   return (
     <>
       <Button onClick={() => setOpen(true)}>
-        <Plus /> New plan
+        <Plus /> {t('New plan')}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Training plan</DialogTitle>
+            <DialogTitle>{t('Training plan')}</DialogTitle>
             <DialogDescription>
-              A weekly schedule repeated for a number of weeks — e.g. “Half Marathon — 12 weeks”.
+              {t(
+                'A weekly schedule repeated for a number of weeks — e.g. “Half Marathon — 12 weeks”.',
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Field label="Name" htmlFor="plan-name" className="col-span-2">
+              <Field label={t('Name')} htmlFor="plan-name" className="col-span-2">
                 <Input
                   id="plan-name"
-                  placeholder="Half Marathon — 12 weeks"
+                  placeholder={t('Half Marathon — 12 weeks')}
                   value={plan.name}
                   onChange={(e) => setPlan({ ...plan, name: e.target.value })}
                 />
               </Field>
-              <Field label="Starts" htmlFor="plan-start">
+              <Field label={t('Starts')} htmlFor="plan-start">
                 <Input
                   id="plan-start"
                   type="date"
@@ -290,7 +296,7 @@ export function NewPlanButton({
                   onChange={(e) => setPlan({ ...plan, start_date: e.target.value })}
                 />
               </Field>
-              <Field label="Weeks" htmlFor="plan-weeks">
+              <Field label={t('Weeks')} htmlFor="plan-weeks">
                 <Input
                   id="plan-weeks"
                   type="number"
@@ -302,13 +308,13 @@ export function NewPlanButton({
               </Field>
             </div>
             {goals.length > 0 && (
-              <Field label="Linked goal" htmlFor="plan-goal" optional>
+              <Field label={t('Linked goal')} htmlFor="plan-goal" optional>
                 <NativeSelect
                   id="plan-goal"
                   value={plan.goal_id}
                   onChange={(e) => setPlan({ ...plan, goal_id: e.target.value })}
                 >
-                  <option value="">None</option>
+                  <option value="">{t('None')}</option>
                   {goals.map((g) => (
                     <option key={g.id} value={g.id}>
                       {g.title}
@@ -318,15 +324,15 @@ export function NewPlanButton({
               </Field>
             )}
             <fieldset className="flex flex-col gap-2">
-              <legend className="mb-1 text-[13px] font-medium">Weekly schedule</legend>
+              <legend className="mb-1 text-[13px] font-medium">{t('Weekly schedule')}</legend>
               {sessions.map((s) => (
                 <div
                   key={s.weekday}
                   className="grid grid-cols-[44px_1fr_1fr] items-center gap-2 sm:grid-cols-[44px_140px_1fr_90px]"
                 >
-                  <span className="text-sm font-medium">{WEEKDAY_SHORT[s.weekday]}</span>
+                  <span className="text-sm font-medium">{weekdayShort(s.weekday, t.locale)}</span>
                   <NativeSelect
-                    aria-label={`${WEEKDAY_SHORT[s.weekday]} type`}
+                    aria-label={t('{day} type', { day: weekdayShort(s.weekday, t.locale) })}
                     value={s.workout_type}
                     onChange={(e) =>
                       update(s.weekday, {
@@ -335,44 +341,44 @@ export function NewPlanButton({
                           s.title ||
                           (e.target.value === 'rest'
                             ? ''
-                            : WORKOUT_TYPE_LABELS[e.target.value as WorkoutType]),
+                            : t(WORKOUT_TYPE_LABELS[e.target.value as WorkoutType])),
                       })
                     }
                   >
-                    <option value="rest">Rest</option>
-                    {WORKOUT_TYPES.map((t) => (
-                      <option key={t} value={t}>
-                        {WORKOUT_TYPE_LABELS[t]}
+                    <option value="rest">{t('Rest')}</option>
+                    {WORKOUT_TYPES.map((it) => (
+                      <option key={it} value={it}>
+                        {t(WORKOUT_TYPE_LABELS[it])}
                       </option>
                     ))}
                   </NativeSelect>
                   <Input
-                    aria-label={`${WEEKDAY_SHORT[s.weekday]} session`}
+                    aria-label={t('{day} session', { day: weekdayShort(s.weekday, t.locale) })}
                     disabled={s.workout_type === 'rest'}
-                    placeholder="Intervals, Long run…"
+                    placeholder={t('Intervals, Long run…')}
                     value={s.title}
                     onChange={(e) => update(s.weekday, { title: e.target.value })}
                   />
                   <Input
-                    aria-label={`${WEEKDAY_SHORT[s.weekday]} minutes`}
+                    aria-label={t('{day} minutes', { day: weekdayShort(s.weekday, t.locale) })}
                     className="hidden sm:block"
                     disabled={s.workout_type === 'rest'}
-                    placeholder="min"
+                    placeholder={t('min')}
                     inputMode="numeric"
                     value={s.target_duration_minutes}
                     onChange={(e) => update(s.weekday, { target_duration_minutes: e.target.value })}
                   />
                   {templates.length > 0 && s.workout_type === 'strength' && (
                     <NativeSelect
-                      aria-label={`${WEEKDAY_SHORT[s.weekday]} template`}
+                      aria-label={t('{day} template', { day: weekdayShort(s.weekday, t.locale) })}
                       className="col-span-2 col-start-2 sm:col-span-3"
                       value={s.template_id}
                       onChange={(e) => update(s.weekday, { template_id: e.target.value })}
                     >
-                      <option value="">No template</option>
-                      {templates.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.name}
+                      <option value="">{t('No template')}</option>
+                      {templates.map((it) => (
+                        <option key={it.id} value={it.id}>
+                          {it.name}
                         </option>
                       ))}
                     </NativeSelect>
@@ -397,8 +403,8 @@ export function NewPlanButton({
                         week: null,
                         title:
                           s.workout_type === 'rest'
-                            ? 'Rest'
-                            : s.title || WORKOUT_TYPE_LABELS[s.workout_type as WorkoutType],
+                            ? t('Rest')
+                            : s.title || t(WORKOUT_TYPE_LABELS[s.workout_type as WorkoutType]),
                         workout_type: s.workout_type as 'rest',
                         template_id: s.template_id || null,
                         target_duration_minutes: s.target_duration_minutes
@@ -406,11 +412,11 @@ export function NewPlanButton({
                           : null,
                       })),
                     }),
-                  { success: 'Plan created', onSuccess: () => setOpen(false) },
+                  { success: t('Plan created'), onSuccess: () => setOpen(false) },
                 )
               }
             >
-              Create plan
+              {t('Create plan')}
             </SubmitButton>
           </DialogFooter>
         </DialogContent>
@@ -420,19 +426,20 @@ export function NewPlanButton({
 }
 
 export function PlanControls({ id, active, name }: { id: string; active: boolean; name: string }) {
+  const t = useT()
   const [confirming, setConfirming] = useState(false)
   const [pending, run] = useServerAction()
   return (
     <div className="flex items-center gap-1">
-      {!active && <Badge variant="secondary">Paused</Badge>}
+      {!active && <Badge variant="secondary">{t('Paused')}</Badge>}
       <Button
         variant="ghost"
         size="icon-sm"
         disabled={pending}
-        aria-label={active ? `Pause ${name}` : `Activate ${name}`}
+        aria-label={active ? t('Pause {name}', { name }) : t('Activate {name}', { name })}
         onClick={() =>
           run(() => setPlanActive({ id, active: !active }), {
-            success: active ? 'Plan paused' : 'Plan activated',
+            success: active ? t('Plan paused') : t('Plan activated'),
           })
         }
       >
@@ -441,7 +448,7 @@ export function PlanControls({ id, active, name }: { id: string; active: boolean
       <Button
         variant="ghost"
         size="icon-sm"
-        aria-label={`Delete ${name}`}
+        aria-label={t('Delete {name}', { name })}
         onClick={() => setConfirming(true)}
       >
         <Trash2 />
@@ -449,9 +456,9 @@ export function PlanControls({ id, active, name }: { id: string; active: boolean
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title="Delete this plan?"
-        description="Logged workouts are kept."
-        onConfirm={() => run(() => deletePlan({ id }), { success: 'Plan deleted' })}
+        title={t('Delete this plan?')}
+        description={t('Logged workouts are kept.')}
+        onConfirm={() => run(() => deletePlan({ id }), { success: t('Plan deleted') })}
       />
     </div>
   )

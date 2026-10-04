@@ -1,8 +1,10 @@
 import { Skeleton } from '@/components/ui/skeleton'
+import { getT } from '@/lib/i18n/server'
 
-export default function Loading() {
+export default async function Loading() {
+  const t = await getT()
   return (
-    <div aria-busy="true" aria-label="Loading" className="flex flex-col gap-6">
+    <div aria-busy="true" aria-label={t('Loading')} className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <Skeleton className="h-7 w-48" />
         <Skeleton className="h-4 w-72" />

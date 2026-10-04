@@ -88,6 +88,22 @@ Swapping the backend means re-implementing repositories; services and UI stay.
 - Each user has a timezone (detected at signup/onboarding, editable). "Today" is always computed in that timezone. Calendar dates are `date` columns; instants are `timestamptz`; recurring events expand on local wall-clock time (DST-safe).
 - Money is `bigint` minor units + ISO 4217 currency; formatting happens only at the edge.
 
+## Languages (i18n)
+
+The UI ships in English and Polish (`src/lib/i18n`).
+
+- Strings are written in English and wrapped in `t('…')`; the English text is the key, so a missing
+  translation simply falls back to English. Polish lives in `src/lib/i18n/pl/*.ts`.
+- Plurals: `t.plural(n, '{n} task', '{n} tasks')` — Polish entries are `[one, few, many]`.
+- Server components use `await getT()`, client components `useT()`. Label maps in `src/lib` mark
+  strings with `msg('…')` and are translated where they are rendered.
+- The language is stored in `user_preferences.language` (set at sign-up from the browser, changeable
+  in Settings → Appearance and on the sign-in pages) and mirrored in the `lifeos-locale` cookie for
+  pages shown before sign-in. Dates use date-fns locales; client components pass the locale
+  explicitly (`t.locale`) so server and client render the same text.
+- `src/lib/i18n/coverage.test.ts` fails if any `t()` / `msg()` string lacks a Polish translation or a
+  translation drops a `{placeholder}`.
+
 ## Offline / PWA
 
 `public/sw.js`: content-hashed static assets cache-first; page navigations network-first with the last visited pages cached for offline reading and an `/offline` fallback. API calls and mutations are never cached. Cached pages are cleared on sign-out. The architecture leaves room for an outbox-based offline mutation queue (actions are idempotent where it matters: habit logs upsert per day, notifications dedupe).

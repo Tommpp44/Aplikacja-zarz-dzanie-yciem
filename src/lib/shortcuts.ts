@@ -1,18 +1,20 @@
+import { msg } from '@/lib/i18n/translate'
+
 /** "g" followed by a key jumps to a section (Gmail/Linear style). */
 export const GOTO_SHORTCUTS: { key: string; href: string; label: string }[] = [
-  { key: 'd', href: '/dashboard', label: 'Dashboard' },
-  { key: 'y', href: '/today', label: 'Today' },
-  { key: 't', href: '/tasks', label: 'Tasks' },
-  { key: 'p', href: '/projects', label: 'Projects' },
-  { key: 'g', href: '/goals', label: 'Goals' },
-  { key: 'h', href: '/habits', label: 'Habits' },
-  { key: 'f', href: '/finances', label: 'Finances' },
-  { key: 'c', href: '/calendar', label: 'Calendar' },
-  { key: 'w', href: '/workouts', label: 'Workouts' },
-  { key: 'n', href: '/notes', label: 'Notes' },
-  { key: 'j', href: '/journal', label: 'Journal' },
-  { key: 'r', href: '/reviews', label: 'Reviews' },
-  { key: 's', href: '/settings', label: 'Settings' },
+  { key: 'd', href: '/dashboard', label: msg('Dashboard') },
+  { key: 'y', href: '/today', label: msg('Today') },
+  { key: 't', href: '/tasks', label: msg('Tasks') },
+  { key: 'p', href: '/projects', label: msg('Projects') },
+  { key: 'g', href: '/goals', label: msg('Goals') },
+  { key: 'h', href: '/habits', label: msg('Habits') },
+  { key: 'f', href: '/finances', label: msg('Finances') },
+  { key: 'c', href: '/calendar', label: msg('Calendar') },
+  { key: 'w', href: '/workouts', label: msg('Workouts') },
+  { key: 'n', href: '/notes', label: msg('Notes') },
+  { key: 'j', href: '/journal', label: msg('Journal') },
+  { key: 'r', href: '/reviews', label: msg('Reviews') },
+  { key: 's', href: '/settings', label: msg('Settings') },
 ]
 
 export function gotoHref(key: string) {

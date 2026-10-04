@@ -6,6 +6,7 @@ import {
 } from './brief'
 import { parseTransactionText, type ParsedTransaction } from './parse-transaction'
 import { parseQuickAdd, type QuickAddResult } from '@/lib/tasks/quick-add'
+import type { Locale } from '@/lib/i18n/config'
 
 /**
  * AI abstraction. LifeOS never depends on a single model vendor: features call
@@ -19,19 +20,19 @@ import { parseQuickAdd, type QuickAddResult } from '@/lib/tasks/quick-add'
  */
 export interface AIProvider {
   readonly name: string
-  dailyBrief(facts: BriefFacts): Promise<string[]>
-  financeSummary(facts: FinanceSummaryFacts): Promise<string | null>
+  dailyBrief(facts: BriefFacts, locale?: Locale): Promise<string[]>
+  financeSummary(facts: FinanceSummaryFacts, locale?: Locale): Promise<string | null>
   parseTransaction(text: string, today: string): Promise<ParsedTransaction>
   parseTask(text: string, today: string): Promise<QuickAddResult>
 }
 
 export class RuleBasedProvider implements AIProvider {
   readonly name = 'rules'
-  async dailyBrief(facts: BriefFacts) {
-    return buildDailyBrief(facts)
+  async dailyBrief(facts: BriefFacts, locale?: Locale) {
+    return buildDailyBrief(facts, locale)
   }
-  async financeSummary(facts: FinanceSummaryFacts) {
-    return buildFinanceSummary(facts)
+  async financeSummary(facts: FinanceSummaryFacts, locale?: Locale) {
+    return buildFinanceSummary(facts, locale)
   }
   async parseTransaction(text: string, today: string) {
     return parseTransactionText(text, today)

@@ -21,6 +21,7 @@ import {
   unlinkNote,
 } from '@/lib/notes/actions'
 import { ENTITY_LABELS, entityHref, type NoteEntityType } from '@/lib/notes/schemas'
+import { useT } from '@/lib/i18n/client'
 
 const RichTextEditor = dynamic(() => import('./rich-text-editor'), {
   ssr: false,
@@ -44,6 +45,7 @@ export function NoteEditor({
   }
   initialLink?: { entity_type: NoteEntityType; entity_id: string }
 }) {
+  const t = useT()
   const router = useRouter()
   const [id, setId] = useState(note?.id)
   const [title, setTitle] = useState(note?.title ?? '')
@@ -66,14 +68,14 @@ export function NoteEditor({
       content_text: contentRef.current.text,
       tag_names: tags
         .split(',')
-        .map((t) => t.trim())
+        .map((tag) => tag.trim())
         .filter(Boolean),
       link: !id && initialLink ? initialLink : undefined,
     })
     savingRef.current = false
     if (!result.ok) {
       setStatus('error')
-      toast.error(result.error)
+      toast.error(t(result.error))
       return
     }
     setStatus('saved')
@@ -81,7 +83,7 @@ export function NoteEditor({
       setId(result.data.id)
       router.replace(`/notes/${result.data.id}`)
     }
-  }, [id, title, tags, initialLink, router])
+  }, [id, title, tags, initialLink, router, t])
 
   const schedule = useCallback(() => {
     setStatus('dirty')
@@ -116,18 +118,18 @@ export function NoteEditor({
           href="/notes"
           className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
         >
-          <ArrowLeft className="size-4" /> Notes
+          <ArrowLeft className="size-4" /> {t('Notes')}
         </Link>
         <div className="flex items-center gap-1">
           <span className="text-muted-foreground mr-2 text-xs" role="status" aria-live="polite">
             {status === 'saving'
-              ? 'Saving…'
+              ? t('Saving…')
               : status === 'dirty'
-                ? 'Unsaved changes'
+                ? t('Unsaved changes')
                 : status === 'error'
-                  ? 'Not saved'
+                  ? t('Not saved')
                   : id
-                    ? 'Saved'
+                    ? t('Saved')
                     : ''}
           </span>
           {id && (
@@ -135,7 +137,7 @@ export function NoteEditor({
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label={note?.pinned ? 'Unpin note' : 'Pin note'}
+                aria-label={note?.pinned ? t('Unpin note') : t('Pin note')}
                 onClick={() => run(() => togglePinNote({ id, pinned: !note?.pinned }))}
               >
                 {note?.pinned ? <PinOff /> : <Pin />}
@@ -143,10 +145,10 @@ export function NoteEditor({
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label={note?.archived ? 'Restore note' : 'Archive note'}
+                aria-label={note?.archived ? t('Restore note') : t('Archive note')}
                 onClick={() =>
                   run(() => setNoteArchived({ id, archived: !note?.archived }), {
-                    success: note?.archived ? 'Note restored' : 'Note archived',
+                    success: note?.archived ? t('Note restored') : t('Note archived'),
                   })
                 }
               >
@@ -155,7 +157,7 @@ export function NoteEditor({
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Delete note"
+                aria-label={t('Delete note')}
                 onClick={() => setConfirming(true)}
               >
                 <Trash2 />
@@ -167,8 +169,8 @@ export function NoteEditor({
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Untitled"
-        aria-label="Note title"
+        placeholder={t('Untitled')}
+        aria-label={t('Note title')}
         maxLength={200}
         className="placeholder:text-muted-foreground/60 bg-transparent text-3xl font-semibold tracking-tight outline-none"
       />
@@ -176,8 +178,8 @@ export function NoteEditor({
         <Input
           value={tags}
           onChange={(e) => setTags(e.target.value)}
-          placeholder="Tags, comma separated"
-          aria-label="Tags"
+          placeholder={t('Tags, comma separated')}
+          aria-label={t('Tags')}
           className="h-8 max-w-xs"
         />
         {id ? (
@@ -185,7 +187,9 @@ export function NoteEditor({
         ) : (
           initialLink && (
             <span className="text-muted-foreground text-xs">
-              Will be linked to this {ENTITY_LABELS[initialLink.entity_type].toLowerCase()}
+              {t('Will be linked to this {entity}', {
+                entity: t(ENTITY_LABELS[initialLink.entity_type]).toLowerCase(),
+              })}
             </span>
           )
         )}
@@ -200,11 +204,11 @@ export function NoteEditor({
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title="Delete this note?"
-        description="This cannot be undone. Archive it instead if you may need it later."
+        title={t('Delete this note?')}
+        description={t('This cannot be undone. Archive it instead if you may need it later.')}
         onConfirm={() =>
           run(() => deleteNote({ id: id! }), {
-            success: 'Note deleted',
+            success: t('Note deleted'),
             onSuccess: () => router.push('/notes'),
           })
         }
@@ -214,6 +218,7 @@ export function NoteEditor({
 }
 
 function LinksBar({ noteId, links }: { noteId: string; links: LinkRow[] }) {
+  const t = useT()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<{ type: NoteEntityType; id: string; label: string }[]>([])
   const [, run] = useServerAction()
@@ -233,11 +238,11 @@ function LinksBar({ noteId, links }: { noteId: string; links: LinkRow[] }) {
         >
           <Link2 className="size-3" aria-hidden />
           <Link href={entityHref(l.entity_type, l.entity_id)} className="hover:underline">
-            {ENTITY_LABELS[l.entity_type]}: {l.name}
+            {t(ENTITY_LABELS[l.entity_type])}: {l.name}
           </Link>
           <button
             type="button"
-            aria-label={`Unlink ${l.name}`}
+            aria-label={t('Unlink {name}', { name: l.name })}
             onClick={() => run(() => unlinkNote({ id: l.id }))}
             className="text-muted-foreground hover:text-foreground"
           >
@@ -247,20 +252,22 @@ function LinksBar({ noteId, links }: { noteId: string; links: LinkRow[] }) {
       ))}
       <Popover>
         <PopoverTrigger className="text-muted-foreground hover:text-foreground inline-flex h-6 items-center gap-1 rounded-md border px-2 text-xs">
-          <Plus className="size-3" /> Link
+          <Plus className="size-3" /> {t('Link')}
         </PopoverTrigger>
         <PopoverContent className="w-80 p-2" align="start">
           <Input
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Project, goal, task, habit, workout…"
-            aria-label="Search items to link"
+            placeholder={t('Project, goal, task, habit, workout…')}
+            aria-label={t('Search items to link')}
             className="mb-2"
           />
           <ul className="max-h-64 overflow-y-auto">
             {results.length === 0 && (
-              <li className="text-muted-foreground px-2 py-3 text-center text-xs">Nothing found</li>
+              <li className="text-muted-foreground px-2 py-3 text-center text-xs">
+                {t('Nothing found')}
+              </li>
             )}
             {results.map((r) => (
               <li key={`${r.type}:${r.id}`}>
@@ -269,12 +276,12 @@ function LinksBar({ noteId, links }: { noteId: string; links: LinkRow[] }) {
                   className="hover:bg-accent flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm"
                   onClick={() =>
                     run(() => linkNote({ note_id: noteId, entity_type: r.type, entity_id: r.id }), {
-                      success: 'Linked',
+                      success: t('Linked'),
                     })
                   }
                 >
                   <span className="text-muted-foreground w-16 shrink-0 text-xs">
-                    {ENTITY_LABELS[r.type]}
+                    {t(ENTITY_LABELS[r.type])}
                   </span>
                   <span className="truncate">{r.label}</span>
                 </button>

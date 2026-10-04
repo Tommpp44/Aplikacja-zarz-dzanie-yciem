@@ -18,6 +18,7 @@ import type { Units } from '@/lib/units'
 import { startWorkout } from '@/lib/workouts/actions'
 import type { WorkoutType } from '@/lib/workouts/schemas'
 import { LogWorkoutDialog } from './log-workout-dialog'
+import { useT } from '@/lib/i18n/client'
 
 /** One tap to start a session; templates and manual logging in the menu. */
 export function StartWorkout({
@@ -33,6 +34,7 @@ export function StartWorkout({
   goals: { id: string; title: string }[]
   defaultLogType?: WorkoutType
 }) {
+  const t = useT()
   const [pending, run] = useServerAction()
   const [logging, setLogging] = useState(false)
   const router = useRouter()
@@ -45,13 +47,13 @@ export function StartWorkout({
         disabled={pending}
         onClick={() => start({ workout_type: 'strength' })}
       >
-        <Play /> Start workout
+        <Play /> {t('Start workout')}
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             className="border-primary-foreground/20 rounded-l-none border-l px-2"
-            aria-label="More ways to start"
+            aria-label={t('More ways to start')}
             disabled={pending}
           >
             <ChevronDown />
@@ -59,20 +61,20 @@ export function StartWorkout({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60">
           <DropdownMenuItem onSelect={() => setLogging(true)}>
-            <NotebookPen /> Log a finished workout
+            <NotebookPen /> {t('Log a finished workout')}
           </DropdownMenuItem>
           {templates.length > 0 && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuLabel>From template</DropdownMenuLabel>
-              {templates.map((t) => (
+              <DropdownMenuLabel>{t('From template')}</DropdownMenuLabel>
+              {templates.map((it) => (
                 <DropdownMenuItem
-                  key={t.id}
+                  key={it.id}
                   onSelect={() =>
-                    start({ workout_type: t.workout_type as WorkoutType, template_id: t.id })
+                    start({ workout_type: it.workout_type as WorkoutType, template_id: it.id })
                   }
                 >
-                  <Dumbbell /> {t.name}
+                  <Dumbbell /> {it.name}
                 </DropdownMenuItem>
               ))}
             </>

@@ -40,6 +40,7 @@ import { minorToInput } from '@/lib/money'
 import { describeRepeatRule, parseRepeatRule, type RepeatRule } from '@/lib/recurrence'
 import { Money } from './money'
 import type { AccountOption, CategoryOption } from './types'
+import { useT } from '@/lib/i18n/client'
 
 export type RecurringRow = {
   id: string
@@ -71,6 +72,7 @@ function RecurringForm({
   today: ISODate
   onDone: () => void
 }) {
+  const t = useT()
   const [values, setValues] = useState({
     txn_type: (item?.txn_type ?? 'expense') as RecurringInput['txn_type'],
     amount: item ? minorToInput(item.amount_minor, item.currency) : '',
@@ -106,25 +108,25 @@ function RecurringForm({
           end_date: values.end_date || null,
         }
         run(() => (item ? updateRecurring({ ...input, id: item.id }) : createRecurring(input)), {
-          success: item ? 'Recurring transaction updated' : 'Recurring transaction added',
+          success: item ? t('Recurring transaction updated') : t('Recurring transaction added'),
           onSuccess: onDone,
           onError: (r) => setErrors(r.fieldErrors ?? {}),
         })
       }}
     >
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Type" htmlFor="rec-type">
+        <Field label={t('Type')} htmlFor="rec-type">
           <NativeSelect
             id="rec-type"
             value={values.txn_type}
             onChange={(e) => set('txn_type', e.target.value as RecurringInput['txn_type'])}
           >
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-            <option value="transfer">Transfer</option>
+            <option value="expense">{t('Expense')}</option>
+            <option value="income">{t('Income')}</option>
+            <option value="transfer">{t('Transfer')}</option>
           </NativeSelect>
         </Field>
-        <Field label="Amount" htmlFor="rec-amount" error={errors.amount}>
+        <Field label={t('Amount')} htmlFor="rec-amount" error={errors.amount}>
           <Input
             id="rec-amount"
             inputMode="decimal"
@@ -133,7 +135,7 @@ function RecurringForm({
           />
         </Field>
         <Field
-          label={values.txn_type === 'transfer' ? 'From' : 'Account'}
+          label={values.txn_type === 'transfer' ? t('From account') : t('Account')}
           htmlFor="rec-account"
           error={errors.account_id}
         >
@@ -150,13 +152,13 @@ function RecurringForm({
           </NativeSelect>
         </Field>
         {values.txn_type === 'transfer' ? (
-          <Field label="To" htmlFor="rec-to" error={errors.transfer_account_id}>
+          <Field label={t('To account')} htmlFor="rec-to" error={errors.transfer_account_id}>
             <NativeSelect
               id="rec-to"
               value={values.transfer_account_id}
               onChange={(e) => set('transfer_account_id', e.target.value)}
             >
-              <option value="">Choose…</option>
+              <option value="">{t('Choose…')}</option>
               {accounts
                 .filter((a) => a.id !== values.account_id)
                 .map((a) => (
@@ -167,13 +169,13 @@ function RecurringForm({
             </NativeSelect>
           </Field>
         ) : (
-          <Field label="Category" htmlFor="rec-category" optional>
+          <Field label={t('Category')} htmlFor="rec-category" optional>
             <NativeSelect
               id="rec-category"
               value={values.category_id}
               onChange={(e) => set('category_id', e.target.value)}
             >
-              <option value="">None</option>
+              <option value="">{t('None')}</option>
               {categories
                 .filter((c) => c.kind === values.txn_type && !c.archived_at)
                 .map((c) => (
@@ -185,19 +187,19 @@ function RecurringForm({
           </Field>
         )}
       </div>
-      <Field label="Name / payee" htmlFor="rec-merchant">
+      <Field label={t('Name / payee')} htmlFor="rec-merchant">
         <Input
           id="rec-merchant"
-          placeholder="Rent, Salary, Netflix…"
+          placeholder={t('Rent, Salary, Netflix…')}
           value={values.merchant}
           onChange={(e) => set('merchant', e.target.value)}
         />
       </Field>
-      <Field label="Repeats" htmlFor="rec-rule">
+      <Field label={t('Repeats')} htmlFor="rec-rule">
         <RepeatRulePicker id="rec-rule" value={rule} onChange={setRule} allowNone={false} />
       </Field>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Next date" htmlFor="rec-next" error={errors.next_date}>
+        <Field label={t('Next date')} htmlFor="rec-next" error={errors.next_date}>
           <Input
             id="rec-next"
             type="date"
@@ -205,7 +207,7 @@ function RecurringForm({
             onChange={(e) => set('next_date', e.target.value)}
           />
         </Field>
-        <Field label="Ends" htmlFor="rec-end" optional>
+        <Field label={t('Ends')} htmlFor="rec-end" optional>
           <Input
             id="rec-end"
             type="date"
@@ -216,15 +218,15 @@ function RecurringForm({
       </div>
       <label className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm">
         <span>
-          Record automatically
+          {t('Record automatically')}
           <span className="text-muted-foreground block text-xs">
-            Otherwise you confirm each occurrence with one click.
+            {t('Otherwise you confirm each occurrence with one click.')}
           </span>
         </span>
         <Switch checked={values.auto_post} onCheckedChange={(v) => set('auto_post', v)} />
       </label>
       <DialogFooter>
-        <SubmitButton pending={pending}>{item ? 'Save' : 'Add'}</SubmitButton>
+        <SubmitButton pending={pending}>{item ? t('Save') : t('Add')}</SubmitButton>
       </DialogFooter>
     </form>
   )
@@ -235,17 +237,20 @@ export function NewRecurringButton(props: {
   categories: CategoryOption[]
   today: ISODate
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   return (
     <>
       <Button onClick={() => setOpen(true)} disabled={props.accounts.length === 0}>
-        <Plus /> New recurring
+        <Plus /> {t('New recurring')}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New recurring transaction</DialogTitle>
-            <DialogDescription>Rent, salary, subscriptions, loan payments…</DialogDescription>
+            <DialogTitle>{t('New recurring transaction')}</DialogTitle>
+            <DialogDescription>
+              {t('Rent, salary, subscriptions, loan payments…')}
+            </DialogDescription>
           </DialogHeader>
           {open && <RecurringForm {...props} onDone={() => setOpen(false)} />}
         </DialogContent>
@@ -265,6 +270,7 @@ export function RecurringItem({
   categories: CategoryOption[]
   today: ISODate
 }) {
+  const t = useT()
   const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [pending, run] = useServerAction()
@@ -276,12 +282,13 @@ export function RecurringItem({
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 truncate text-sm font-medium">
           {item.merchant || item.description || category?.name || 'Recurring'}
-          {!item.active && <Badge variant="secondary">Paused</Badge>}
-          {item.auto_post && item.active && <Badge variant="outline">Auto</Badge>}
+          {!item.active && <Badge variant="secondary">{t('Paused')}</Badge>}
+          {item.auto_post && item.active && <Badge variant="outline">{t('Auto')}</Badge>}
         </p>
         <p className="text-muted-foreground truncate text-xs">
-          {describeRepeatRule(parseRepeatRule(item.repeat_rule))} · {account?.name}
-          {item.active && ` · next ${relativeDayLabel(item.next_date, today).toLowerCase()}`}
+          {describeRepeatRule(parseRepeatRule(item.repeat_rule), t.locale)} · {account?.name}
+          {item.active &&
+            ` · ${t('next {date}', { date: relativeDayLabel(item.next_date, today, t.locale).toLowerCase() })}`}
         </p>
       </div>
       <Money
@@ -296,41 +303,41 @@ export function RecurringItem({
           variant="outline"
           disabled={pending}
           onClick={() =>
-            run(() => postRecurring({ id: item.id, skip: false }), { success: 'Recorded' })
+            run(() => postRecurring({ id: item.id, skip: false }), { success: t('Recorded') })
           }
         >
-          <Check /> Record
+          <Check /> {t('Record')}
         </Button>
       )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon-sm" aria-label="Recurring actions">
+          <Button variant="ghost" size="icon-sm" aria-label={t('Recurring actions')}>
             <MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={() => setEditing(true)}>
-            <Pencil /> Edit
+            <Pencil /> {t('Edit')}
           </DropdownMenuItem>
           {item.active && (
             <DropdownMenuItem
               onSelect={() =>
                 run(() => postRecurring({ id: item.id, skip: true }), {
-                  success: 'Next occurrence skipped',
+                  success: t('Next occurrence skipped'),
                 })
               }
             >
-              <SkipForward /> Skip next
+              <SkipForward /> {t('Skip next')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem
             onSelect={() =>
               run(() => setRecurringActive({ id: item.id, active: !item.active }), {
-                success: item.active ? 'Paused' : 'Resumed',
+                success: item.active ? t('Paused') : t('Resumed'),
               })
             }
           >
-            {item.active ? <Pause /> : <Play />} {item.active ? 'Pause' : 'Resume'}
+            {item.active ? <Pause /> : <Play />} {item.active ? t('Pause') : t('Resume')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirming(true)}>
@@ -341,8 +348,10 @@ export function RecurringItem({
       <Dialog open={editing} onOpenChange={setEditing}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit recurring transaction</DialogTitle>
-            <DialogDescription className="sr-only">Change schedule or amount.</DialogDescription>
+            <DialogTitle>{t('Edit recurring transaction')}</DialogTitle>
+            <DialogDescription className="sr-only">
+              {t('Change schedule or amount.')}
+            </DialogDescription>
           </DialogHeader>
           {editing && (
             <RecurringForm
@@ -358,9 +367,9 @@ export function RecurringItem({
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title="Delete this recurring transaction?"
-        description="Transactions already recorded are kept."
-        onConfirm={() => run(() => deleteRecurring({ id: item.id }), { success: 'Deleted' })}
+        title={t('Delete this recurring transaction?')}
+        description={t('Transactions already recorded are kept.')}
+        onConfirm={() => run(() => deleteRecurring({ id: item.id }), { success: t('Deleted') })}
       />
     </li>
   )

@@ -1,5 +1,4 @@
 import { BarChart3 } from 'lucide-react'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BarsChart, TrendChart } from '@/components/charts/lazy'
 import { GoalProgressBar } from '@/components/goals/goal-progress-bar'
@@ -16,13 +15,24 @@ import { formatISODate, minutesToLabel } from '@/lib/dates'
 import { formatMoney } from '@/lib/money'
 import { getOnboardedUserContext } from '@/lib/settings/service'
 import { formatDistance, formatWeight, type Units } from '@/lib/units'
+import { getT, pageTitle } from '@/lib/i18n/server'
+import { msg } from '@/lib/i18n/translate'
 
-export const metadata: Metadata = { title: 'Analytics' }
+export const generateMetadata = pageTitle('Analytics')
 
 const SECTIONS = ['finance', 'productivity', 'habits', 'fitness', 'goals', 'time'] as const
 type Section = (typeof SECTIONS)[number]
+const SECTION_LABELS: Record<Section, string> = {
+  finance: msg('Finance'),
+  productivity: msg('Productivity'),
+  habits: msg('Habits'),
+  fitness: msg('Fitness'),
+  goals: msg('Goals'),
+  time: msg('Time spent'),
+}
 
 export default async function AnalyticsPage({ searchParams }: PageProps<'/analytics'>) {
+  const t = await getT()
   const sp = await searchParams
   const range: AnalyticsRange = ANALYTICS_RANGES.includes(sp.range as AnalyticsRange)
     ? (sp.range as AnalyticsRange)
@@ -40,23 +50,27 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
   return (
     <>
       <PageHeader
-        title="Analytics"
+        title={t('Analytics')}
         description={`${formatISODate(a.from, 'd MMM yyyy')} – ${formatISODate(a.to, 'd MMM yyyy')}`}
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <SegmentedLinks
-            label="Analytics section"
+            label={t('Analytics section')}
             active={section}
             items={SECTIONS.map((s) => ({
               value: s,
-              label: s[0]!.toUpperCase() + s.slice(1),
+              label: t(SECTION_LABELS[s]),
               href: href(s, range),
             }))}
           />
           <SegmentedLinks
-            label="Range"
+            label={t('Range')}
             active={range}
-            items={ANALYTICS_RANGES.map((r) => ({ value: r, label: r, href: href(section, r) }))}
+            items={ANALYTICS_RANGES.map((r) => ({
+              value: r,
+              label: r === 'ALL' ? t('ALL') : r,
+              href: href(section, r),
+            }))}
           />
         </div>
       </PageHeader>
@@ -64,35 +78,35 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
       {section === 'productivity' && (
         <Section
           stats={[
-            ['Tasks completed', a.productivity.completed],
+            [t('Tasks completed'), a.productivity.completed],
             [
-              'Completion rate',
+              t('Completion rate'),
               a.productivity.completionRate === null
                 ? '—'
                 : `${Math.round(a.productivity.completionRate)}%`,
-              'of tasks due in range',
+              t('of tasks due in range'),
             ],
-            ['Overdue now', a.productivity.overdue],
+            [t('Overdue now'), a.productivity.overdue],
             [
-              'Focus time',
+              t('Focus time'),
               minutesToLabel(a.productivity.focusMinutes),
-              'estimated from completed tasks',
+              t('estimated from completed tasks'),
             ],
-            ['Projects completed', a.productivity.projectsCompleted],
+            [t('Projects completed'), a.productivity.projectsCompleted],
           ]}
           chart={
             <BarsChart
-              ariaLabel="Tasks completed"
+              ariaLabel={t('Tasks completed')}
               data={a.productivity.series.map((p) => ({ label: label(p.key), completed: p.value }))}
-              series={[{ key: 'completed', label: 'Tasks completed' }]}
+              series={[{ key: 'completed', label: t('Tasks completed') }]}
             />
           }
-          chartTitle="Tasks completed"
+          chartTitle={t('Tasks completed')}
           empty={
             allZero(a.productivity.series) && {
-              description: 'Complete a few tasks and your productivity trend appears here.',
+              description: t('Complete a few tasks and your productivity trend appears here.'),
               href: '/tasks',
-              cta: 'Open tasks',
+              cta: t('Open tasks'),
             }
           }
         />
@@ -103,34 +117,38 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
           <Section
             stats={[
               [
-                'Completion rate',
+                t('Completion rate'),
                 `${Math.round(a.habits.rate)}%`,
                 `${a.habits.done}/${a.habits.due}`,
               ],
-              ['Consistency', `${Math.round(a.habits.consistency)}%`, 'average, last 30 days'],
-              ['Check-ins', a.habits.series.reduce((s, p) => s + p.value, 0)],
+              [
+                t('Consistency'),
+                `${Math.round(a.habits.consistency)}%`,
+                t('average, last 30 days'),
+              ],
+              [t('Check-ins'), a.habits.series.reduce((s, p) => s + p.value, 0)],
             ]}
             chart={
               <BarsChart
-                ariaLabel="Habit check-ins"
+                ariaLabel={t('Habit check-ins')}
                 data={a.habits.series.map((p) => ({ label: label(p.key), checkins: p.value }))}
-                series={[{ key: 'checkins', label: 'Check-ins' }]}
+                series={[{ key: 'checkins', label: t('Check-ins') }]}
               />
             }
-            chartTitle="Check-ins"
+            chartTitle={t('Check-ins')}
             empty={
               allZero(a.habits.series) && {
-                description: 'Check in on a habit and your consistency builds up here.',
+                description: t('Check in on a habit and your consistency builds up here.'),
                 href: '/habits?new=1',
-                cta: 'Create a habit',
+                cta: t('Create a habit'),
               }
             }
           />
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             {(
               [
-                ['Best habits', a.habits.best],
-                ['Weakest habits', a.habits.weakest],
+                [t('Best habits'), a.habits.best],
+                [t('Weakest habits'), a.habits.weakest],
               ] as const
             ).map(([title, list]) => (
               <Card key={title}>
@@ -139,7 +157,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3">
                   {list.length === 0 ? (
-                    <p className="text-muted-foreground text-sm">No habits yet.</p>
+                    <p className="text-muted-foreground text-sm">{t('No habits yet.')}</p>
                   ) : (
                     list.map((h) => (
                       <Link key={h.id} href={`/habits/${h.id}`} className="flex flex-col gap-1">
@@ -161,25 +179,25 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
       {section === 'fitness' && (
         <Section
           stats={[
-            ['Workouts', a.fitness.workouts],
-            ['Training time', minutesToLabel(a.fitness.minutes)],
-            ['Distance', formatDistance(a.fitness.distance, units)],
-            ['Volume', formatWeight(Math.round(a.fitness.volume), units)],
-            ['New PRs', a.fitness.newPRs],
+            [t('Workouts'), a.fitness.workouts],
+            [t('Training time'), minutesToLabel(a.fitness.minutes)],
+            [t('Distance'), formatDistance(a.fitness.distance, units)],
+            [t('Volume'), formatWeight(Math.round(a.fitness.volume), units)],
+            [t('New PRs'), a.fitness.newPRs],
           ]}
           chart={
             <BarsChart
-              ariaLabel="Workouts"
+              ariaLabel={t('Workouts')}
               data={a.fitness.series.map((p) => ({ label: label(p.key), workouts: p.value }))}
-              series={[{ key: 'workouts', label: 'Workouts' }]}
+              series={[{ key: 'workouts', label: t('Workouts') }]}
             />
           }
-          chartTitle="Workouts"
+          chartTitle={t('Workouts')}
           empty={
             allZero(a.fitness.series) && {
-              description: 'Log a workout — even a walk — to start your training history.',
+              description: t('Log a workout — even a walk — to start your training history.'),
               href: '/workouts',
-              cta: 'Log a workout',
+              cta: t('Log a workout'),
             }
           }
         />
@@ -189,15 +207,15 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
         <>
           <Section
             stats={[
-              ['Income', formatMoney(a.finance.income, cur)],
-              ['Expenses', formatMoney(a.finance.expenses, cur)],
-              ['Savings', formatMoney(a.finance.savings, cur)],
-              ['Savings rate', `${Math.round(a.finance.savingsRate)}%`],
-              ['Net worth', formatMoney(a.finance.netWorth, cur)],
+              [t('Income'), formatMoney(a.finance.income, cur)],
+              [t('Expenses'), formatMoney(a.finance.expenses, cur)],
+              [t('Savings'), formatMoney(a.finance.savings, cur)],
+              [t('Savings rate'), `${Math.round(a.finance.savingsRate)}%`],
+              [t('Net worth'), formatMoney(a.finance.netWorth, cur)],
             ]}
             chart={
               <TrendChart
-                ariaLabel="Net worth"
+                ariaLabel={t('Net worth')}
                 format={`money:${cur}`}
                 data={a.finance.netWorthSeries.map((p) => ({
                   label: label(p.key),
@@ -205,31 +223,31 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
                 }))}
               />
             }
-            chartTitle="Net worth"
+            chartTitle={t('Net worth')}
             empty={
               allZero(a.finance.netWorthSeries) && {
-                description: 'Add an account to see how your net worth develops.',
+                description: t('Add an account to see how your net worth develops.'),
                 href: '/finances/accounts?new=1',
-                cta: 'Add account',
+                cta: t('Add account'),
               }
             }
           />
           <Card className="mt-6">
             <CardHeader>
-              <CardTitle>Spending</CardTitle>
+              <CardTitle>{t('Spending')}</CardTitle>
               <Link href="/finances/analytics" className="text-primary text-xs hover:underline">
-                Detailed financial analytics
+                {t('Detailed financial analytics')}
               </Link>
             </CardHeader>
             <CardContent>
               <BarsChart
-                ariaLabel="Spending"
+                ariaLabel={t('Spending')}
                 format={`money:${cur}`}
                 data={a.finance.expenseSeries.map((p) => ({
                   label: label(p.key),
                   spending: Math.round(p.value),
                 }))}
-                series={[{ key: 'spending', label: 'Spending', color: 'var(--chart-4)' }]}
+                series={[{ key: 'spending', label: t('Spending'), color: 'var(--chart-4)' }]}
               />
             </CardContent>
           </Card>
@@ -239,20 +257,20 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
       {section === 'goals' && (
         <>
           <div className="bg-card mb-6 grid grid-cols-2 gap-4 rounded-xl border p-5 md:grid-cols-5">
-            <Stat label="Active goals" value={a.goals.active} />
-            <Stat label="Average progress" value={`${Math.round(a.goals.avgProgress)}%`} />
-            <Stat label="On track" value={a.goals.onTrack} tone="positive" />
+            <Stat label={t('Active goals')} value={a.goals.active} />
+            <Stat label={t('Average progress')} value={`${Math.round(a.goals.avgProgress)}%`} />
+            <Stat label={t('On track')} value={a.goals.onTrack} tone="positive" />
             <Stat
-              label="Behind"
+              label={t('Behind')}
               value={a.goals.behind}
               tone={a.goals.behind ? 'warning' : undefined}
             />
-            <Stat label="Completed" value={a.goals.completed} hint="in range" />
+            <Stat label={t('Completed')} value={a.goals.completed} hint={t('in range')} />
           </div>
           <Card>
             <CardContent className="flex flex-col gap-4 pt-4">
               {a.goals.list.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No active goals.</p>
+                <p className="text-muted-foreground text-sm">{t('No active goals.')}</p>
               ) : (
                 a.goals.list.map((g) => (
                   <Link key={g.id} href={`/goals/${g.id}`} className="flex flex-col gap-1">
@@ -277,31 +295,36 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
       {section === 'time' && (
         <Section
           stats={[
-            ['Scheduled events', minutesToLabel(a.time.eventMinutes)],
-            ['Training', minutesToLabel(a.time.trainingMinutes)],
-            ['Focused task work', minutesToLabel(a.time.focusMinutes), 'tasks with a duration'],
+            [t('Scheduled events'), minutesToLabel(a.time.eventMinutes)],
+            [t('Training'), minutesToLabel(a.time.trainingMinutes)],
+            [
+              t('Focused task work'),
+              minutesToLabel(a.time.focusMinutes),
+              t('tasks with a duration'),
+            ],
           ]}
           chart={
             <BarsChart
-              ariaLabel="Time allocation"
+              ariaLabel={t('Time allocation')}
               format="minutes"
               data={[
-                { label: 'Events', minutes: a.time.eventMinutes },
-                { label: 'Training', minutes: a.time.trainingMinutes },
-                { label: 'Tasks', minutes: a.time.focusMinutes },
+                { label: t('Events'), minutes: a.time.eventMinutes },
+                { label: t('Training'), minutes: a.time.trainingMinutes },
+                { label: t('Tasks'), minutes: a.time.focusMinutes },
               ]}
-              series={[{ key: 'minutes', label: 'Time' }]}
+              series={[{ key: 'minutes', label: t('Time spent') }]}
             />
           }
-          chartTitle="Where your time went"
+          chartTitle={t('Where your time went')}
           empty={
             !a.time.eventMinutes &&
             !a.time.trainingMinutes &&
             !a.time.focusMinutes && {
-              description:
+              description: t(
                 'Plan events, log workouts or give tasks a duration to see your time split.',
+              ),
               href: '/calendar?view=week',
-              cta: 'Open calendar',
+              cta: t('Open calendar'),
             }
           }
         />
@@ -310,7 +333,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
   )
 }
 
-function Section({
+async function Section({
   stats,
   chart,
   chartTitle,
@@ -322,6 +345,7 @@ function Section({
   /** Shown instead of a flat chart when there is nothing to plot yet. */
   empty?: { description: string; href: string; cta: string } | false
 }) {
+  const t = await getT()
   return (
     <div className="flex flex-col gap-6">
       <div className="bg-card grid grid-cols-2 gap-4 rounded-xl border p-5 md:grid-cols-5">
@@ -338,7 +362,7 @@ function Section({
             <EmptyState
               compact
               icon={BarChart3}
-              title="Nothing to chart yet"
+              title={t('Nothing to chart yet')}
               description={empty.description}
               action={
                 <Button asChild size="sm">

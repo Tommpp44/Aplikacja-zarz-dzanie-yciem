@@ -18,17 +18,19 @@ import type { Units } from '@/lib/units'
 import { deleteWorkout, finishWorkout, saveWorkoutAsTemplate } from '@/lib/workouts/actions'
 import type { WorkoutInput } from '@/lib/workouts/schemas'
 import { LogWorkoutDialog } from './log-workout-dialog'
+import { useT } from '@/lib/i18n/client'
 
 export function ElapsedTimer({ startedAt }: { startedAt: string }) {
+  const t = useT()
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(t)
+    const timer = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(timer)
   }, [])
   const s = Math.max(0, Math.floor((now - new Date(startedAt).getTime()) / 1000))
   const text = `${Math.floor(s / 3600) ? `${Math.floor(s / 3600)}:` : ''}${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
   return (
-    <span className="tabular font-mono text-sm" aria-label="Elapsed time" role="timer">
+    <span className="tabular font-mono text-sm" aria-label={t('Elapsed time')} role="timer">
       {text}
     </span>
   )
@@ -47,6 +49,7 @@ export function WorkoutActions({
   units: Units
   goals: { id: string; title: string }[]
 }) {
+  const t = useT()
   const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [pending, run] = useServerAction()
@@ -58,7 +61,7 @@ export function WorkoutActions({
           disabled={pending}
           onClick={() =>
             run(() => finishWorkout({ id: workout.id }), {
-              success: 'Workout completed — nice work!',
+              success: t('Workout completed — nice work!'),
             })
           }
         >
@@ -66,11 +69,11 @@ export function WorkoutActions({
         </Button>
       )}
       <Button variant="outline" onClick={() => setEditing(true)}>
-        <Pencil /> Edit
+        <Pencil /> {t('Edit')}
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="More workout actions">
+          <Button variant="ghost" size="icon" aria-label={t('More workout actions')}>
             <MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
@@ -78,11 +81,11 @@ export function WorkoutActions({
           <DropdownMenuItem
             onSelect={() =>
               run(() => saveWorkoutAsTemplate({ id: workout.id, name: workout.name }), {
-                success: 'Saved as template',
+                success: t('Saved as template'),
               })
             }
           >
-            <Copy /> Save as template
+            <Copy /> {t('Save as template')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirming(true)}>
@@ -101,11 +104,11 @@ export function WorkoutActions({
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title="Delete this workout?"
-        description="All exercises and sets of this session will be removed."
+        title={t('Delete this workout?')}
+        description={t('All exercises and sets of this session will be removed.')}
         onConfirm={() =>
           run(() => deleteWorkout({ id: workout.id }), {
-            success: 'Workout deleted',
+            success: t('Workout deleted'),
             onSuccess: () => router.push('/workouts'),
           })
         }

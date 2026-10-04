@@ -6,9 +6,12 @@ import {
   startOfWeekISO,
   toISODate,
   weekdayOf,
-  WEEKDAY_SHORT,
+  weekdayShort,
   type ISODate,
 } from './dates'
+import type { Locale } from '@/lib/i18n/config'
+import { currentLocale } from '@/lib/i18n/locale-state'
+import { makeT } from '@/lib/i18n/translate'
 
 /**
  * Repeat rules shared by tasks, calendar events, recurring transactions and
@@ -172,26 +175,33 @@ export function nextTaskDueDate(
   return nextOccurrenceAfter(rule, anchor, after) ?? addDaysISO(after, 1)
 }
 
-const FREQ_UNIT: Record<RepeatRule['freq'], [string, string]> = {
-  daily: ['day', 'days'],
-  weekly: ['week', 'weeks'],
-  monthly: ['month', 'months'],
-  yearly: ['year', 'years'],
+const EVERY: Record<RepeatRule['freq'], [one: string, many: string, other: string]> = {
+  daily: ['Every day', 'Every {n} day', 'Every {n} days'],
+  weekly: ['Every week', 'Every {n} week', 'Every {n} weeks'],
+  monthly: ['Every month', 'Every {n} month', 'Every {n} months'],
+  yearly: ['Every year', 'Every {n} year', 'Every {n} years'],
 }
 
-export function describeRepeatRule(rule: RepeatRule | null | undefined) {
-  if (!rule) return 'Does not repeat'
-  const [one, many] = FREQ_UNIT[rule.freq]
-  let text = rule.interval > 1 ? `Every ${rule.interval} ${many}` : `Every ${one}`
-  if (rule.freq === 'daily' && rule.interval === 1) text = 'Every day'
+export function describeRepeatRule(
+  rule: RepeatRule | null | undefined,
+  locale: Locale = currentLocale(),
+) {
+  const t = makeT(locale)
+  if (!rule) return t('Does not repeat')
+  const [every, one, many] = EVERY[rule.freq]
+  let text = rule.interval > 1 ? t.plural(rule.interval, one, many) : t(every)
   if (rule.freq === 'weekly' && rule.weekdays && rule.weekdays.length > 0) {
     const sorted = [...rule.weekdays].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7))
     if (sorted.length === 5 && [1, 2, 3, 4, 5].every((d) => sorted.includes(d))) {
-      return rule.interval === 1 ? 'Every weekday' : `${text} on weekdays`
+      return rule.interval === 1 ? t('Every weekday') : t('{text} on weekdays', { text })
     }
-    text += ` on ${sorted.map((d) => WEEKDAY_SHORT[d]).join(', ')}`
+    text = t('{text} on {days}', {
+      text,
+      days: sorted.map((d) => weekdayShort(d, locale)).join(', '),
+    })
   }
-  if (rule.freq === 'monthly' && rule.monthDay) text += ` on day ${rule.monthDay}`
+  if (rule.freq === 'monthly' && rule.monthDay)
+    text = t('{text} on day {day}', { text, day: rule.monthDay })
   return text
 }
 

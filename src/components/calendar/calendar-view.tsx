@@ -8,15 +8,18 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { minutesOfDay } from '@/lib/calendar/expand'
 import type { CalendarView as View } from '@/lib/calendar/schemas'
 import { colorClass } from '@/lib/colors'
-import {
-  formatISODate,
-  relativeDayLabel,
-  WEEKDAY_SHORT,
-  weekdayOf,
-  type ISODate,
-} from '@/lib/dates'
+import { formatISODate, relativeDayLabel, weekdayShort, weekdayOf, type ISODate } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import { EventDialog, type EventFormValues } from './event-dialog'
+import { useT } from '@/lib/i18n/client'
+import { msg } from '@/lib/i18n/translate'
+
+const VIEW_LABELS = {
+  day: msg('Day'),
+  week: msg('Week'),
+  month: msg('Month'),
+  agenda: msg('Agenda'),
+} as const
 
 export type CalItem = {
   key: string
@@ -54,6 +57,7 @@ function itemsOn(items: CalItem[], date: ISODate) {
 }
 
 export function CalendarView(props: Props) {
+  const t = useT()
   const { view, today, days, items, nav } = props
   const [dialog, setDialog] = useState<EventFormValues | null>(null)
 
@@ -81,15 +85,15 @@ export function CalendarView(props: Props) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" asChild>
-            <Link href={nav.today}>Today</Link>
+            <Link href={nav.today}>{t('Today')}</Link>
           </Button>
           <Button variant="ghost" size="icon-sm" asChild>
-            <Link href={nav.prev} aria-label="Previous">
+            <Link href={nav.prev} aria-label={t('Previous')}>
               <ChevronLeft />
             </Link>
           </Button>
           <Button variant="ghost" size="icon-sm" asChild>
-            <Link href={nav.next} aria-label="Next">
+            <Link href={nav.next} aria-label={t('Next')}>
               <ChevronRight />
             </Link>
           </Button>
@@ -97,7 +101,7 @@ export function CalendarView(props: Props) {
         </div>
         <div className="flex items-center gap-2">
           <nav
-            aria-label="Calendar view"
+            aria-label={t('Calendar view')}
             className="bg-muted inline-flex h-9 items-center gap-0.5 rounded-lg p-[3px]"
           >
             {(['day', 'week', 'month', 'agenda'] as const).map((v) => (
@@ -106,16 +110,16 @@ export function CalendarView(props: Props) {
                 href={nav.views[v]}
                 aria-current={view === v ? 'page' : undefined}
                 className={cn(
-                  'text-muted-foreground hover:text-foreground flex h-full items-center rounded-md px-3 text-[13px] font-medium capitalize',
+                  'text-muted-foreground hover:text-foreground flex h-full items-center rounded-md px-3 text-[13px] font-medium',
                   view === v && 'bg-card text-foreground shadow-xs',
                 )}
               >
-                {v}
+                {t(VIEW_LABELS[v])}
               </Link>
             ))}
           </nav>
           <Button onClick={() => setDialog(newEvent(view === 'day' ? props.anchor : today))}>
-            <Plus /> Event
+            <Plus /> {t('Event')}
           </Button>
         </div>
       </div>
@@ -197,13 +201,14 @@ function MonthGrid({
   onOpen,
   onCreate,
 }: Props & { onOpen: (i: CalItem) => void; onCreate: (d: ISODate) => void }) {
+  const t = useT()
   const weekdays = weekStartsOn === 1 ? [1, 2, 3, 4, 5, 6, 0] : [0, 1, 2, 3, 4, 5, 6]
   return (
     <div className="bg-card overflow-hidden rounded-xl border">
       <div className="text-muted-foreground grid grid-cols-7 border-b text-center text-xs font-medium">
         {weekdays.map((d) => (
           <div key={d} className="py-2">
-            {WEEKDAY_SHORT[d]}
+            {weekdayShort(d, t.locale)}
           </div>
         ))}
       </div>
@@ -235,7 +240,7 @@ function MonthGrid({
                 </Link>
                 <button
                   type="button"
-                  aria-label={`Add event on ${d}`}
+                  aria-label={t('Add event on {date}', { date: d })}
                   onClick={() => onCreate(d)}
                   className="text-muted-foreground rounded p-0.5 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
                 >
@@ -251,7 +256,7 @@ function MonthGrid({
                     href={`/calendar?view=day&date=${d}`}
                     className="text-muted-foreground hover:text-foreground px-1 text-[11px]"
                   >
-                    +{list.length - 3} more
+                    {t('+{n} more', { n: list.length - 3 })}
                   </Link>
                 )}
               </div>
@@ -276,6 +281,7 @@ function TimeGrid({
   onOpen: (i: CalItem) => void
   onCreate: (d: ISODate, hour: number) => void
 }) {
+  const t = useT()
   const hours = useMemo(() => Array.from({ length: 24 - START_HOUR }, (_, i) => i + START_HOUR), [])
   const cols =
     days.length === 1 ? 'grid-cols-[48px_1fr]' : 'grid-cols-[48px_repeat(7,minmax(0,1fr))]'
@@ -285,7 +291,7 @@ function TimeGrid({
         <div />
         {days.map((d) => (
           <div key={d} className="border-l px-2 py-2 text-center">
-            <p className="text-muted-foreground text-xs">{WEEKDAY_SHORT[weekdayOf(d)]}</p>
+            <p className="text-muted-foreground text-xs">{weekdayShort(weekdayOf(d), t.locale)}</p>
             <p
               className={cn(
                 'tabular mx-auto flex size-7 items-center justify-center rounded-full text-sm font-medium',
@@ -323,7 +329,7 @@ function TimeGrid({
                 <button
                   key={h}
                   type="button"
-                  aria-label={`Add event ${d} ${h}:00`}
+                  aria-label={t('Add event {date} {time}', { date: d, time: `${h}:00` })}
                   onClick={() => onCreate(d, h)}
                   style={{ height: HOUR_PX }}
                   className="border-border/60 hover:bg-accent/40 block w-full border-b border-dashed"
@@ -379,14 +385,15 @@ function Agenda({
   today: ISODate
   onOpen: (i: CalItem) => void
 }) {
+  const t = useT()
   const withItems = days
     .map((d) => ({ d, list: itemsOn(items, d) }))
     .filter((x) => x.list.length > 0)
   if (withItems.length === 0)
     return (
       <EmptyState
-        title="Nothing scheduled"
-        description="Your next 30 days are clear. Add events or give tasks a date."
+        title={t('Nothing scheduled')}
+        description={t('Your next 30 days are clear. Add events or give tasks a date.')}
       />
     )
   return (
@@ -399,7 +406,7 @@ function Agenda({
               d === today ? 'text-primary' : 'text-muted-foreground',
             )}
           >
-            {relativeDayLabel(d, today)} · {formatISODate(d, 'd MMM')}
+            {relativeDayLabel(d, today, t.locale)} · {formatISODate(d, 'd MMM', t.locale)}
           </h3>
           <ul className="bg-card divide-y rounded-xl border">
             {list.map((i) => (
@@ -411,7 +418,7 @@ function Agenda({
                 >
                   <span className="tabular text-muted-foreground w-24 shrink-0 text-xs">
                     {i.allDay || !i.startTime
-                      ? 'All day'
+                      ? t('All day')
                       : `${i.startTime}${i.endTime ? `–${i.endTime}` : ''}`}
                   </span>
                   {i.kind === 'task' ? (

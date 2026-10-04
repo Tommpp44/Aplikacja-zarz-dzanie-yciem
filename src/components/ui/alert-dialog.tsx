@@ -2,6 +2,7 @@
 
 import { AlertDialog as AlertDialogPrimitive } from 'radix-ui'
 import * as React from 'react'
+import { useT } from '@/lib/i18n/client'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from './button'
 
@@ -13,7 +14,7 @@ function ConfirmDialog({
   trigger,
   title,
   description,
-  confirmLabel = 'Delete',
+  confirmLabel,
   onConfirm,
   open,
   onOpenChange,
@@ -30,6 +31,7 @@ function ConfirmDialog({
   children?: React.ReactNode
   confirmDisabled?: boolean
 }) {
+  const t = useT()
   return (
     <AlertDialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       {trigger && <AlertDialogPrimitive.Trigger asChild>{trigger}</AlertDialogPrimitive.Trigger>}
@@ -51,14 +53,14 @@ function ConfirmDialog({
           {children}
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <AlertDialogPrimitive.Cancel className={buttonVariants({ variant: 'outline' })}>
-              Cancel
+              {t('Cancel')}
             </AlertDialogPrimitive.Cancel>
             <AlertDialogPrimitive.Action
               disabled={confirmDisabled}
               className={buttonVariants({ variant: 'destructive' })}
               onClick={() => void onConfirm()}
             >
-              {confirmLabel}
+              {confirmLabel ?? t('Delete')}
             </AlertDialogPrimitive.Action>
           </div>
         </AlertDialogPrimitive.Content>

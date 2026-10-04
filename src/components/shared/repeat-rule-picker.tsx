@@ -2,9 +2,10 @@
 
 import { NativeSelect } from '@/components/ui/native-select'
 import { Input } from '@/components/ui/input'
-import { WEEKDAY_SHORT, orderedWeekdays } from '@/lib/dates'
+import { weekdayShort, orderedWeekdays } from '@/lib/dates'
 import type { RepeatRule } from '@/lib/recurrence'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n/client'
 
 type Props = {
   id?: string
@@ -22,6 +23,7 @@ export function RepeatRulePicker({
   allowNone = true,
   weekStartsOn = 1,
 }: Props) {
+  const t = useT()
   const freq = value?.freq ?? 'none'
   return (
     <div className="flex flex-col gap-2">
@@ -36,11 +38,11 @@ export function RepeatRulePicker({
             else onChange({ freq: f as RepeatRule['freq'], interval: value?.interval ?? 1 })
           }}
         >
-          {allowNone && <option value="none">Does not repeat</option>}
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-          <option value="yearly">Yearly</option>
+          {allowNone && <option value="none">{t('Does not repeat')}</option>}
+          <option value="daily">{t('Daily')}</option>
+          <option value="weekly">{t('Weekly')}</option>
+          <option value="monthly">{t('Monthly')}</option>
+          <option value="yearly">{t('Yearly')}</option>
         </NativeSelect>
         {value && (
           <label className="text-muted-foreground flex items-center gap-2 text-[13px]">
@@ -49,7 +51,7 @@ export function RepeatRulePicker({
               type="number"
               min={1}
               max={365}
-              aria-label="Repeat interval"
+              aria-label={t('Repeat interval')}
               className="w-16"
               value={value.interval}
               onChange={(e) =>
@@ -63,7 +65,7 @@ export function RepeatRulePicker({
         )}
       </div>
       {value?.freq === 'weekly' && (
-        <div className="flex flex-wrap gap-1" role="group" aria-label="Weekdays">
+        <div className="flex flex-wrap gap-1" role="group" aria-label={t('Weekdays')}>
           {orderedWeekdays(weekStartsOn).map((d) => {
             const active = value.weekdays?.includes(d) ?? false
             return (
@@ -84,7 +86,7 @@ export function RepeatRulePicker({
                     : 'bg-card text-muted-foreground hover:text-foreground',
                 )}
               >
-                {WEEKDAY_SHORT[d]}
+                {weekdayShort(d, t.locale)}
               </button>
             )
           })}

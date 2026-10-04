@@ -3,6 +3,7 @@
 import { X } from 'lucide-react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import * as React from 'react'
+import { useT } from '@/lib/i18n/client'
 import { cn } from '@/lib/utils'
 
 const Dialog = DialogPrimitive.Root
@@ -30,6 +31,7 @@ function DialogContent({
   hideClose = false,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & { hideClose?: boolean }) {
+  const t = useT()
   return (
     <DialogPrimitive.Portal>
       <DialogOverlay />
@@ -48,7 +50,7 @@ function DialogContent({
         {!hideClose && (
           <DialogPrimitive.Close className="text-muted-foreground hover:bg-accent hover:text-foreground absolute top-3.5 right-3.5 rounded-md p-1 transition-colors">
             <X className="size-4" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{t('Close')}</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>

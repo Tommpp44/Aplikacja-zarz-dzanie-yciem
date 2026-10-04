@@ -11,19 +11,23 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { TransactionForm, type TransactionFormProps } from './transaction-form'
+import { useT } from '@/lib/i18n/client'
 
 export function TransactionDialog({
   open,
   onOpenChange,
   ...props
 }: TransactionFormProps & { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const t = useT()
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{props.transaction ? 'Edit transaction' : 'New transaction'}</DialogTitle>
+          <DialogTitle>
+            {props.transaction ? t('Edit transaction') : t('New transaction')}
+          </DialogTitle>
           <DialogDescription className="sr-only">
-            Record income, an expense or a transfer.
+            {t('Record income, an expense or a transfer.')}
           </DialogDescription>
         </DialogHeader>
         <TransactionForm {...props} onDone={() => onOpenChange(false)} />
@@ -33,7 +37,7 @@ export function TransactionDialog({
 }
 
 export function AddTransactionButton({
-  label = 'Add transaction',
+  label,
   variant,
   size,
   ...props
@@ -42,11 +46,12 @@ export function AddTransactionButton({
   variant?: ButtonProps['variant']
   size?: ButtonProps['size']
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   return (
     <>
       <Button onClick={() => setOpen(true)} variant={variant} size={size}>
-        <Plus /> {label}
+        <Plus /> {label ?? t('Add transaction')}
       </Button>
       <TransactionDialog open={open} onOpenChange={setOpen} {...props} />
     </>

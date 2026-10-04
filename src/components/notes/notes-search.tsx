@@ -4,8 +4,10 @@ import { Search } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
+import { useT } from '@/lib/i18n/client'
 
 export function NotesSearch() {
+  const t = useT()
   const params = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -29,8 +31,8 @@ export function NotesSearch() {
       <Input
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Search notes"
-        aria-label="Search notes"
+        placeholder={t('Search notes')}
+        aria-label={t('Search notes')}
         className="pl-8"
       />
     </div>

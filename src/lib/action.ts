@@ -5,6 +5,7 @@ import { getSession, type SessionContext } from '@/lib/auth/session'
 import { DataError } from '@/lib/db/errors'
 import { logger } from '@/lib/logger'
 import type { ActionResult } from '@/lib/action-types'
+import { msg } from '@/lib/i18n/translate'
 
 export type { ActionResult } from '@/lib/action-types'
 
@@ -33,7 +34,8 @@ export function authedAction<S extends z.ZodType, R>(
 ): (input: z.input<S>) => Promise<ActionResult<R>> {
   return async (rawInput) => {
     const session = await getSession()
-    if (!session) return { ok: false, error: 'Your session has expired. Please sign in again.' }
+    if (!session)
+      return { ok: false, error: msg('Your session has expired. Please sign in again.') }
 
     const parsed = schema.safeParse(rawInput)
     if (!parsed.success) {
@@ -42,7 +44,7 @@ export function authedAction<S extends z.ZodType, R>(
         const key = issue.path.join('.') || '_'
         fieldErrors[key] ??= issue.message
       }
-      return { ok: false, error: 'Please check the highlighted fields.', fieldErrors }
+      return { ok: false, error: msg('Please check the highlighted fields.'), fieldErrors }
     }
 
     try {
@@ -61,7 +63,7 @@ export function authedAction<S extends z.ZodType, R>(
       logger.error('action crashed', { action: options.name, userId: session.user.id }, error)
       return {
         ok: false,
-        error: options.failureMessage ?? `We couldn't complete this action. Please try again.`,
+        error: options.failureMessage ?? msg('We couldn’t complete this action. Please try again.'),
       }
     }
   }

@@ -1,5 +1,4 @@
 import { Landmark, PiggyBank } from 'lucide-react'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { DonutChart } from '@/components/charts/lazy'
 import { BudgetRow } from '@/components/finances/budget-row'
@@ -18,10 +17,12 @@ import { ACCOUNT_TYPE_LABELS, type AccountType } from '@/lib/finance/schemas'
 import { getFinanceOverview } from '@/lib/finance/service'
 import { formatMoney, minorToMajor } from '@/lib/money'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Finances' }
+export const generateMetadata = pageTitle('Finances')
 
 export default async function FinancesPage() {
+  const t = await getT()
   const { supabase, user, today, currency, prefs } = await getOnboardedUserContext()
   const f = await getFinanceOverview(supabase, user.id, today, currency)
   const accountOptions = f.accounts.map((a) => ({
@@ -42,11 +43,13 @@ export default async function FinancesPage() {
     return (
       <EmptyState
         icon={Landmark}
-        title="Add your first account"
-        description="Start with your main bank account. Balances are always calculated from your transactions, so they never drift."
+        title={t('Add your first account')}
+        description={t(
+          'Start with your main bank account. Balances are always calculated from your transactions, so they never drift.',
+        )}
         action={
           <Button asChild>
-            <Link href="/finances/accounts?new=1">Add account</Link>
+            <Link href="/finances/accounts?new=1">{t('Add account')}</Link>
           </Button>
         }
       />
@@ -57,7 +60,7 @@ export default async function FinancesPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <Stat
-          label="Net worth"
+          label={t('Net worth')}
           value={formatMoney(f.netWorth.net, currency)}
           size="lg"
           hint={`Assets ${formatMoney(f.netWorth.assets, currency)} · Liabilities ${formatMoney(f.netWorth.liabilities, currency)}${f.netWorth.otherCurrencies.length ? ` · + ${f.netWorth.otherCurrencies.map((o) => formatMoney(o.net, o.currency)).join(', ')}` : ''}`}
@@ -66,27 +69,29 @@ export default async function FinancesPage() {
       </div>
 
       <section
-        aria-label="This month"
+        aria-label={t('This month')}
         className="bg-card grid grid-cols-2 gap-4 rounded-xl border p-5 md:grid-cols-5"
       >
-        <Stat label="Income" value={formatMoney(f.month.income, currency)} tone="positive" />
+        <Stat label={t('Income')} value={formatMoney(f.month.income, currency)} tone="positive" />
         <Stat
-          label="Expenses"
+          label={t('Expenses')}
           value={formatMoney(f.month.expenses, currency)}
           hint={
             expenseChange === null
-              ? 'this month'
-              : `${expenseChange > 0 ? '+' : ''}${Math.round(expenseChange)}% vs last month`
+              ? t('this month')
+              : t('{change}% vs last month', {
+                  change: `${expenseChange > 0 ? '+' : ''}${Math.round(expenseChange)}`,
+                })
           }
         />
         <Stat
-          label="Savings"
+          label={t('Savings')}
           value={formatMoney(f.month.savings, currency)}
           tone={f.month.savings < 0 ? 'negative' : undefined}
         />
-        <Stat label="Savings rate" value={`${Math.round(f.month.savingsRate)}%`} />
+        <Stat label={t('Savings rate')} value={`${Math.round(f.month.savingsRate)}%`} />
         <Stat
-          label="Budget utilization"
+          label={t('Budget utilization')}
           value={f.budgetUtilization === null ? '—' : `${Math.round(f.budgetUtilization)}%`}
           tone={
             f.budgetUtilization !== null && f.budgetUtilization > 100
@@ -95,16 +100,16 @@ export default async function FinancesPage() {
                 ? 'warning'
                 : undefined
           }
-          hint={f.budgetUtilization === null ? 'no budgets yet' : 'of monthly budgets'}
+          hint={f.budgetUtilization === null ? t('no budgets yet') : t('of monthly budgets')}
         />
       </section>
 
       {f.dueRecurring.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Due to record</CardTitle>
+            <CardTitle>{t('Due to record')}</CardTitle>
             <Link href="/finances/recurring" className="text-primary text-xs hover:underline">
-              Manage
+              {t('Manage')}
             </Link>
           </CardHeader>
           <CardContent>
@@ -116,9 +121,9 @@ export default async function FinancesPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Recent transactions</CardTitle>
+            <CardTitle>{t('Recent transactions')}</CardTitle>
             <Link href="/finances/transactions" className="text-primary text-xs hover:underline">
-              View all
+              {t('View all')}
             </Link>
           </CardHeader>
           <CardContent>
@@ -133,24 +138,24 @@ export default async function FinancesPage() {
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>End-of-month forecast</CardTitle>
+              <CardTitle>{t('End-of-month forecast')}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-2 text-sm">
               <Row
-                label="Expected income"
+                label={t('Expected income')}
                 value={<Money minor={f.forecast.expectedIncome} currency={currency} />}
               />
               <Row
-                label="Expected expenses"
+                label={t('Expected expenses')}
                 value={<Money minor={f.forecast.expectedExpenses} currency={currency} />}
               />
               <Row
-                label="Expected savings"
+                label={t('Expected savings')}
                 value={<Money minor={f.forecast.expectedSavings} currency={currency} tone />}
               />
               <div className="bg-border my-1 h-px" />
               <Row
-                label="Expected balance (cash & bank)"
+                label={t('Expected balance (cash & bank)')}
                 value={
                   <Money
                     minor={f.forecast.expectedEndBalance}
@@ -160,22 +165,23 @@ export default async function FinancesPage() {
                 }
               />
               <p className="text-muted-foreground text-xs">
-                Based on scheduled recurring items and your average daily spending over the last 90
-                days.
+                {t(
+                  'Based on scheduled recurring items and your average daily spending over the last 90 days.',
+                )}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Budgets</CardTitle>
+              <CardTitle>{t('Budgets')}</CardTitle>
               <Link href="/finances/budgets" className="text-primary text-xs hover:underline">
-                {f.budgets.length ? 'Manage' : 'Create'}
+                {f.budgets.length ? t('Manage') : t('Create')}
               </Link>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               {f.budgets.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
-                  Set a monthly limit for categories like Food or Entertainment.
+                  {t('Set a monthly limit for categories like Food or Entertainment.')}
                 </p>
               ) : (
                 f.budgets
@@ -190,9 +196,9 @@ export default async function FinancesPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Accounts</CardTitle>
+            <CardTitle>{t('Accounts')}</CardTitle>
             <Link href="/finances/accounts" className="text-primary text-xs hover:underline">
-              Manage
+              {t('Manage')}
             </Link>
           </CardHeader>
           <CardContent>
@@ -203,7 +209,7 @@ export default async function FinancesPage() {
                     <ColorDot color={a.color} />
                     <span className="truncate font-medium">{a.name}</span>
                     <span className="text-muted-foreground text-xs">
-                      {ACCOUNT_TYPE_LABELS[a.account_type as AccountType]}
+                      {t(ACCOUNT_TYPE_LABELS[a.account_type as AccountType])}
                     </span>
                   </span>
                   <Money
@@ -218,15 +224,15 @@ export default async function FinancesPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Top categories this month</CardTitle>
+            <CardTitle>{t('Top categories this month')}</CardTitle>
           </CardHeader>
           <CardContent>
             {f.topCategories.length === 0 ? (
-              <EmptyState compact icon={PiggyBank} title="No spending yet this month" />
+              <EmptyState compact icon={PiggyBank} title={t('No spending yet this month')} />
             ) : (
               <div className="grid items-center gap-4 sm:grid-cols-2">
                 <DonutChart
-                  ariaLabel="Spending by category"
+                  ariaLabel={t('Spending by category')}
                   format={`money:${currency}`}
                   data={f.topCategories.slice(0, 6).map((c) => ({
                     label: c.name,

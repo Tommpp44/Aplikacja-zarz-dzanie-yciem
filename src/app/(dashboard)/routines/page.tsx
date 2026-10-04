@@ -1,5 +1,4 @@
 import { Repeat } from 'lucide-react'
-import type { Metadata } from 'next'
 import { NewRoutineButton } from '@/components/routines/new-routine-button'
 import { RoutineCard } from '@/components/routines/routine-card'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -8,10 +7,12 @@ import { weekdayOf } from '@/lib/dates'
 import { listHabits } from '@/lib/habits/repository'
 import { listRoutines } from '@/lib/routines/repository'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Routines' }
+export const generateMetadata = pageTitle('Routines')
 
 export default async function RoutinesPage() {
+  const t = await getT()
   const { supabase, user, today, prefs } = await getOnboardedUserContext()
   const [routines, habits] = await Promise.all([
     listRoutines(supabase, user.id, today),
@@ -25,22 +26,24 @@ export default async function RoutinesPage() {
   return (
     <>
       <PageHeader
-        title="Routines"
-        description="Repeatable checklists for the moments that shape your day."
+        title={t('Routines')}
+        description={t('Repeatable checklists for the moments that shape your day.')}
         actions={<NewRoutineButton habits={habitOptions} weekStartsOn={prefs.week_start} />}
       />
       {routines.length === 0 ? (
         <EmptyState
           icon={Repeat}
-          title="No routines yet"
-          description="Build a morning or evening routine: wake up, drink water, stretch, plan the day."
+          title={t('No routines yet')}
+          description={t(
+            'Build a morning or evening routine: wake up, drink water, stretch, plan the day.',
+          )}
         />
       ) : (
         <div className="flex flex-col gap-8">
           {todays.length > 0 && (
             <section aria-labelledby="routines-today">
               <h2 id="routines-today" className="text-muted-foreground mb-3 text-sm font-semibold">
-                Today
+                {t('Today')}
               </h2>
               <div className="grid gap-4 md:grid-cols-2">
                 {todays.map((r) => (
@@ -58,7 +61,7 @@ export default async function RoutinesPage() {
           {others.length > 0 && (
             <section aria-labelledby="routines-other">
               <h2 id="routines-other" className="text-muted-foreground mb-3 text-sm font-semibold">
-                Other days
+                {t('Other days')}
               </h2>
               <div className="grid gap-4 md:grid-cols-2">
                 {others.map((r) => (

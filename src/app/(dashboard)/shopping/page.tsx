@@ -1,5 +1,4 @@
 import { ShoppingCart } from 'lucide-react'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { NewListForm } from '@/components/shopping/new-list-form'
 import { ShoppingListView } from '@/components/shopping/shopping-list'
@@ -8,10 +7,12 @@ import { PageHeader } from '@/components/ui/page-header'
 import { unwrap } from '@/lib/db/errors'
 import { getOnboardedUserContext } from '@/lib/settings/service'
 import { cn } from '@/lib/utils'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Shopping' }
+export const generateMetadata = pageTitle('Shopping')
 
 export default async function ShoppingPage({ searchParams }: PageProps<'/shopping'>) {
+  const t = await getT()
   const sp = await searchParams
   const { supabase, user } = await getOnboardedUserContext()
   const lists = unwrap(
@@ -40,7 +41,10 @@ export default async function ShoppingPage({ searchParams }: PageProps<'/shoppin
     : []
   return (
     <>
-      <PageHeader title="Shopping" description="Simple lists with quantities and categories." />
+      <PageHeader
+        title={t('Shopping')}
+        description={t('Simple lists with quantities and categories.')}
+      />
       <div className="grid gap-6 md:grid-cols-[240px_1fr]">
         <aside className="flex flex-col gap-3">
           <ul className="flex flex-col gap-1">
@@ -71,8 +75,8 @@ export default async function ShoppingPage({ searchParams }: PageProps<'/shoppin
           ) : (
             <EmptyState
               icon={ShoppingCart}
-              title="No shopping lists"
-              description="Create a list like “Groceries” and add items as you think of them."
+              title={t('No shopping lists')}
+              description={t('Create a list like “Groceries” and add items as you think of them.')}
             />
           )}
         </div>

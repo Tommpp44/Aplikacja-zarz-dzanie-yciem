@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { optionalDate, optionalTime, optionalUuid } from '@/lib/validation'
 import { ENTITY_COLORS } from '@/lib/colors'
+import { msg } from '@/lib/i18n/translate'
 
 export const HABIT_TYPES = ['boolean', 'numeric', 'duration', 'count'] as const
 export const HABIT_FREQUENCIES = [
@@ -12,26 +13,26 @@ export const HABIT_FREQUENCIES = [
 ] as const
 
 export const HABIT_TYPE_LABELS: Record<(typeof HABIT_TYPES)[number], string> = {
-  boolean: 'Yes / no',
-  numeric: 'Amount (e.g. 2 L water)',
-  duration: 'Duration (minutes)',
-  count: 'Count (e.g. 50 push-ups)',
+  boolean: msg('Yes / no'),
+  numeric: msg('Amount (e.g. 2 L water)'),
+  duration: msg('Duration (minutes)'),
+  count: msg('Count (e.g. 50 push-ups)'),
 }
 
 export const FREQUENCY_LABELS: Record<(typeof HABIT_FREQUENCIES)[number], string> = {
-  daily: 'Every day',
-  weekdays: 'Selected weekdays',
-  weekly: 'Once a week',
-  times_per_week: 'X times per week',
-  interval: 'Every N days',
+  daily: msg('Every day'),
+  weekdays: msg('Selected weekdays'),
+  weekly: msg('Once a week'),
+  times_per_week: msg('X times per week'),
+  interval: msg('Every N days'),
 }
 
 export const habitSchema = z
   .object({
-    name: z.string().trim().min(1, 'Name your habit').max(120),
+    name: z.string().trim().min(1, msg('Name your habit')).max(120),
     description: z.string().trim().max(2000).nullable().optional(),
     habit_type: z.enum(HABIT_TYPES),
-    target: z.number().positive('Target must be greater than 0').max(100000),
+    target: z.number().positive(msg('Target must be greater than 0')).max(100000),
     unit: z.string().trim().max(20).nullable().optional(),
     frequency: z.enum(HABIT_FREQUENCIES),
     weekdays: z.array(z.number().int().min(0).max(6)).max(7).default([]),
@@ -45,13 +46,17 @@ export const habitSchema = z
   })
   .superRefine((v, ctx) => {
     if (v.frequency === 'weekdays' && v.weekdays.length === 0)
-      ctx.addIssue({ code: 'custom', path: ['weekdays'], message: 'Pick at least one day' })
+      ctx.addIssue({ code: 'custom', path: ['weekdays'], message: msg('Pick at least one day') })
     if (v.frequency === 'times_per_week' && !v.times_per_week)
-      ctx.addIssue({ code: 'custom', path: ['times_per_week'], message: 'How many times?' })
+      ctx.addIssue({ code: 'custom', path: ['times_per_week'], message: msg('How many times?') })
     if (v.frequency === 'interval' && !v.interval_days)
-      ctx.addIssue({ code: 'custom', path: ['interval_days'], message: 'Every how many days?' })
+      ctx.addIssue({
+        code: 'custom',
+        path: ['interval_days'],
+        message: msg('Every how many days?'),
+      })
     if (v.end_date && v.start_date && v.end_date < v.start_date)
-      ctx.addIssue({ code: 'custom', path: ['end_date'], message: 'End must be after start' })
+      ctx.addIssue({ code: 'custom', path: ['end_date'], message: msg('End must be after start') })
   })
 export type HabitInput = z.input<typeof habitSchema>
 

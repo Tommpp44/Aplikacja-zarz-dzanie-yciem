@@ -14,6 +14,8 @@ import {
   summarize,
 } from './calculations'
 import { listBudgets, listCategories, listRecurring, listTransactionsInRange } from './repository'
+import { currentLocale } from '@/lib/i18n/locale-state'
+import { translate } from '@/lib/i18n/translate'
 
 /** Everything the finance overview and dashboard need, computed from real data. */
 export async function getFinanceOverview(db: DB, userId: string, today: ISODate, currency: string) {
@@ -84,7 +86,9 @@ export async function getFinanceOverview(db: DB, userId: string, today: ISODate,
     .map(([id, amount]) => ({
       id,
       amount,
-      name: id ? (categoryMap.get(id)?.name ?? 'Other') : 'Uncategorized',
+      name: id
+        ? (categoryMap.get(id)?.name ?? translate(currentLocale(), 'Other'))
+        : translate(currentLocale(), 'Uncategorized'),
       color: id ? (categoryMap.get(id)?.color ?? 'slate') : 'slate',
     }))
     .sort((a, b) => b.amount - a.amount)

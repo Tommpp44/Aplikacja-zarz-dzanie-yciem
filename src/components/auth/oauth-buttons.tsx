@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { signInWithOAuth } from '@/lib/auth/actions'
 import type { OAuthProvider } from '@/lib/env'
+import { useT } from '@/lib/i18n/client'
 
 const LABELS: Record<OAuthProvider, string> = {
   google: 'Google',
@@ -14,6 +15,7 @@ const LABELS: Record<OAuthProvider, string> = {
 }
 
 export function OAuthButtons({ providers, next }: { providers: OAuthProvider[]; next?: string }) {
+  const t = useT()
   const [pending, startTransition] = useTransition()
   if (providers.length === 0) return null
   return (
@@ -31,7 +33,7 @@ export function OAuthButtons({ providers, next }: { providers: OAuthProvider[]; 
           onClick={() =>
             startTransition(async () => {
               const result = await signInWithOAuth(provider, next)
-              if (result && !result.ok) toast.error(result.error)
+              if (result && !result.ok) toast.error(t(result.error))
             })
           }
         >

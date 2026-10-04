@@ -11,8 +11,10 @@ import { Input } from '@/components/ui/input'
 import { SubmitButton } from '@/components/ui/submit-button'
 import { requestPasswordReset, updatePassword } from '@/lib/auth/actions'
 import { newPasswordSchema, resetRequestSchema } from '@/lib/auth/schemas'
+import { useT } from '@/lib/i18n/client'
 
 export function ForgotPasswordForm() {
+  const t = useT()
   const [sent, setSent] = useState(false)
   const [pending, startTransition] = useTransition()
   const form = useForm<z.input<typeof resetRequestSchema>>({
@@ -22,7 +24,7 @@ export function ForgotPasswordForm() {
   if (sent) {
     return (
       <p className="bg-card text-muted-foreground rounded-xl border p-6 text-center text-sm">
-        If an account exists for that email, a reset link is on its way.
+        {t('If an account exists for that email, a reset link is on its way.')}
       </p>
     )
   }
@@ -34,7 +36,7 @@ export function ForgotPasswordForm() {
         startTransition(async () => {
           const result = await requestPasswordReset(values)
           if (!result.ok) {
-            toast.error(result.error)
+            toast.error(t(result.error))
             return
           }
           setSent(true)
@@ -42,13 +44,15 @@ export function ForgotPasswordForm() {
       )}
     >
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Reset password</h1>
-        <p className="text-muted-foreground mt-1 text-sm">We will email you a secure reset link.</p>
+        <h1 className="text-xl font-semibold tracking-tight">{t('Reset password')}</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {t('We will email you a secure reset link.')}
+        </p>
       </div>
-      <Field label="Email" htmlFor="email" error={form.formState.errors.email?.message}>
+      <Field label={t('Email')} htmlFor="email" error={form.formState.errors.email?.message}>
         <Input id="email" type="email" autoComplete="email" {...form.register('email')} />
       </Field>
-      <SubmitButton pending={pending}>Send reset link</SubmitButton>
+      <SubmitButton pending={pending}>{t('Send reset link')}</SubmitButton>
     </form>
   )
 }
@@ -60,6 +64,7 @@ export function NewPasswordForm({
   redirectTo?: string | null
   compact?: boolean
 }) {
+  const t = useT()
   const [pending, startTransition] = useTransition()
   const router = useRouter()
   const form = useForm<z.input<typeof newPasswordSchema>>({
@@ -78,17 +83,17 @@ export function NewPasswordForm({
         startTransition(async () => {
           const result = await updatePassword(values)
           if (!result.ok) {
-            toast.error(result.error)
+            toast.error(t(result.error))
             return
           }
-          toast.success('Password updated')
+          toast.success(t('Password updated'))
           form.reset()
           if (redirectTo) router.replace(redirectTo)
         }),
       )}
     >
       <Field
-        label="New password"
+        label={t('New password')}
         htmlFor="password"
         error={form.formState.errors.password?.message}
       >
@@ -100,7 +105,7 @@ export function NewPasswordForm({
         />
       </Field>
       <Field
-        label="Confirm password"
+        label={t('Confirm password')}
         htmlFor="confirm"
         error={form.formState.errors.confirm?.message}
       >
@@ -112,7 +117,7 @@ export function NewPasswordForm({
         />
       </Field>
       <SubmitButton pending={pending} className="self-start">
-        Update password
+        {t('Update password')}
       </SubmitButton>
     </form>
   )

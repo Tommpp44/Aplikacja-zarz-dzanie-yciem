@@ -2,7 +2,7 @@ import {
   addDaysISO,
   endOfMonthISO,
   startOfWeekISO,
-  WEEKDAY_SHORT,
+  weekdayShort,
   orderedWeekdays,
   type ISODate,
 } from '@/lib/dates'
@@ -33,7 +33,7 @@ export function MonthHeatmap({
     <div>
       <div className="text-muted-foreground mb-1 grid grid-cols-7 gap-1 text-center text-[11px]">
         {orderedWeekdays(weekStartsOn).map((d) => (
-          <span key={d}>{WEEKDAY_SHORT[d]}</span>
+          <span key={d}>{weekdayShort(d)}</span>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1">

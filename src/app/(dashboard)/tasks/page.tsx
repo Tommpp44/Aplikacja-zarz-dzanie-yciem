@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { QuickAddBar } from '@/components/tasks/quick-add-bar'
@@ -12,45 +11,48 @@ import { listProjectOptions } from '@/lib/projects/repository'
 import { getOnboardedUserContext } from '@/lib/settings/service'
 import { countOpenByView, listTags, listTasks } from '@/lib/tasks/repository'
 import { TASK_VIEWS, type TaskView } from '@/lib/tasks/schemas'
+import { getT, pageTitle } from '@/lib/i18n/server'
+import { msg } from '@/lib/i18n/translate'
 
-export const metadata: Metadata = { title: 'Tasks' }
+export const generateMetadata = pageTitle('Tasks')
 
 const VIEW_META: Record<TaskView, { label: string; empty: string; emptyDescription: string }> = {
   inbox: {
-    label: 'Inbox',
-    empty: 'Inbox zero',
-    emptyDescription: 'Capture anything on your mind — sort it out later.',
+    label: msg('Inbox'),
+    empty: msg('Inbox zero'),
+    emptyDescription: msg('Capture anything on your mind — sort it out later.'),
   },
   today: {
-    label: 'Today',
-    empty: 'Nothing due today',
-    emptyDescription: 'Enjoy the space, or pull something from Upcoming.',
+    label: msg('Today'),
+    empty: msg('Nothing due today'),
+    emptyDescription: msg('Enjoy the space, or pull something from Upcoming.'),
   },
   upcoming: {
-    label: 'Upcoming',
-    empty: 'Nothing planned for the next two weeks',
-    emptyDescription: 'Add a date to a task to see it here.',
+    label: msg('Upcoming'),
+    empty: msg('Nothing planned for the next two weeks'),
+    emptyDescription: msg('Add a date to a task to see it here.'),
   },
   scheduled: {
-    label: 'Scheduled',
-    empty: 'No scheduled tasks',
-    emptyDescription: 'Tasks with a due date appear here.',
+    label: msg('Scheduled'),
+    empty: msg('No scheduled tasks'),
+    emptyDescription: msg('Tasks with a due date appear here.'),
   },
   someday: {
-    label: 'Someday',
-    empty: 'No someday tasks',
-    emptyDescription: 'Park ideas here with "someday" in Quick Add.',
+    label: msg('Someday'),
+    empty: msg('No someday tasks'),
+    emptyDescription: msg(msg('Park ideas here with "someday" in Quick Add.')),
   },
   completed: {
-    label: 'Completed',
-    empty: 'No completed tasks yet',
-    emptyDescription: 'Completed tasks are listed here, newest first.',
+    label: msg('Completed'),
+    empty: msg('No completed tasks yet'),
+    emptyDescription: msg('Completed tasks are listed here, newest first.'),
   },
 }
 
 const PAGE_SIZE = 50
 
 export default async function TasksPage({ searchParams }: PageProps<'/tasks'>) {
+  const t = await getT()
   const params = await searchParams
   const view: TaskView = TASK_VIEWS.includes(params.view as TaskView)
     ? (params.view as TaskView)
@@ -81,19 +83,25 @@ export default async function TasksPage({ searchParams }: PageProps<'/tasks'>) {
   return (
     <>
       <PageHeader
-        title="Tasks"
+        title={t('Tasks')}
         description={
           counts.overdue > 0
-            ? `${counts.today} due today · ${counts.overdue} overdue`
-            : `${counts.today} due today · ${counts.inbox} in inbox`
+            ? t('{today} due today · {overdue} overdue', {
+                today: counts.today,
+                overdue: counts.overdue,
+              })
+            : t('{today} due today · {inbox} in inbox', {
+                today: counts.today,
+                inbox: counts.inbox,
+              })
         }
       >
         <SegmentedLinks
-          label="Task views"
+          label={t('Task views')}
           active={view}
           items={TASK_VIEWS.map((v) => ({
             value: v,
-            label: VIEW_META[v].label,
+            label: t(VIEW_META[v].label),
             href: `/tasks?view=${v}`,
             count: v === 'inbox' ? counts.inbox : v === 'today' ? counts.today : undefined,
           }))}
@@ -127,21 +135,21 @@ export default async function TasksPage({ searchParams }: PageProps<'/tasks'>) {
                 ? 'date'
                 : 'none'
           }
-          emptyTitle={meta.empty}
-          emptyDescription={meta.emptyDescription}
+          emptyTitle={t(meta.empty)}
+          emptyDescription={t(meta.emptyDescription)}
         />
         {view === 'completed' && (page > 0 || hasMore) && (
           <div className="flex justify-between">
             {page > 0 ? (
               <Button variant="outline" size="sm" asChild>
-                <Link href={`/tasks?view=completed&page=${page - 1}`}>Newer</Link>
+                <Link href={`/tasks?view=completed&page=${page - 1}`}>{t('Newer')}</Link>
               </Button>
             ) : (
               <span />
             )}
             {hasMore && (
               <Button variant="outline" size="sm" asChild>
-                <Link href={`/tasks?view=completed&page=${page + 1}`}>Older</Link>
+                <Link href={`/tasks?view=completed&page=${page + 1}`}>{t('Older')}</Link>
               </Button>
             )}
           </div>

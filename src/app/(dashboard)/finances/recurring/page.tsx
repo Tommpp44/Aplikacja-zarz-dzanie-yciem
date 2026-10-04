@@ -1,15 +1,16 @@
 import { Repeat } from 'lucide-react'
-import type { Metadata } from 'next'
 import { NewRecurringButton, RecurringItem } from '@/components/finances/recurring-dialogs'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Stat } from '@/components/ui/stat'
 import { getFinanceOverview } from '@/lib/finance/service'
 import { formatMoney } from '@/lib/money'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Recurring' }
+export const generateMetadata = pageTitle('Recurring')
 
 export default async function RecurringPage() {
+  const t = await getT()
   const { supabase, user, today, currency } = await getOnboardedUserContext()
   const f = await getFinanceOverview(supabase, user.id, today, currency)
   const accounts = f.accounts.map((a) => ({
@@ -23,16 +24,16 @@ export default async function RecurringPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="grid grid-cols-3 gap-6">
           <Stat
-            label="Recurring income / month"
+            label={t('Recurring income / month')}
             value={formatMoney(f.recurringMonthly.income, currency)}
             tone="positive"
           />
           <Stat
-            label="Recurring costs / month"
+            label={t('Recurring costs / month')}
             value={formatMoney(f.recurringMonthly.expenses, currency)}
           />
           <Stat
-            label="Fixed costs / year"
+            label={t('Fixed costs / year')}
             value={formatMoney(f.recurringMonthly.expenses * 12, currency)}
           />
         </div>
@@ -41,8 +42,10 @@ export default async function RecurringPage() {
       {f.recurring.length === 0 ? (
         <EmptyState
           icon={Repeat}
-          title="No recurring transactions"
-          description="Add rent, salary, internet or subscriptions to forecast your month and never forget a bill."
+          title={t('No recurring transactions')}
+          description={t(
+            'Add rent, salary, internet or subscriptions to forecast your month and never forget a bill.',
+          )}
         />
       ) : (
         <ul className="bg-card divide-y rounded-xl border">

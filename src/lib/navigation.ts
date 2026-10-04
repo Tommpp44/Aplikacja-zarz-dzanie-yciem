@@ -19,51 +19,55 @@ import {
   Wallet,
   type LucideIcon,
 } from 'lucide-react'
+import { msg } from '@/lib/i18n/translate'
 
 export type NavItem = { href: string; label: string; icon: LucideIcon }
 export type NavGroup = { label?: string; items: NavItem[] }
 
 export const NAV_GROUPS: NavGroup[] = [
-  { items: [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }] },
+  { items: [{ href: '/dashboard', label: msg('Dashboard'), icon: LayoutDashboard }] },
   {
-    label: 'Plan',
+    label: msg('Plan'),
     items: [
-      { href: '/today', label: 'Today', icon: Sun },
-      { href: '/tasks', label: 'Tasks', icon: CheckSquare },
-      { href: '/calendar', label: 'Calendar', icon: CalendarDays },
-      { href: '/projects', label: 'Projects', icon: FolderKanban },
+      { href: '/today', label: msg('Today'), icon: Sun },
+      { href: '/tasks', label: msg('Tasks'), icon: CheckSquare },
+      { href: '/calendar', label: msg('Calendar'), icon: CalendarDays },
+      { href: '/projects', label: msg('Projects'), icon: FolderKanban },
     ],
   },
-  { label: 'Grow', items: [{ href: '/goals', label: 'Goals', icon: Target }] },
+  { label: msg('Grow'), items: [{ href: '/goals', label: msg('Goals'), icon: Target }] },
   {
-    label: 'Routine',
+    label: msg('Routine'),
     items: [
-      { href: '/habits', label: 'Habits', icon: Flame },
-      { href: '/routines', label: 'Routines', icon: Repeat },
+      { href: '/habits', label: msg('Habits'), icon: Flame },
+      { href: '/routines', label: msg('Routines'), icon: Repeat },
     ],
   },
-  { label: 'Money', items: [{ href: '/finances', label: 'Finances', icon: Wallet }] },
+  { label: msg('Money'), items: [{ href: '/finances', label: msg('Finances'), icon: Wallet }] },
   {
-    label: 'Body',
+    label: msg('Body'),
     items: [
-      { href: '/workouts', label: 'Workouts', icon: Dumbbell },
-      { href: '/activity', label: 'Activity', icon: Footprints },
+      { href: '/workouts', label: msg('Workouts'), icon: Dumbbell },
+      { href: '/activity', label: msg('Activity'), icon: Footprints },
     ],
   },
   {
-    label: 'Mind',
+    label: msg('Mind'),
     items: [
-      { href: '/notes', label: 'Notes', icon: NotebookPen },
-      { href: '/journal', label: 'Journal', icon: BookOpen },
+      { href: '/notes', label: msg('Notes'), icon: NotebookPen },
+      { href: '/journal', label: msg('Journal'), icon: BookOpen },
     ],
   },
-  { label: 'Insight', items: [{ href: '/analytics', label: 'Analytics', icon: BarChart3 }] },
+  {
+    label: msg('Insight'),
+    items: [{ href: '/analytics', label: msg('Analytics'), icon: BarChart3 }],
+  },
 ]
 
 export const MORE_ITEMS: NavItem[] = [
-  { href: '/shopping', label: 'Shopping', icon: ShoppingCart },
-  { href: '/reviews', label: 'Reviews', icon: ClipboardCheck },
-  { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/shopping', label: msg('Shopping'), icon: ShoppingCart },
+  { href: '/reviews', label: msg('Reviews'), icon: ClipboardCheck },
+  { href: '/settings', label: msg('Settings'), icon: Settings },
 ]
 
 export const ALL_NAV_ITEMS: NavItem[] = [...NAV_GROUPS.flatMap((g) => g.items), ...MORE_ITEMS]

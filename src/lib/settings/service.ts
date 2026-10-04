@@ -5,6 +5,8 @@ import { requireUser } from '@/lib/auth/session'
 import { unwrap } from '@/lib/db/errors'
 import { safeTimeZone, todayISO, type DateFormat } from '@/lib/dates'
 import type { Row } from '@/lib/db/types'
+import { isLocale, type Locale } from '@/lib/i18n/config'
+import { setRequestLocale } from '@/lib/i18n/locale-state'
 import {
   normalizeDashboardLayout,
   normalizeNotificationSettings,
@@ -23,7 +25,9 @@ export type Preferences = Omit<
   | 'week_start'
   | 'accent'
   | 'date_format'
+  | 'language'
 > & {
+  language: Locale
   week_start: 0 | 1
   accent: Accent
   date_format: DateFormat
@@ -52,7 +56,9 @@ async function loadUserContext() {
     dashboard_layout: normalizeDashboardLayout(raw.dashboard_layout),
     notification_settings: normalizeNotificationSettings(raw.notification_settings),
     last_used: lastUsedSchema.parse(raw.last_used),
+    language: isLocale(raw.language) ? raw.language : 'en',
   }
+  setRequestLocale(prefs.language)
   return {
     supabase,
     user,
@@ -60,6 +66,7 @@ async function loadUserContext() {
     prefs,
     timezone,
     currency: prefs.currency,
+    locale: prefs.language,
     today: todayISO(timezone),
   }
 }

@@ -4,9 +4,10 @@ import { z } from 'zod'
 import { authedAction, idSchema } from '@/lib/action'
 import { unwrap } from '@/lib/db/errors'
 import { guessShoppingCategory, parseShoppingItem } from './parse'
+import { msg } from '@/lib/i18n/translate'
 
 export const createShoppingList = authedAction(
-  z.object({ name: z.string().trim().min(1, 'Name the list').max(120) }),
+  z.object({ name: z.string().trim().min(1, msg('Name the list')).max(120) }),
   { name: 'createShoppingList' },
   async ({ name }, { supabase, user }) => {
     const row = unwrap(
@@ -44,7 +45,7 @@ export const deleteShoppingList = authedAction(
 )
 
 export const addShoppingItem = authedAction(
-  z.object({ list_id: z.uuid(), text: z.string().trim().min(1, 'Type an item').max(200) }),
+  z.object({ list_id: z.uuid(), text: z.string().trim().min(1, msg('Type an item')).max(200) }),
   { name: 'addShoppingItem' },
   async ({ list_id, text }, { supabase, user }) => {
     const parsed = parseShoppingItem(text)

@@ -1,11 +1,13 @@
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { currentLocale } from '@/lib/i18n/locale-state'
+import { translate } from '@/lib/i18n/translate'
 import { cn } from '@/lib/utils'
 
 export function Widget({
   title,
   href,
-  linkLabel = 'Open',
+  linkLabel,
   children,
   className,
 }: {
@@ -21,7 +23,7 @@ export function Widget({
         <CardTitle>{title}</CardTitle>
         {href && (
           <Link href={href} className="text-primary text-xs hover:underline">
-            {linkLabel}
+            {linkLabel ?? translate(currentLocale(), 'Open')}
           </Link>
         )}
       </CardHeader>

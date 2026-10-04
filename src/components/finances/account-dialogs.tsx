@@ -42,6 +42,7 @@ import {
   type AccountInput,
 } from '@/lib/finance/schemas'
 import { COMMON_CURRENCIES, formatMoney, minorToInput } from '@/lib/money'
+import { useT } from '@/lib/i18n/client'
 
 export function NewAccountButton({
   currency,
@@ -50,6 +51,7 @@ export function NewAccountButton({
   currency: string
   defaultOpen?: boolean
 }) {
+  const t = useT()
   const [open, setOpen] = useState(defaultOpen)
   const [pending, run] = useServerAction()
   const empty: AccountInput = {
@@ -70,15 +72,16 @@ export function NewAccountButton({
   return (
     <>
       <Button onClick={() => setOpen(true)}>
-        <Plus /> New account
+        <Plus /> {t('New account')}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New account</DialogTitle>
+            <DialogTitle>{t('New account')}</DialogTitle>
             <DialogDescription>
-              Enter today&apos;s balance. From now on the balance is calculated from your
-              transactions.
+              {t(
+                "Enter today's balance. From now on the balance is calculated from your transactions.",
+              )}
             </DialogDescription>
           </DialogHeader>
           <form
@@ -86,7 +89,7 @@ export function NewAccountButton({
             className="flex flex-col gap-4"
             onSubmit={form.handleSubmit((values) =>
               run(() => createAccount(values), {
-                success: 'Account created',
+                success: t('Account created'),
                 onSuccess: () => setOpen(false),
                 onError: (r) =>
                   Object.entries(r.fieldErrors ?? {}).forEach(([k, m]) =>
@@ -95,25 +98,25 @@ export function NewAccountButton({
               }),
             )}
           >
-            <Field label="Name" htmlFor="acc-name" error={errors.name?.message}>
+            <Field label={t('Name')} htmlFor="acc-name" error={errors.name?.message}>
               <Input
                 id="acc-name"
                 autoFocus
-                placeholder="Main bank account"
+                placeholder={t('Main bank account')}
                 {...form.register('name')}
               />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Type" htmlFor="acc-type">
+              <Field label={t('Type')} htmlFor="acc-type">
                 <NativeSelect id="acc-type" {...form.register('account_type')}>
-                  {ACCOUNT_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {ACCOUNT_TYPE_LABELS[t]}
+                  {ACCOUNT_TYPES.map((it) => (
+                    <option key={it} value={it}>
+                      {t(ACCOUNT_TYPE_LABELS[it])}
                     </option>
                   ))}
                 </NativeSelect>
               </Field>
-              <Field label="Currency" htmlFor="acc-currency" error={errors.currency?.message}>
+              <Field label={t('Currency')} htmlFor="acc-currency" error={errors.currency?.message}>
                 <NativeSelect id="acc-currency" {...form.register('currency')}>
                   {[...new Set([currency, ...COMMON_CURRENCIES])].map((c) => (
                     <option key={c}>{c}</option>
@@ -121,18 +124,18 @@ export function NewAccountButton({
                 </NativeSelect>
               </Field>
               <Field
-                label="Current balance"
+                label={t('Current balance')}
                 htmlFor="acc-balance"
                 error={errors.opening_balance?.message}
-                hint="For cards and loans, the amount you owe."
+                hint={t('For cards and loans, the amount you owe.')}
               >
                 <Input id="acc-balance" inputMode="decimal" {...form.register('opening_balance')} />
               </Field>
-              <Field label="Institution" htmlFor="acc-inst" optional>
-                <Input id="acc-inst" placeholder="mBank" {...form.register('institution')} />
+              <Field label={t('Institution')} htmlFor="acc-inst" optional>
+                <Input id="acc-inst" placeholder={t('mBank')} {...form.register('institution')} />
               </Field>
             </div>
-            <Field label="Color">
+            <Field label={t('Color')}>
               <Controller
                 control={form.control}
                 name="color"
@@ -142,7 +145,7 @@ export function NewAccountButton({
               />
             </Field>
             <label className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
-              Include in net worth
+              {t('Include in net worth')}
               <Controller
                 control={form.control}
                 name="include_in_net_worth"
@@ -152,7 +155,7 @@ export function NewAccountButton({
               />
             </label>
             <DialogFooter>
-              <SubmitButton pending={pending}>Create account</SubmitButton>
+              <SubmitButton pending={pending}>{t('Create account')}</SubmitButton>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -182,6 +185,7 @@ export function AccountMenu({
   today: ISODate
   transactionCount: number
 }) {
+  const t = useT()
   const [mode, setMode] = useState<'edit' | 'reconcile' | 'delete' | null>(null)
   const [pending, run] = useServerAction()
   const [name, setName] = useState(account.name)
@@ -195,16 +199,20 @@ export function AccountMenu({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon-sm" aria-label={`${account.name} actions`}>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={t('{name} actions', { name: account.name })}
+          >
             <MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={() => setMode('edit')}>
-            <Pencil /> Edit
+            <Pencil /> {t('Edit')}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setMode('reconcile')}>
-            <Scale /> Correct balance
+            <Scale /> {t('Correct balance')}
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() =>
@@ -219,12 +227,12 @@ export function AccountMenu({
                     include_in_net_worth: account.include_in_net_worth,
                     active: !account.active,
                   }),
-                { success: account.active ? 'Account archived' : 'Account restored' },
+                { success: account.active ? t('Account archived') : t('Account restored') },
               )
             }
           >
             {account.active ? <Archive /> : <ArchiveRestore />}{' '}
-            {account.active ? 'Archive' : 'Restore'}
+            {account.active ? t('Archive') : t('Restore')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => setMode('delete')}>
@@ -236,27 +244,27 @@ export function AccountMenu({
       <Dialog open={mode === 'edit'} onOpenChange={(o) => !o && setMode(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit account</DialogTitle>
+            <DialogTitle>{t('Edit account')}</DialogTitle>
             <DialogDescription>
               Currency and opening balance are fixed; use “Correct balance” to fix the balance.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4">
-            <Field label="Name" htmlFor="edit-acc-name">
+            <Field label={t('Name')} htmlFor="edit-acc-name">
               <Input id="edit-acc-name" value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
-            <Field label="Institution" htmlFor="edit-acc-inst" optional>
+            <Field label={t('Institution')} htmlFor="edit-acc-inst" optional>
               <Input
                 id="edit-acc-inst"
                 value={institution}
                 onChange={(e) => setInstitution(e.target.value)}
               />
             </Field>
-            <Field label="Color">
+            <Field label={t('Color')}>
               <ColorPicker value={color} onChange={setColor} />
             </Field>
             <label className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
-              Include in net worth
+              {t('Include in net worth')}
               <Switch checked={include} onCheckedChange={setInclude} />
             </label>
           </div>
@@ -275,11 +283,11 @@ export function AccountMenu({
                       include_in_net_worth: include,
                       account_type: account.account_type as AccountInput['account_type'],
                     }),
-                  { success: 'Account updated', onSuccess: () => setMode(null) },
+                  { success: t('Account updated'), onSuccess: () => setMode(null) },
                 )
               }
             >
-              Save
+              {t('Save')}
             </SubmitButton>
           </DialogFooter>
         </DialogContent>
@@ -288,15 +296,19 @@ export function AccountMenu({
       <Dialog open={mode === 'reconcile'} onOpenChange={(o) => !o && setMode(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Correct balance</DialogTitle>
+            <DialogTitle>{t('Correct balance')}</DialogTitle>
             <DialogDescription>
-              Tracked balance:{' '}
-              <strong>{formatMoney(account.balance_minor, account.currency)}</strong>. Enter the
-              real balance from your bank — we record the difference as a visible correction so your
-              history stays explainable.
+              {t('Tracked balance:')}{' '}
+              <strong>{formatMoney(account.balance_minor, account.currency)}</strong>.{' '}
+              {t(
+                'Enter the real balance from your bank — we record the difference as a visible correction so your history stays explainable.',
+              )}
             </DialogDescription>
           </DialogHeader>
-          <Field label={`Actual balance (${account.currency})`} htmlFor="actual-balance">
+          <Field
+            label={t('Actual balance ({currency})', { currency: account.currency })}
+            htmlFor="actual-balance"
+          >
             <Input
               id="actual-balance"
               inputMode="decimal"
@@ -319,14 +331,16 @@ export function AccountMenu({
                   {
                     success: (d) =>
                       d.adjusted === 0
-                        ? 'Balance already matches'
-                        : `Correction of ${formatMoney(d.adjusted, account.currency, { signed: true })} recorded`,
+                        ? t('Balance already matches')
+                        : t('Correction of {amount} recorded', {
+                            amount: formatMoney(d.adjusted, account.currency, { signed: true }),
+                          }),
                     onSuccess: () => setMode(null),
                   },
                 )
               }
             >
-              Save correction
+              {t('Save correction')}
             </SubmitButton>
           </DialogFooter>
         </DialogContent>
@@ -340,16 +354,19 @@ export function AccountMenu({
             setConfirmText('')
           }
         }}
-        title={`Delete “${account.name}”?`}
-        description={`This permanently deletes the account and its ${transactionCount} transaction(s), including transfers to and from it. Consider archiving instead. Type the account name to confirm.`}
-        confirmLabel="Delete account and transactions"
+        title={t('Delete “{name}”?', { name: account.name })}
+        description={t(
+          'This permanently deletes the account and its {n} transaction(s), including transfers to and from it. Consider archiving instead. Type the account name to confirm.',
+          { n: transactionCount },
+        )}
+        confirmLabel={t('Delete account and transactions')}
         confirmDisabled={confirmText !== account.name}
         onConfirm={() =>
-          run(() => deleteAccount({ id: account.id }), { success: 'Account deleted' })
+          run(() => deleteAccount({ id: account.id }), { success: t('Account deleted') })
         }
       >
         <Input
-          aria-label="Type the account name to confirm"
+          aria-label={t('Type the account name to confirm')}
           value={confirmText}
           onChange={(e) => setConfirmText(e.target.value)}
           placeholder={account.name}

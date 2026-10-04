@@ -15,6 +15,8 @@ import {
   profileSchema,
 } from './schemas'
 import { ACCENT_COOKIE } from './schemas'
+import { LOCALES } from '@/lib/i18n/config'
+import { setLocaleCookieValue } from '@/lib/i18n/actions'
 
 export const updateProfile = authedAction(
   profileSchema,
@@ -156,5 +158,17 @@ export const rememberLastUsed = authedAction(
         .eq('user_id', user.id),
       'save preferences',
     )
+  },
+)
+
+export const updateLanguage = authedAction(
+  z.object({ language: z.enum(LOCALES) }),
+  { name: 'updateLanguage' },
+  async ({ language }, { supabase, user }) => {
+    unwrap(
+      await supabase.from('user_preferences').update({ language }).eq('user_id', user.id),
+      'save language',
+    )
+    await setLocaleCookieValue(language)
   },
 )

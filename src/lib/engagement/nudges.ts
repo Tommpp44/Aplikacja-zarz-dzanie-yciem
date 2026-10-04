@@ -1,3 +1,4 @@
+import { msg } from '@/lib/i18n/translate'
 import { addDaysISO, type ISODate } from '@/lib/dates'
 
 export type ReflectionStatus = { dailyReview: boolean; journal: boolean; weeklyReview: boolean }
@@ -21,18 +22,18 @@ export function pickNudge(input: {
   if (lastDayOfWeek && hour >= 12 && !status.weeklyReview) {
     return {
       kind: 'weekly-review',
-      title: 'Your week is almost done',
-      body: 'Ten minutes to look back: what went well, what to carry into next week.',
+      title: msg('Your week is almost done'),
+      body: msg('Ten minutes to look back: what went well, what to carry into next week.'),
       href: '/reviews?type=weekly',
     }
   }
   if (hour >= 18 && !status.dailyReview) {
     return {
       kind: 'evening',
-      title: 'Wrap up your day',
+      title: msg('Wrap up your day'),
       body: status.journal
-        ? 'Note a highlight and set yourself up for tomorrow.'
-        : 'Note a highlight, jot a few lines in your journal and set up tomorrow.',
+        ? msg('Note a highlight and set yourself up for tomorrow.')
+        : msg('Note a highlight, jot a few lines in your journal and set up tomorrow.'),
       href: '/reviews?type=daily',
       journalHref: status.journal ? null : '/journal',
     }

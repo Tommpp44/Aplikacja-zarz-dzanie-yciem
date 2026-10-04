@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { colorClass } from '@/lib/colors'
 import { logHabit } from '@/lib/habits/actions'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n/client'
 
 type HabitBits = {
   id: string
@@ -37,6 +38,7 @@ export function HabitCheck({
   value: number
   size?: 'sm' | 'md'
 }) {
+  const t = useT()
   const [, startTransition] = useTransition()
   const [optimistic, setOptimistic] = useOptimistic(value)
   const done = optimistic >= habit.target
@@ -46,7 +48,7 @@ export function HabitCheck({
       const clamped = Math.max(0, Math.round(next * 100) / 100)
       setOptimistic(clamped)
       const result = await logHabit({ habit_id: habit.id, date, value: clamped })
-      if (!result.ok) toast.error(result.error)
+      if (!result.ok) toast.error(t(result.error))
     })
 
   if (habit.habit_type === 'boolean') {
@@ -55,7 +57,11 @@ export function HabitCheck({
         type="button"
         onClick={() => save(done ? 0 : 1)}
         aria-pressed={done}
-        aria-label={done ? `Undo ${habit.name}` : `Mark ${habit.name} as done`}
+        aria-label={
+          done
+            ? t('Undo {name}', { name: habit.name })
+            : t('Mark {name} as done', { name: habit.name })
+        }
         className={cn(
           'flex shrink-0 items-center justify-center rounded-full border-2 transition-all',
           size === 'sm' ? 'size-7' : 'size-9',
@@ -74,7 +80,7 @@ export function HabitCheck({
     <div className="flex shrink-0 items-center gap-1">
       <button
         type="button"
-        aria-label={`Decrease ${habit.name}`}
+        aria-label={t('Decrease {name}', { name: habit.name })}
         disabled={optimistic <= 0}
         onClick={() => save(optimistic - s)}
         className="text-muted-foreground hover:text-foreground flex size-7 items-center justify-center rounded-md border disabled:opacity-40"
@@ -90,7 +96,7 @@ export function HabitCheck({
       </span>
       <button
         type="button"
-        aria-label={`Increase ${habit.name}`}
+        aria-label={t('Increase {name}', { name: habit.name })}
         onClick={() => save(optimistic + s)}
         className={cn(
           'flex size-7 items-center justify-center rounded-md border',

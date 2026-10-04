@@ -19,8 +19,10 @@ import { useServerAction } from '@/hooks/use-server-action'
 import { importTransactions } from '@/lib/finance/actions'
 import { csvToTransactions, type CsvTransactionRow } from '@/lib/finance/csv'
 import type { AccountOption } from './types'
+import { useT } from '@/lib/i18n/client'
 
 export function ImportDialog({ accounts }: { accounts: AccountOption[] }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? '')
   const [rows, setRows] = useState<CsvTransactionRow[]>([])
@@ -37,7 +39,7 @@ export function ImportDialog({ accounts }: { accounts: AccountOption[] }) {
   return (
     <>
       <Button variant="outline" onClick={() => setOpen(true)} disabled={accounts.length === 0}>
-        <Upload /> Import
+        <Upload /> {t('Import')}
       </Button>
       <Dialog
         open={open}
@@ -48,15 +50,15 @@ export function ImportDialog({ accounts }: { accounts: AccountOption[] }) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Import transactions (CSV)</DialogTitle>
+            <DialogTitle>{t('Import transactions (CSV)')}</DialogTitle>
             <DialogDescription>
-              Columns needed: <code>date</code> and <code>amount</code> (negative = expense).
-              Optional: type, category, merchant, description. Polish bank headers (data, kwota,
-              odbiorca, opis) are recognised.
+              Columns needed: <code>{t('date')}</code> {t('and')} <code>{t('amount')}</code>{' '}
+              (negative = expense). Optional: type, category, merchant, description. Polish bank
+              headers (data, kwota, odbiorca, opis) are recognised.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4">
-            <Field label="Into account" htmlFor="import-account">
+            <Field label={t('Into account')} htmlFor="import-account">
               <NativeSelect
                 id="import-account"
                 value={accountId}
@@ -69,7 +71,7 @@ export function ImportDialog({ accounts }: { accounts: AccountOption[] }) {
                 ))}
               </NativeSelect>
             </Field>
-            <Field label="CSV file" htmlFor="import-file">
+            <Field label={t('CSV file')} htmlFor="import-file">
               <Input
                 id="import-file"
                 type="file"
@@ -78,7 +80,7 @@ export function ImportDialog({ accounts }: { accounts: AccountOption[] }) {
                   const file = e.target.files?.[0]
                   if (!file) return
                   if (file.size > 5 * 1024 * 1024) {
-                    setErrors([{ line: 0, message: 'File is larger than 5 MB.' }])
+                    setErrors([{ line: 0, message: t('File is larger than 5 MB.') }])
                     return
                   }
                   setFileName(file.name)
@@ -91,14 +93,17 @@ export function ImportDialog({ accounts }: { accounts: AccountOption[] }) {
             {fileName && (
               <div className="bg-muted rounded-lg p-3 text-sm">
                 <p>
-                  <strong>{rows.length}</strong> transactions ready to import
+                  {t('{n} transactions ready to import', { n: rows.length })}
                   {errors.length > 0 && (
-                    <span className="text-warning"> · {errors.length} lines skipped</span>
+                    <span className="text-warning">
+                      {' · '}
+                      {t('{n} lines skipped', { n: errors.length })}
+                    </span>
                   )}
                 </p>
                 {errors.slice(0, 5).map((e) => (
                   <p key={e.line} className="text-muted-foreground text-xs">
-                    Line {e.line}: {e.message}
+                    {t('Line {n}: {message}', { n: e.line, message: t(e.message) })}
                   </p>
                 ))}
               </div>
@@ -112,7 +117,12 @@ export function ImportDialog({ accounts }: { accounts: AccountOption[] }) {
               onClick={() =>
                 run(() => importTransactions({ account_id: accountId, rows }), {
                   success: (d) =>
-                    `Imported ${d.imported} transactions${d.skipped ? ` (${d.skipped} skipped)` : ''}`,
+                    d.skipped
+                      ? t('Imported {n} transactions ({skipped} skipped)', {
+                          n: d.imported,
+                          skipped: d.skipped,
+                        })
+                      : t('Imported {n} transactions', { n: d.imported }),
                   onSuccess: () => {
                     setOpen(false)
                     reset()

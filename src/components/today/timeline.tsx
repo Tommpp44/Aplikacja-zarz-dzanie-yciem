@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { Checkbox } from '@/components/ui/checkbox'
 import { EmptyState } from '@/components/ui/empty-state'
 import { colorClass } from '@/lib/colors'
+import { useT } from '@/lib/i18n/client'
 import { toggleTaskCompleted } from '@/lib/tasks/actions'
 import { nowIndex, type TimelineEntry } from '@/lib/today/timeline'
 import { cn } from '@/lib/utils'
@@ -20,6 +21,7 @@ function Row({
   entry: TimelineEntry
   onToggle: (e: TimelineEntry, done: boolean) => void
 }) {
+  const t = useT()
   const Icon = ICONS[entry.kind]
   return (
     <li className="flex items-start gap-3 py-2.5">
@@ -42,7 +44,7 @@ function Row({
           <Checkbox
             className="mt-0.5 rounded-full"
             checked={entry.done}
-            aria-label={`Complete ${entry.title}`}
+            aria-label={t('Complete {title}', { title: entry.title })}
             onCheckedChange={(v) => onToggle(entry, v === true)}
           />
         ) : (
@@ -59,7 +61,10 @@ function Row({
           </span>
           {(entry.meta || entry.endTime) && (
             <span className="text-muted-foreground block truncate text-xs">
-              {[entry.endTime ? `until ${entry.endTime}` : null, entry.meta]
+              {[
+                entry.endTime ? t('until {time}', { time: entry.endTime }) : null,
+                entry.meta && t(entry.meta),
+              ]
                 .filter(Boolean)
                 .join(' · ')}
             </span>
@@ -79,6 +84,7 @@ export function Timeline({
   anytime: TimelineEntry[]
   now: string
 }) {
+  const t = useT()
   const [, startTransition] = useTransition()
   const [state, setState] = useOptimistic(
     { timed, anytime },
@@ -91,16 +97,16 @@ export function Timeline({
     startTransition(async () => {
       setState({ key: entry.key, done })
       const r = await toggleTaskCompleted({ id: entry.id, completed: done })
-      if (!r.ok) toast.error(r.error)
-      else if (done) toast.success('Task completed')
+      if (!r.ok) toast.error(t(r.error))
+      else if (done) toast.success(t('Task completed'))
     })
 
   if (state.timed.length === 0 && state.anytime.length === 0) {
     return (
       <EmptyState
         icon={CalendarDays}
-        title="Nothing scheduled today"
-        description="Add an event, give a task a time, or set up a routine to build your day."
+        title={t('Nothing scheduled today')}
+        description={t('Add an event, give a task a time, or set up a routine to build your day.')}
       />
     )
   }
@@ -108,7 +114,7 @@ export function Timeline({
   return (
     <div className="flex flex-col gap-6">
       {state.timed.length > 0 && (
-        <ol className="relative flex flex-col divide-y" aria-label="Timeline">
+        <ol className="relative flex flex-col divide-y" aria-label={t('Timeline')}>
           {state.timed.map((entry, i) => (
             <Fragment key={entry.key}>
               {i === idx && <NowMarker now={now} />}
@@ -119,8 +125,8 @@ export function Timeline({
         </ol>
       )}
       {state.anytime.length > 0 && (
-        <section aria-label="Anytime today">
-          <h3 className="text-muted-foreground mb-1 text-xs font-semibold">Anytime today</h3>
+        <section aria-label={t('Anytime today')}>
+          <h3 className="text-muted-foreground mb-1 text-xs font-semibold">{t('Anytime today')}</h3>
           <ul className="flex flex-col divide-y">
             {state.anytime.map((entry) => (
               <Row key={entry.key} entry={entry} onToggle={toggle} />
@@ -133,8 +139,9 @@ export function Timeline({
 }
 
 function NowMarker({ now }: { now: string }) {
+  const t = useT()
   return (
-    <li className="flex items-center gap-3 py-1" aria-label={`Now, ${now}`}>
+    <li className="flex items-center gap-3 py-1" aria-label={t('Now, {time}', { time: now })}>
       <span className="tabular text-destructive w-12 text-right text-xs font-semibold">{now}</span>
       <span className="bg-destructive size-2 rounded-full" aria-hidden />
       <span className="bg-destructive/60 h-px flex-1" aria-hidden />

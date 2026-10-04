@@ -8,19 +8,21 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { useServerAction } from '@/hooks/use-server-action'
 import { checklistProgress, type ChecklistItem } from '@/lib/engagement/checklist'
+import { useT } from '@/lib/i18n/client'
 import { rememberLastUsed } from '@/lib/settings/actions'
 import { cn, percent } from '@/lib/utils'
 
 /** First-week checklist shown on the dashboard until completed or dismissed. */
 export function GettingStarted({ items }: { items: ChecklistItem[] }) {
   const router = useRouter()
+  const t = useT()
   const [pending, run] = useServerAction()
   const { done, total } = checklistProgress(items)
   const next = items.find((i) => !i.done)
 
   const dismiss = () =>
     run(() => rememberLastUsed({ checklist_dismissed: true }), {
-      success: 'Checklist hidden. You can find everything in the sidebar.',
+      success: t('Checklist hidden. You can find everything in the sidebar.'),
       onSuccess: () => router.refresh(),
     })
 
@@ -33,25 +35,25 @@ export function GettingStarted({ items }: { items: ChecklistItem[] }) {
               <Rocket className="size-5" aria-hidden />
             </span>
             <div>
-              <h2 className="font-semibold">Get set up in a few minutes</h2>
+              <h2 className="font-semibold">{t('Get set up in a few minutes')}</h2>
               <p className="text-muted-foreground text-sm">
                 {done === 0
-                  ? 'A few small steps make LifeOS genuinely useful.'
-                  : `${done} of ${total} done — nice momentum.`}
+                  ? t('A few small steps make LifeOS genuinely useful.')
+                  : t('{done} of {total} done — nice momentum.', { done, total })}
               </p>
             </div>
           </div>
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Hide checklist"
+            aria-label={t('Hide checklist')}
             disabled={pending}
             onClick={dismiss}
           >
             <X />
           </Button>
         </div>
-        <Progress value={percent(done, total)} label="Setup progress" className="mb-4" />
+        <Progress value={percent(done, total)} label={t('Setup progress')} className="mb-4" />
         <ul className="grid gap-1.5 sm:grid-cols-2">
           {items.map((item) => (
             <li key={item.id}>
@@ -74,12 +76,12 @@ export function GettingStarted({ items }: { items: ChecklistItem[] }) {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className={cn('block text-sm font-medium', item.done && 'line-through')}>
-                    {item.label}
-                    <span className="sr-only">{item.done ? ' (done)' : ''}</span>
+                    {t(item.label)}
+                    <span className="sr-only">{item.done ? ` (${t('done')})` : ''}</span>
                   </span>
                   {!item.done && (
                     <span className="text-muted-foreground block truncate text-xs">
-                      {item.hint}
+                      {t(item.hint)}
                     </span>
                   )}
                 </span>

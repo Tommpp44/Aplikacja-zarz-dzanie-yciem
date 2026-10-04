@@ -1,5 +1,4 @@
 import { Dumbbell, Trophy } from 'lucide-react'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BarsChart } from '@/components/charts/lazy'
 import { Badge } from '@/components/ui/badge'
@@ -14,13 +13,15 @@ import { getOnboardedUserContext } from '@/lib/settings/service'
 import { formatDistance, formatWeight, type Units } from '@/lib/units'
 import { WORKOUT_TYPE_LABELS, type WorkoutType } from '@/lib/workouts/schemas'
 import { getStrengthRecords, getTrainingOverview, listTemplates } from '@/lib/workouts/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Workouts' }
+export const generateMetadata = pageTitle('Workouts')
 
 export default async function WorkoutsPage() {
+  const t = await getT()
   const { supabase, user, today, prefs } = await getOnboardedUserContext()
   const units: Units = prefs.units === 'imperial' ? 'imperial' : 'metric'
-  const [t, records, templates, goals] = await Promise.all([
+  const [tr, records, templates, goals] = await Promise.all([
     getTrainingOverview(supabase, user.id, today, prefs.week_start),
     getStrengthRecords(supabase, user.id),
     listTemplates(supabase, user.id),
@@ -31,11 +32,14 @@ export default async function WorkoutsPage() {
   return (
     <>
       <PageHeader
-        title="Workouts"
+        title={t('Workouts')}
         description={
-          t.thisWeek.target
-            ? `${t.thisWeek.count} of ${t.thisWeek.target} planned workouts this week`
-            : `${t.thisWeek.count} workouts this week`
+          tr.thisWeek.target
+            ? t('{count} of {target} planned workouts this week', {
+                count: tr.thisWeek.count,
+                target: tr.thisWeek.target,
+              })
+            : t.plural(tr.thisWeek.count, '{n} workout this week', '{n} workouts this week')
         }
         actions={
           <StartWorkout
@@ -47,57 +51,63 @@ export default async function WorkoutsPage() {
           />
         }
       />
-      {t.inProgress && (
+      {tr.inProgress && (
         <Link
-          href={`/workouts/${t.inProgress.id}`}
+          href={`/workouts/${tr.inProgress.id}`}
           className="border-warning/40 bg-warning-soft mb-6 flex items-center justify-between rounded-xl border px-4 py-3 text-sm"
         >
-          <span>
-            <strong>{t.inProgress.name}</strong> is in progress
-          </span>
-          <span className="font-medium">Continue →</span>
+          <span>{t('{name} is in progress', { name: tr.inProgress.name })}</span>
+          <span className="font-medium">{t('Continue →')}</span>
         </Link>
       )}
 
       <div className="bg-card mb-6 grid grid-cols-2 gap-4 rounded-xl border p-5 md:grid-cols-4">
         <Stat
-          label="This week"
+          label={t('This week')}
           value={
-            t.thisWeek.target ? `${t.thisWeek.count} / ${t.thisWeek.target}` : t.thisWeek.count
+            tr.thisWeek.target ? `${tr.thisWeek.count} / ${tr.thisWeek.target}` : tr.thisWeek.count
           }
-          hint="workouts"
+          hint={t('workouts')}
           size="lg"
         />
-        <Stat label="Training time" value={minutesToLabel(t.thisWeek.minutes)} hint="this week" />
         <Stat
-          label="Distance"
-          value={formatDistance(t.thisWeek.distance, units)}
-          hint="this week"
+          label={t('Training time')}
+          value={minutesToLabel(tr.thisWeek.minutes)}
+          hint={t('this week')}
         />
-        <Stat label="Personal records" value={records.prs.length} hint="exercises tracked" />
+        <Stat
+          label={t('Distance')}
+          value={formatDistance(tr.thisWeek.distance, units)}
+          hint={t('this week')}
+        />
+        <Stat
+          label={t('Personal records')}
+          value={records.prs.length}
+          hint={t('exercises tracked')}
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
-          {t.todaysSessions.length > 0 && (
+          {tr.todaysSessions.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Planned today</CardTitle>
+                <CardTitle>{t('Planned today')}</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col divide-y">
-                {t.todaysSessions.map((s) => (
+                {tr.todaysSessions.map((s) => (
                   <div key={s.id} className="flex items-center justify-between gap-3 py-2">
                     <div>
                       <p className="text-sm font-medium">{s.title}</p>
                       <p className="text-muted-foreground text-xs">
-                        {s.planName} · week {s.week}
+                        {s.planName} · {t('week {n}', { n: s.week })}
                         {s.target_duration_minutes ? ` · ${s.target_duration_minutes} min` : ''}
                       </p>
                     </div>
                     {s.workout_type === 'rest' ? (
-                      <Badge variant="secondary">Rest day</Badge>
+                      <Badge variant="secondary">{t('Rest day')}</Badge>
                     ) : s.done ? (
-                      <Badge variant="success">Done</Badge>
+                      <Badge variant="success">{t('Done')}</Badge>
                     ) : (
                       <StartPlannedSession sessionId={s.id} type={s.workout_type as WorkoutType} />
                     )}
@@ -108,36 +118,36 @@ export default async function WorkoutsPage() {
           )}
           <Card>
             <CardHeader>
-              <CardTitle>Weekly frequency</CardTitle>
+              <CardTitle>{t('Weekly frequency')}</CardTitle>
             </CardHeader>
             <CardContent>
               <BarsChart
-                ariaLabel="Workouts per week"
+                ariaLabel={t('Workouts per week')}
                 height={180}
-                data={t.weekly.map((w) => ({
+                data={tr.weekly.map((w) => ({
                   label: formatISODate(w.weekStart, 'd MMM'),
                   workouts: w.count,
                   minutes: w.minutes,
                 }))}
-                series={[{ key: 'workouts', label: 'Workouts' }]}
+                series={[{ key: 'workouts', label: t('Workouts') }]}
               />
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Recent workouts</CardTitle>
+              <CardTitle>{t('Recent workouts')}</CardTitle>
             </CardHeader>
             <CardContent>
-              {t.workouts.length === 0 ? (
+              {tr.workouts.length === 0 ? (
                 <EmptyState
                   compact
                   icon={Dumbbell}
-                  title="No workouts yet"
-                  description="Start a session or log one you already did."
+                  title={t('No workouts yet')}
+                  description={t('Start a session or log one you already did.')}
                 />
               ) : (
                 <ul className="flex flex-col divide-y">
-                  {t.workouts.slice(0, 15).map((w) => (
+                  {tr.workouts.slice(0, 15).map((w) => (
                     <li key={w.id}>
                       <Link
                         href={`/workouts/${w.id}`}
@@ -146,14 +156,14 @@ export default async function WorkoutsPage() {
                         <span className="min-w-0">
                           <span className="block truncate text-sm font-medium">{w.name}</span>
                           <span className="text-muted-foreground text-xs">
-                            {WORKOUT_TYPE_LABELS[w.workout_type as WorkoutType]} ·{' '}
+                            {t(WORKOUT_TYPE_LABELS[w.workout_type as WorkoutType])} ·{' '}
                             {relativeDayLabel(w.performed_on, today)}
                           </span>
                         </span>
                         <span className="text-muted-foreground shrink-0 text-right text-xs">
                           {w.status !== 'completed' ? (
                             <Badge variant="warning">
-                              {w.status === 'in_progress' ? 'In progress' : 'Planned'}
+                              {w.status === 'in_progress' ? t('In progress') : t('Planned')}
                             </Badge>
                           ) : (
                             [
@@ -177,12 +187,12 @@ export default async function WorkoutsPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Personal records</CardTitle>
+            <CardTitle>{t('Personal records')}</CardTitle>
           </CardHeader>
           <CardContent>
             {records.prs.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                Log strength sets to track your best lifts and estimated 1RM.
+                {t('Log strength sets to track your best lifts and estimated 1RM.')}
               </p>
             ) : (
               <ul className="flex flex-col gap-2">

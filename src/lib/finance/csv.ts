@@ -1,3 +1,4 @@
+import { msg } from '@/lib/i18n/translate'
 /**
  * Minimal RFC 4180 CSV reader/writer (quotes, escaped quotes, newlines in
  * fields, comma or semicolon delimiters as used by European banks).
@@ -110,16 +111,16 @@ export function csvToTransactions(text: string) {
   if (cols.date === undefined || cols.amount === undefined) {
     return {
       rows: out,
-      errors: [{ line: 1, message: 'The file needs at least "date" and "amount" columns.' }],
+      errors: [{ line: 1, message: msg('The file needs at least "date" and "amount" columns.') }],
     }
   }
   rows.slice(1).forEach((r, index) => {
     const line = index + 2
     const date = normalizeCsvDate(r[cols.date!] ?? '')
     const rawAmount = (r[cols.amount!] ?? '').trim()
-    if (!date) return errors.push({ line, message: 'Invalid date' })
+    if (!date) return errors.push({ line, message: msg('Invalid date') })
     if (!rawAmount || !/^[-+]?[\d\s.,']+$/.test(rawAmount))
-      return errors.push({ line, message: 'Invalid amount' })
+      return errors.push({ line, message: msg('Invalid amount') })
     const negative = rawAmount.startsWith('-')
     const typeCell = cols.type !== undefined ? (r[cols.type] ?? '').trim().toLowerCase() : ''
     const txn_type: 'expense' | 'income' =

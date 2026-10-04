@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { GettingStarted } from '@/components/dashboard/getting-started'
 import { NudgeCard } from '@/components/dashboard/nudge-card'
 import { InstallPrompt } from '@/components/engagement/install-prompt'
@@ -24,11 +23,12 @@ import { currentHour, startOfWeekISO } from '@/lib/dates'
 import { checklistProgress } from '@/lib/engagement/checklist'
 import { pickNudge } from '@/lib/engagement/nudges'
 import type { DashboardWidgetId } from '@/lib/settings/schemas'
+import { getT, pageTitle } from '@/lib/i18n/server'
 import { getOnboardedUserContext } from '@/lib/settings/service'
 import type { Units } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
-export const metadata: Metadata = { title: 'Dashboard' }
+export const generateMetadata = pageTitle('Dashboard')
 
 const WIDGETS: Record<
   DashboardWidgetId,
@@ -48,9 +48,9 @@ const WIDGETS: Record<
 export default async function DashboardPage() {
   const ctx = await getOnboardedUserContext()
   const { profile, user, today, timezone, prefs, currency } = ctx
-  const data = await getDashboardData(ctx)
+  const [data, t] = await Promise.all([getDashboardData(ctx), getT()])
   const units: Units = prefs.units === 'imperial' ? 'imperial' : 'metric'
-  const name = profile.display_name || user.email?.split('@')[0] || 'there'
+  const name = profile.display_name || user.email?.split('@')[0] || t('there')
   const visible = prefs.dashboard_layout.filter((w) => w.visible)
   const hour = currentHour(timezone)
   const showChecklist = data.checklist && !checklistProgress(data.checklist).complete
@@ -87,7 +87,7 @@ export default async function DashboardPage() {
         {!showChecklist && <InstallPrompt />}
         <Card>
           <CardContent className="pt-4">
-            <p className="text-muted-foreground mb-2 text-xs font-medium">Today&apos;s focus</p>
+            <p className="text-muted-foreground mb-2 text-xs font-medium">{t("Today's focus")}</p>
             <FocusEditor focus={data.day.focus} today={today} />
           </CardContent>
         </Card>
@@ -99,7 +99,7 @@ export default async function DashboardPage() {
           const Component = entry.Component
           return (
             <div key={w.id} className={cn(entry.wide && 'lg:col-span-2 lg:row-span-2')}>
-              <Component data={data} today={today} currency={currency} units={units} />
+              <Component data={data} today={today} currency={currency} units={units} t={t} />
             </div>
           )
         })}

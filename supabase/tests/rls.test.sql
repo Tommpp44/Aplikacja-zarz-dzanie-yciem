@@ -2,7 +2,7 @@
 -- users' data. Run with `npx supabase test db` (uses pgTAP, local stack only).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(18);
+select plan(21);
 
 -- Two users (the bootstrap trigger creates profiles, preferences, categories).
 insert into auth.users (id, email, raw_user_meta_data) values
@@ -63,6 +63,15 @@ select throws_ok(
 set local request.jwt.claims to '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
 select is((select title from public.tasks where id = 'aaaaaaaa-0000-0000-0000-000000000002'), 'Alice task', 'bob could not modify alice task');
 select is((select count(*)::int from public.projects), 1, 'bob could not delete alice project');
+
+-- New users get their interface language and localized default categories.
+reset role;
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('33333333-3333-3333-3333-333333333333', 'ola@test.local', '{"display_name":"Ola","language":"pl"}'),
+  ('44444444-4444-4444-4444-444444444444', 'eve@test.local', '{"language":"xx"}');
+select is((select language from public.user_preferences where user_id = '33333333-3333-3333-3333-333333333333'), 'pl', 'polish sign-up stores the language');
+select ok(exists(select 1 from public.transaction_categories where user_id = '33333333-3333-3333-3333-333333333333' and name = 'Jedzenie'), 'polish users get polish category names');
+select is((select language from public.user_preferences where user_id = '44444444-4444-4444-4444-444444444444'), 'en', 'unknown languages fall back to english');
 
 select * from finish();
 rollback;

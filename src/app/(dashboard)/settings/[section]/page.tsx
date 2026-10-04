@@ -1,5 +1,4 @@
 import { Download, Upload } from 'lucide-react'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { NewPasswordForm } from '@/components/auth/password-forms'
@@ -11,26 +10,30 @@ import {
   ProfileForm,
   SignOutEverywhereButton,
 } from '@/components/settings/settings-forms'
+import { LanguagePicker } from '@/components/shared/language-picker'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { SETTINGS_SECTIONS, type SettingsSectionId } from '@/lib/settings/sections'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
+import { msg } from '@/lib/i18n/translate'
 
-export const metadata: Metadata = { title: 'Settings' }
+export const generateMetadata = pageTitle('Settings')
 
 const INTEGRATIONS = [
-  { name: 'Google Calendar', area: 'Calendar' },
-  { name: 'Outlook Calendar', area: 'Calendar' },
-  { name: 'Apple Calendar', area: 'Calendar' },
-  { name: 'Apple Health', area: 'Activity' },
-  { name: 'Google Fit / Health Connect', area: 'Activity' },
-  { name: 'Garmin', area: 'Workouts' },
-  { name: 'Strava', area: 'Workouts' },
-  { name: 'Fitbit', area: 'Activity' },
-  { name: 'Open Banking', area: 'Finances' },
+  { name: 'Google Calendar', area: msg('Calendar') },
+  { name: 'Outlook Calendar', area: msg('Calendar') },
+  { name: 'Apple Calendar', area: msg('Calendar') },
+  { name: 'Apple Health', area: msg('Activity') },
+  { name: 'Google Fit / Health Connect', area: msg('Activity') },
+  { name: 'Garmin', area: msg('Workouts') },
+  { name: 'Strava', area: msg('Workouts') },
+  { name: 'Fitbit', area: msg('Activity') },
+  { name: 'Open Banking', area: msg('Finances') },
 ]
 
 export default async function SettingsSectionPage({ params }: PageProps<'/settings/[section]'>) {
+  const t = await getT()
   const { section } = await params
   const meta = SETTINGS_SECTIONS.find((s) => s.id === section)
   if (!meta) notFound()
@@ -41,9 +44,9 @@ export default async function SettingsSectionPage({ params }: PageProps<'/settin
     <section aria-labelledby="section-title" className="flex flex-col gap-6">
       <div>
         <h2 id="section-title" className="text-lg font-semibold">
-          {meta.label}
+          {t(meta.label)}
         </h2>
-        <p className="text-muted-foreground text-sm">{meta.description}</p>
+        <p className="text-muted-foreground text-sm">{t(meta.description)}</p>
       </div>
 
       {id === 'profile' && (
@@ -61,35 +64,46 @@ export default async function SettingsSectionPage({ params }: PageProps<'/settin
         />
       )}
       {id === 'appearance' && (
-        <AppearanceForm theme={prefs.theme as 'light' | 'dark' | 'system'} accent={prefs.accent} />
+        <>
+          <fieldset>
+            <legend className="mb-2 text-sm font-medium">{t('Language')}</legend>
+            <LanguagePicker persist />
+          </fieldset>
+          <AppearanceForm
+            theme={prefs.theme as 'light' | 'dark' | 'system'}
+            accent={prefs.accent}
+          />
+        </>
       )}
       {id === 'notifications' && <NotificationsForm initial={prefs.notification_settings} />}
       {id === 'privacy' && (
         <>
           <div className="bg-card flex max-w-xl flex-col gap-3 rounded-xl border p-5">
-            <h3 className="font-medium">Export your data</h3>
+            <h3 className="font-medium">{t('Export your data')}</h3>
             <p className="text-muted-foreground text-sm">
-              Download everything LifeOS stores about you as JSON (all modules), or your
-              transactions as CSV.
+              {t(
+                'Download everything LifeOS stores about you as JSON (all modules), or your transactions as CSV.',
+              )}
             </p>
             <div className="flex flex-wrap gap-2">
               <Button asChild>
                 <a href="/api/export" download>
-                  <Download /> Export all data (JSON)
+                  <Download /> {t('Export all data (JSON)')}
                 </a>
               </Button>
               <Button variant="outline" asChild>
                 <a href="/api/finances/transactions/export" download>
-                  <Download /> Transactions (CSV)
+                  <Download /> {t('Transactions (CSV)')}
                 </a>
               </Button>
             </div>
           </div>
           <div className="bg-card flex max-w-xl flex-col gap-2 rounded-xl border p-5 text-sm">
-            <h3 className="font-medium">Delete individual records</h3>
+            <h3 className="font-medium">{t('Delete individual records')}</h3>
             <p className="text-muted-foreground">
-              Every task, transaction, note, habit, goal and workout can be deleted from its own
-              screen. Deleted transactions are excluded from balances immediately.
+              {t(
+                'Every task, transaction, note, habit, goal and workout can be deleted from its own screen. Deleted transactions are excluded from balances immediately.',
+              )}
             </p>
           </div>
           <DeleteAccountSection />
@@ -98,13 +112,15 @@ export default async function SettingsSectionPage({ params }: PageProps<'/settin
       {id === 'security' && (
         <>
           <div className="bg-card flex max-w-xl flex-col gap-3 rounded-xl border p-5">
-            <h3 className="font-medium">Change password</h3>
+            <h3 className="font-medium">{t('Change password')}</h3>
             <NewPasswordForm redirectTo={null} compact />
           </div>
           <div className="bg-card flex max-w-xl flex-col gap-3 rounded-xl border p-5">
-            <h3 className="font-medium">Sessions</h3>
+            <h3 className="font-medium">{t('Sessions')}</h3>
             <p className="text-muted-foreground text-sm">
-              Signed in as {user.email}. Signing out everywhere ends the session on every device.
+              {t('Signed in as {email}. Signing out everywhere ends the session on every device.', {
+                email: user.email ?? '',
+              })}
             </p>
             <div>
               <SignOutEverywhereButton />
@@ -115,30 +131,30 @@ export default async function SettingsSectionPage({ params }: PageProps<'/settin
       {id === 'data' && (
         <div className="grid max-w-2xl gap-4 sm:grid-cols-2">
           <div className="bg-card flex flex-col gap-3 rounded-xl border p-5">
-            <h3 className="font-medium">Import</h3>
+            <h3 className="font-medium">{t('Import')}</h3>
             <p className="text-muted-foreground text-sm">
-              Import bank transactions from CSV (most Polish and EU bank exports work).
+              {t('Import bank transactions from CSV (most Polish and EU bank exports work).')}
             </p>
             <Button variant="outline" asChild className="self-start">
               <Link href="/finances/transactions">
-                <Upload /> Import transactions
+                <Upload /> {t('Import transactions')}
               </Link>
             </Button>
           </div>
           <div className="bg-card flex flex-col gap-3 rounded-xl border p-5">
-            <h3 className="font-medium">Export</h3>
+            <h3 className="font-medium">{t('Export')}</h3>
             <p className="text-muted-foreground text-sm">
-              Take your data anywhere — JSON for everything, CSV for transactions.
+              {t('Take your data anywhere — JSON for everything, CSV for transactions.')}
             </p>
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" asChild>
                 <a href="/api/export" download>
-                  JSON
+                  {t('JSON')}
                 </a>
               </Button>
               <Button variant="outline" asChild>
                 <a href="/api/finances/transactions/export" download>
-                  CSV
+                  {t('CSV')}
                 </a>
               </Button>
             </div>
@@ -148,8 +164,9 @@ export default async function SettingsSectionPage({ params }: PageProps<'/settin
       {id === 'integrations' && (
         <>
           <p className="text-muted-foreground max-w-xl text-sm">
-            Integrations are on the roadmap. LifeOS already stores the source of every imported
-            record, so connected data will appear next to your manual entries without duplicates.
+            {t(
+              'Integrations are on the roadmap. LifeOS already stores the source of every imported record, so connected data will appear next to your manual entries without duplicates.',
+            )}
           </p>
           <ul className="grid max-w-2xl gap-2 sm:grid-cols-2">
             {INTEGRATIONS.map((i) => (
@@ -159,9 +176,9 @@ export default async function SettingsSectionPage({ params }: PageProps<'/settin
               >
                 <span>
                   <span className="block font-medium">{i.name}</span>
-                  <span className="text-muted-foreground text-xs">{i.area}</span>
+                  <span className="text-muted-foreground text-xs">{t(i.area)}</span>
                 </span>
-                <Badge variant="secondary">Planned</Badge>
+                <Badge variant="secondary">{t('Planned')}</Badge>
               </li>
             ))}
           </ul>
@@ -170,12 +187,13 @@ export default async function SettingsSectionPage({ params }: PageProps<'/settin
       {id === 'billing' && (
         <div className="bg-card flex max-w-xl flex-col gap-2 rounded-xl border p-5">
           <div className="flex items-center gap-2">
-            <h3 className="font-medium">Current plan</h3>
-            <Badge>{profile.plan === 'pro' ? 'Pro' : 'Free'}</Badge>
+            <h3 className="font-medium">{t('Current plan')}</h3>
+            <Badge>{profile.plan === 'pro' ? t('Pro') : t('Free')}</Badge>
           </div>
           <p className="text-muted-foreground text-sm">
-            Every feature is available during the early access period. Paid plans may be introduced
-            later — you will be told well in advance.
+            {t(
+              'Every feature is available during the early access period. Paid plans may be introduced later — you will be told well in advance.',
+            )}
           </p>
         </div>
       )}

@@ -10,6 +10,7 @@ import { describeRepeatRule } from '@/lib/recurrence'
 import { quickAddTask } from '@/lib/tasks/actions'
 import { dueLabel } from '@/lib/tasks/format'
 import { parseQuickAdd } from '@/lib/tasks/quick-add'
+import { useT } from '@/lib/i18n/client'
 
 /**
  * Quick Add: type naturally ("Buy groceries tomorrow at 18:00 p2 #Home @errands")
@@ -21,7 +22,7 @@ export function QuickAddBar({
   goalId,
   parentTaskId,
   defaults,
-  placeholder = 'Add a task — e.g. "Buy groceries tomorrow at 18:00 p2"',
+  placeholder,
   autoFocus,
   onCreated,
 }: {
@@ -34,6 +35,7 @@ export function QuickAddBar({
   autoFocus?: boolean
   onCreated?: () => void
 }) {
+  const t = useT()
   const [text, setText] = useState('')
   const [pending, run] = useServerAction()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -67,10 +69,13 @@ export function QuickAddBar({
           icon: CalendarClock,
           text: dueLabel(preview.due_date, preview.due_time, today),
         },
-        preview.repeat_rule && { icon: Repeat, text: describeRepeatRule(preview.repeat_rule) },
+        preview.repeat_rule && {
+          icon: Repeat,
+          text: describeRepeatRule(preview.repeat_rule, t.locale),
+        },
         preview.priority && { icon: Flag, text: `P${preview.priority}` },
         preview.project_name && { icon: FolderKanban, text: preview.project_name },
-        ...preview.tags.map((t) => ({ icon: Tag, text: t })),
+        ...preview.tags.map((it) => ({ icon: Tag, text: it })),
       ].filter(Boolean) as { icon: typeof Tag; text: string }[])
     : []
 
@@ -92,8 +97,8 @@ export function QuickAddBar({
           ref={inputRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder={placeholder}
-          aria-label="Quick add task"
+          placeholder={placeholder ?? t('Add a task — e.g. "Buy groceries tomorrow at 18:00 p2"')}
+          aria-label={t('Quick add task')}
           autoFocus={autoFocus}
           maxLength={500}
           className="placeholder:text-muted-foreground h-11 flex-1 bg-transparent text-sm outline-none"

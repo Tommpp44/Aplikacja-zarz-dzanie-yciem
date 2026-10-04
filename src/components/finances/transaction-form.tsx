@@ -24,11 +24,13 @@ import { transactionSchema, type TransactionInput } from '@/lib/finance/schemas'
 import { formatMoney, minorToInput } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import type { AccountOption, CategoryOption, TransactionLike } from './types'
+import { useT } from '@/lib/i18n/client'
+import { msg } from '@/lib/i18n/translate'
 
 const TYPES = [
-  { value: 'expense', label: 'Expense', icon: TrendingDown },
-  { value: 'income', label: 'Income', icon: TrendingUp },
-  { value: 'transfer', label: 'Transfer', icon: ArrowLeftRight },
+  { value: 'expense', label: msg('Expense'), icon: TrendingDown },
+  { value: 'income', label: msg('Income'), icon: TrendingUp },
+  { value: 'transfer', label: msg('Transfer'), icon: ArrowLeftRight },
 ] as const
 
 export type TransactionFormProps = {
@@ -54,6 +56,7 @@ export function TransactionForm({
   defaultType = 'expense',
   onDone,
 }: TransactionFormProps) {
+  const t = useT()
   const [pending, run] = useServerAction()
   const [more, setMore] = useState(Boolean(transaction?.description || transaction?.tags?.length))
   const [nl, setNl] = useState('')
@@ -115,11 +118,11 @@ export function TransactionForm({
     return (
       <div className="flex flex-col items-start gap-3 text-sm">
         <p className="text-muted-foreground">
-          Add your first account to start recording transactions.
+          {t('Add your first account to start recording transactions.')}
         </p>
         <Button asChild>
           <Link href="/finances/accounts?new=1" onClick={onDone}>
-            Add account
+            {t('Add account')}
           </Link>
         </Button>
       </div>
@@ -157,12 +160,12 @@ export function TransactionForm({
     }
     if (transaction) {
       run(() => updateTransaction({ ...clean, id: transaction.id }), {
-        success: 'Transaction updated',
+        success: t('Transaction updated'),
         onSuccess: () => onDone?.(),
       })
     } else {
       run(() => createTransaction(clean), {
-        success: 'Transaction saved',
+        success: t('Transaction saved'),
         onSuccess: (data) => {
           onDone?.()
           form.reset({ ...clean, amount: '', merchant: '', description: '', tags: [] })
@@ -180,7 +183,7 @@ export function TransactionForm({
     if (!transaction) return
     const id = transaction.id
     run(() => deleteTransaction({ id }), {
-      success: 'Transaction deleted',
+      success: t('Transaction deleted'),
       undo: { action: () => restoreTransaction({ id }) },
       onSuccess: () => onDone?.(),
     })
@@ -201,12 +204,12 @@ export function TransactionForm({
               }
             }}
             placeholder='Or type it: "Spent 54 PLN on groceries at Lidl"'
-            aria-label="Describe the transaction in words"
+            aria-label={t('Describe the transaction in words')}
             className="placeholder:text-muted-foreground h-9 flex-1 bg-transparent text-sm outline-none"
           />
           {nl && (
             <Button type="button" size="sm" variant="ghost" onClick={applyNaturalLanguage}>
-              Fill
+              {t('Fill')}
             </Button>
           )}
         </div>
@@ -214,25 +217,25 @@ export function TransactionForm({
 
       <div
         role="radiogroup"
-        aria-label="Type"
+        aria-label={t('Type')}
         className="bg-muted grid grid-cols-3 gap-1 rounded-lg p-1"
       >
-        {TYPES.map((t) => {
-          const Icon = t.icon
-          const active = type === t.value
+        {TYPES.map((it) => {
+          const Icon = it.icon
+          const active = type === it.value
           return (
             <button
-              key={t.value}
+              key={it.value}
               type="button"
               role="radio"
               aria-checked={active}
               onClick={() => {
-                form.setValue('txn_type', t.value)
+                form.setValue('txn_type', it.value)
                 form.setValue(
                   'category_id',
-                  t.value === 'expense'
+                  it.value === 'expense'
                     ? (lastUsed?.expense_category_id ?? null)
-                    : t.value === 'income'
+                    : it.value === 'income'
                       ? (lastUsed?.income_category_id ?? null)
                       : null,
                 )
@@ -242,13 +245,13 @@ export function TransactionForm({
                 active && 'bg-card text-foreground shadow-xs',
               )}
             >
-              <Icon className="size-3.5" /> {t.label}
+              <Icon className="size-3.5" /> {t(it.label)}
             </button>
           )
         })}
       </div>
       {type === 'adjustment' && (
-        <p className="text-muted-foreground text-xs">Balance correction (signed amount).</p>
+        <p className="text-muted-foreground text-xs">{t('Balance correction (signed amount).')}</p>
       )}
 
       <Field
@@ -269,7 +272,7 @@ export function TransactionForm({
 
       {(type === 'expense' || type === 'income') && (
         <fieldset>
-          <legend className="mb-1.5 text-[13px] font-medium">Category</legend>
+          <legend className="mb-1.5 text-[13px] font-medium">{t('Category')}</legend>
           <div className="flex flex-wrap gap-1.5">
             {visibleCategories.map((c) => {
               const active = categoryId === c.id
@@ -300,7 +303,7 @@ export function TransactionForm({
 
       <div className="grid grid-cols-2 gap-3">
         <Field
-          label={type === 'transfer' ? 'From' : 'Account'}
+          label={type === 'transfer' ? t('From account') : t('Account')}
           htmlFor="txn-account"
           error={errors.account_id?.message}
         >
@@ -313,9 +316,13 @@ export function TransactionForm({
           </NativeSelect>
         </Field>
         {type === 'transfer' ? (
-          <Field label="To" htmlFor="txn-to" error={errors.transfer_account_id?.message}>
+          <Field
+            label={t('To account')}
+            htmlFor="txn-to"
+            error={errors.transfer_account_id?.message}
+          >
             <NativeSelect id="txn-to" {...form.register('transfer_account_id')}>
-              <option value="">Choose…</option>
+              <option value="">{t('Choose…')}</option>
               {accounts
                 .filter((a) => a.id !== accountId)
                 .map((a) => (
@@ -326,7 +333,7 @@ export function TransactionForm({
             </NativeSelect>
           </Field>
         ) : (
-          <Field label="Date" htmlFor="txn-date" error={errors.occurred_on?.message}>
+          <Field label={t('Date')} htmlFor="txn-date" error={errors.occurred_on?.message}>
             <Input id="txn-date" type="date" {...form.register('occurred_on')} />
           </Field>
         )}
@@ -335,25 +342,25 @@ export function TransactionForm({
         <Field
           label={`Received (${destination.currency})`}
           htmlFor="txn-received"
-          hint="Amount credited to the destination account."
+          hint={t('Amount credited to the destination account.')}
         >
           <Input id="txn-received" inputMode="decimal" {...form.register('transfer_amount')} />
         </Field>
       )}
       {type === 'transfer' && (
-        <Field label="Date" htmlFor="txn-date-t">
+        <Field label={t('Date')} htmlFor="txn-date-t">
           <Input id="txn-date-t" type="date" {...form.register('occurred_on')} />
         </Field>
       )}
       {type !== 'transfer' && (
         <Field
-          label={type === 'income' ? 'From (payer)' : 'Merchant'}
+          label={type === 'income' ? t('From (payer)') : t('Merchant')}
           htmlFor="txn-merchant"
           optional
         >
           <Input
             id="txn-merchant"
-            placeholder={type === 'income' ? 'Employer' : 'Lidl'}
+            placeholder={type === 'income' ? t('Employer') : t('Lidl')}
             {...form.register('merchant')}
           />
         </Field>
@@ -365,15 +372,16 @@ export function TransactionForm({
         className="text-muted-foreground hover:text-foreground flex items-center gap-1 self-start text-xs font-medium"
         aria-expanded={more}
       >
-        <ChevronDown className={cn('size-3.5 transition-transform', more && 'rotate-180')} /> More
+        <ChevronDown className={cn('size-3.5 transition-transform', more && 'rotate-180')} />{' '}
+        {t('More')}
         details
       </button>
       {more && (
         <div className="flex flex-col gap-3">
-          <Field label="Description" htmlFor="txn-description" optional>
+          <Field label={t('Description')} htmlFor="txn-description" optional>
             <Input id="txn-description" {...form.register('description')} />
           </Field>
-          <Field label="Tags" htmlFor="txn-tags" hint="Comma separated" optional>
+          <Field label={t('Tags')} htmlFor="txn-tags" hint={t('Comma separated')} optional>
             <Input
               id="txn-tags"
               defaultValue={transaction?.tags?.join(', ')}
@@ -382,7 +390,7 @@ export function TransactionForm({
                   'tags',
                   e.target.value
                     .split(',')
-                    .map((t) => t.trim())
+                    .map((it) => it.trim())
                     .filter(Boolean),
                 )
               }
@@ -400,20 +408,20 @@ export function TransactionForm({
             onClick={remove}
             disabled={pending}
           >
-            Delete
+            {t('Delete')}
           </Button>
         ) : (
           <span className="text-muted-foreground text-xs">
-            {account ? `Balance updates instantly` : ''}
+            {account ? t('Balance updates instantly') : ''}
           </span>
         )}
         <SubmitButton pending={pending}>
-          {transaction ? 'Save' : type === 'transfer' ? 'Save transfer' : `Save ${type}`}
+          {transaction ? t('Save') : type === 'transfer' ? t('Save transfer') : `Save ${type}`}
         </SubmitButton>
       </div>
       {transaction?.source && transaction.source !== 'manual' && (
         <p className="text-muted-foreground text-xs">
-          Source: {transaction.source}
+          {t('Source: {source}', { source: transaction.source })}
           {transaction.txn_type === 'transfer' && destination
             ? ` · ${formatMoney(transaction.amount_minor, transaction.currency)} → ${destination.name}`
             : ''}

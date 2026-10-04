@@ -1,5 +1,4 @@
 import { ArrowLeft, Dumbbell, Flame, FolderKanban, Landmark } from 'lucide-react'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { TrendChart } from '@/components/charts/lazy'
@@ -27,10 +26,12 @@ import type { GoalInput } from '@/lib/goals/schemas'
 import { listProjectOptions } from '@/lib/projects/repository'
 import { getOnboardedUserContext } from '@/lib/settings/service'
 import { listTasks } from '@/lib/tasks/repository'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Goal' }
+export const generateMetadata = pageTitle('Goal')
 
 export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
+  const t = await getT()
   const { id } = await params
   const { supabase, user, today, prefs } = await getOnboardedUserContext()
   const goal = await getGoal(supabase, user.id, id).catch(() => null)
@@ -79,7 +80,7 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
         ? 'milestones'
         : goal.unit
   const fmt = (v: number) => formatGoalValue(v, unit)
-  const openTasks = tasks.filter((t) => !['completed', 'cancelled'].includes(t.status))
+  const openTasks = tasks.filter((it) => !['completed', 'cancelled'].includes(it.status))
   const chartData = [...logs].reverse().map((l) => ({
     label: formatISODate(l.logged_at.slice(0, 10), 'd MMM'),
     value: Number(l.value),
@@ -94,13 +95,13 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
             Date.parse(goal.completed_at) > Date.parse(`${today}T00:00:00Z`) - 3 * 86_400_000)
         }
         onceKey={`goal:${goal.id}`}
-        message={`Goal achieved: ${goal.title} 🎉`}
+        message={`${t('Goal achieved: {title}', { title: goal.title })} 🎉`}
       />
       <Link
         href="/goals"
         className="text-muted-foreground hover:text-foreground mb-3 inline-flex items-center gap-1 text-sm"
       >
-        <ArrowLeft className="size-4" /> Goals
+        <ArrowLeft className="size-4" /> {t('Goals')}
       </Link>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
@@ -124,29 +125,29 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
       </div>
 
       <section
-        aria-label="Progress"
+        aria-label={t('Progress')}
         className="bg-card mb-6 flex flex-col gap-5 rounded-xl border p-5"
       >
         <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
           <Stat
-            label="Current"
+            label={t('Current')}
             value={
               goal.target_type === 'boolean'
                 ? progress.done
-                  ? 'Done'
-                  : 'Not yet'
+                  ? t('Done')
+                  : t('Not yet')
                 : fmt(progress.current)
             }
             size="lg"
             className="col-span-2 md:col-span-1"
           />
           <Stat
-            label="Target"
-            value={goal.target_type === 'boolean' ? 'Done' : fmt(progress.target)}
+            label={t('Target')}
+            value={goal.target_type === 'boolean' ? t('Done') : fmt(progress.target)}
           />
-          <Stat label="Progress" value={`${progress.percent.toFixed(1)}%`} />
+          <Stat label={t('Progress')} value={`${progress.percent.toFixed(1)}%`} />
           <Stat
-            label="Pace"
+            label={t('Pace')}
             value={
               pace.requiredPerMonth !== null && !progress.done
                 ? `${fmt(Math.ceil(pace.requiredPerMonth))}/mo`
@@ -154,23 +155,23 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
             }
             hint={
               pace.requiredPerMonth !== null && !progress.done
-                ? 'needed to finish on time'
+                ? t('needed to finish on time')
                 : undefined
             }
           />
           <Stat
-            label="Expected completion"
+            label={t('Expected completion')}
             value={
               pace.projectedCompletion
                 ? formatISODate(pace.projectedCompletion, 'd MMM yyyy')
                 : progress.done
-                  ? 'Achieved'
+                  ? t('Achieved')
                   : '—'
             }
             hint={
               goal.deadline
-                ? `Deadline ${formatISODate(goal.deadline, 'd MMM yyyy')}`
-                : 'No deadline'
+                ? t('Deadline {date}', { date: formatISODate(goal.deadline, 'd MMM yyyy') })
+                : t('No deadline')
             }
             tone={
               pace.projectedCompletion && goal.deadline && pace.projectedCompletion > goal.deadline
@@ -179,7 +180,7 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
             }
           />
         </div>
-        <GoalProgressBar percent={progress.percent} pace={pace} label="Goal progress" />
+        <GoalProgressBar percent={progress.percent} pace={pace} label={t('Goal progress')} />
         {goal.progress_source === 'manual' &&
           goal.target_type !== 'boolean' &&
           goal.status !== 'completed' && (
@@ -194,11 +195,11 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
         )}
         {goal.progress_source === 'account' && (
           <p className="text-muted-foreground text-sm">
-            Tracked automatically from{' '}
+            {t('Tracked automatically from the balance of')}{' '}
             <Link href="/finances/accounts" className="text-primary hover:underline">
-              {account?.name ?? 'your account'}
+              {account?.name ?? t('your account')}
             </Link>{' '}
-            balance — every transaction updates this goal.
+            — {t('every transaction updates this goal.')}
           </p>
         )}
       </section>
@@ -208,12 +209,12 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
           {goal.progress_source === 'manual' && chartData.length > 1 && (
             <Card>
               <CardHeader>
-                <CardTitle>Progress over time</CardTitle>
+                <CardTitle>{t('Progress over time')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <TrendChart
                   data={chartData}
-                  ariaLabel="Goal progress over time"
+                  ariaLabel={t('Goal progress over time')}
                   format={
                     goal.unit && /^[A-Z]{3}$/.test(goal.unit) ? `money:${goal.unit}` : 'number'
                   }
@@ -223,31 +224,33 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
           )}
           <Card>
             <CardHeader>
-              <CardTitle>Tasks for this goal</CardTitle>
+              <CardTitle>{t('Tasks for this goal')}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               <QuickAddBar
                 today={today}
                 goalId={goal.id}
-                placeholder="Add a task that moves this goal forward"
+                placeholder={t('Add a task that moves this goal forward')}
               />
               <TaskList
                 tasks={openTasks}
                 today={today}
                 options={{ projects: projectOptions, goals: goalOptions }}
                 weekStartsOn={prefs.week_start}
-                emptyTitle="No open tasks"
-                emptyDescription="What is the next small step?"
+                emptyTitle={t('No open tasks')}
+                emptyDescription={t('What is the next small step?')}
               />
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Recent activity</CardTitle>
+              <CardTitle>{t('Recent activity')}</CardTitle>
             </CardHeader>
             <CardContent>
               {logs.length === 0 ? (
-                <p className="text-muted-foreground text-sm">Progress updates will appear here.</p>
+                <p className="text-muted-foreground text-sm">
+                  {t('Progress updates will appear here.')}
+                </p>
               ) : (
                 <ul className="flex flex-col divide-y">
                   {logs.slice(0, 8).map((l) => (
@@ -269,7 +272,7 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
         <aside className="flex flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle>Milestones</CardTitle>
+              <CardTitle>{t('Milestones')}</CardTitle>
             </CardHeader>
             <CardContent>
               <MilestoneList goalId={goal.id} milestones={milestones} />
@@ -277,7 +280,7 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Connected</CardTitle>
+              <CardTitle>{t('Connected')}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-2 text-sm">
               {account && (
@@ -308,8 +311,8 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
               ))}
               {(linkedWorkouts.count ?? 0) > 0 && (
                 <Link href="/workouts" className="hover:text-primary flex items-center gap-2">
-                  <Dumbbell className="text-muted-foreground size-4" /> {linkedWorkouts.count}{' '}
-                  workouts
+                  <Dumbbell className="text-muted-foreground size-4" />{' '}
+                  {t.plural(linkedWorkouts.count ?? 0, '{n} workout', '{n} workouts')}
                 </Link>
               )}
               {!account &&
@@ -317,7 +320,9 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
                 !linkedHabits.data?.length &&
                 !linkedWorkouts.count && (
                   <p className="text-muted-foreground">
-                    Link projects, habits, workouts or an account to this goal from their settings.
+                    {t(
+                      'Link projects, habits, workouts or an account to this goal from their settings.',
+                    )}
                   </p>
                 )}
             </CardContent>

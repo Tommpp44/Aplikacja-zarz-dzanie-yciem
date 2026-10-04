@@ -1,6 +1,7 @@
 import { formatISODate, greetingFor } from '@/lib/dates'
+import { getT } from '@/lib/i18n/server'
 
-export function DashboardHeader({
+export async function DashboardHeader({
   name,
   today,
   hour,
@@ -11,6 +12,7 @@ export function DashboardHeader({
   hour: number
   actions?: React.ReactNode
 }) {
+  const t = await getT()
   return (
     <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
@@ -18,7 +20,7 @@ export function DashboardHeader({
         <h1 className="mt-0.5 text-2xl font-semibold tracking-tight sm:text-3xl">
           {greetingFor(hour)}, {name}
         </h1>
-        <p className="text-muted-foreground mt-1 text-sm">How is your life going today?</p>
+        <p className="text-muted-foreground mt-1 text-sm">{t('How is your life going today?')}</p>
       </div>
       {actions}
     </header>

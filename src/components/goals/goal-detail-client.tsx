@@ -36,6 +36,7 @@ import {
 import type { GoalInput } from '@/lib/goals/schemas'
 import { formatISODate } from '@/lib/dates'
 import { GoalFormDialog, type GoalFormAccount } from './goal-form-dialog'
+import { useT } from '@/lib/i18n/client'
 
 export function GoalActions({
   goal,
@@ -44,6 +45,7 @@ export function GoalActions({
   goal: GoalInput & { id: string }
   accounts: GoalFormAccount[]
 }) {
+  const t = useT()
   const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [pending, run] = useServerAction()
@@ -63,26 +65,26 @@ export function GoalActions({
         </Button>
       )}
       <Button variant="outline" onClick={() => setEditing(true)}>
-        <Pencil /> Edit
+        <Pencil /> {t('Edit')}
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="More goal actions">
+          <Button variant="ghost" size="icon" aria-label={t('More goal actions')}>
             <MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {goal.status === 'active' ? (
             <DropdownMenuItem onSelect={() => status('paused', 'Goal paused')}>
-              <Pause /> Pause
+              <Pause /> {t('Pause')}
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem onSelect={() => status('active', 'Goal reactivated')}>
-              <Play /> Set active
+              <Play /> {t('Set active')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem onSelect={() => status('archived', 'Goal archived')}>
-            <Archive /> Archive
+            <Archive /> {t('Archive')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => setConfirming(true)}>
@@ -94,11 +96,13 @@ export function GoalActions({
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title="Delete this goal?"
-        description="Milestones and progress history are deleted. Linked tasks, projects and habits are kept. Archive instead if you want to keep the history."
+        title={t('Delete this goal?')}
+        description={t(
+          'Milestones and progress history are deleted. Linked tasks, projects and habits are kept. Archive instead if you want to keep the history.',
+        )}
         onConfirm={() =>
           run(() => deleteGoal({ id: goal.id }), {
-            success: 'Goal deleted',
+            success: t('Goal deleted'),
             onSuccess: () => router.push('/goals'),
           })
         }
@@ -116,6 +120,7 @@ export function ProgressUpdater({
   current: number
   unit: string | null
 }) {
+  const t = useT()
   const [value, setValue] = useState(String(current))
   const [note, setNote] = useState('')
   const [pending, run] = useServerAction()
@@ -127,13 +132,13 @@ export function ProgressUpdater({
         const n = Number(value.replace(',', '.'))
         if (!Number.isFinite(n)) return
         run(() => updateGoalProgress({ id: goalId, value: n, note: note || undefined }), {
-          success: 'Progress updated',
+          success: t('Progress updated'),
           onSuccess: () => setNote(''),
         })
       }}
     >
       <label className="sr-only" htmlFor="goal-value">
-        Current value
+        {t('Current value')}
       </label>
       <div className="relative sm:w-40">
         <Input
@@ -149,20 +154,21 @@ export function ProgressUpdater({
         )}
       </div>
       <Input
-        aria-label="Note (optional)"
-        placeholder="Note (optional)"
+        aria-label={t('Note (optional)')}
+        placeholder={t('Note (optional)')}
         value={note}
         onChange={(e) => setNote(e.target.value)}
         maxLength={500}
       />
       <Button type="submit" disabled={pending}>
-        Update
+        {t('Update')}
       </Button>
     </form>
   )
 }
 
 export function MarkBooleanGoal({ goalId, done }: { goalId: string; done: boolean }) {
+  const t = useT()
   const [pending, run] = useServerAction()
   return (
     <Button
@@ -170,11 +176,11 @@ export function MarkBooleanGoal({ goalId, done }: { goalId: string; done: boolea
       variant={done ? 'outline' : 'default'}
       onClick={() =>
         run(() => updateGoalProgress({ id: goalId, value: done ? 0 : 1 }), {
-          success: done ? 'Marked as not done' : 'Marked as done',
+          success: done ? t('Marked as not done') : t('Marked as done'),
         })
       }
     >
-      {done ? 'Mark as not done' : 'Mark as done'}
+      {done ? t('Mark as not done') : t('Mark as done')}
     </Button>
   )
 }
@@ -182,23 +188,26 @@ export function MarkBooleanGoal({ goalId, done }: { goalId: string; done: boolea
 type Milestone = { id: string; title: string; completed_at: string | null; due_date: string | null }
 
 export function MilestoneList({ goalId, milestones }: { goalId: string; milestones: Milestone[] }) {
+  const t = useT()
   const [title, setTitle] = useState('')
   const [due, setDue] = useState('')
   const [pending, run] = useServerAction()
   return (
     <div className="flex flex-col gap-3">
       {milestones.length === 0 ? (
-        <p className="text-muted-foreground text-sm">Break the goal into a few checkpoints.</p>
+        <p className="text-muted-foreground text-sm">
+          {t('Break the goal into a few checkpoints.')}
+        </p>
       ) : (
         <ol className="flex flex-col gap-1">
           {milestones.map((m) => (
             <li key={m.id} className="group flex items-center gap-3 rounded-md px-1 py-1.5">
               <Checkbox
                 checked={Boolean(m.completed_at)}
-                aria-label={`Milestone ${m.title}`}
+                aria-label={t('Milestone {name}', { name: m.title })}
                 onCheckedChange={(v) =>
                   run(() => toggleMilestone({ id: m.id, completed: v === true }), {
-                    success: v === true ? 'Milestone reached' : undefined,
+                    success: v === true ? t('Milestone reached') : undefined,
                   })
                 }
               />
@@ -209,12 +218,12 @@ export function MilestoneList({ goalId, milestones }: { goalId: string; mileston
               </span>
               {m.due_date && (
                 <span className="text-muted-foreground text-xs">
-                  {formatISODate(m.due_date, 'd MMM')}
+                  {formatISODate(m.due_date, 'd MMM', t.locale)}
                 </span>
               )}
               <button
                 className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-                aria-label={`Delete milestone ${m.title}`}
+                aria-label={t('Delete milestone {title}', { title: m.title })}
                 onClick={() => run(() => deleteMilestone({ id: m.id }))}
               >
                 <X className="size-3.5" />
@@ -239,14 +248,14 @@ export function MilestoneList({ goalId, milestones }: { goalId: string; mileston
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Add milestone"
-          aria-label="Milestone title"
+          placeholder={t('Add milestone')}
+          aria-label={t('Milestone title')}
         />
         <Input
           type="date"
           value={due}
           onChange={(e) => setDue(e.target.value)}
-          aria-label="Milestone date"
+          aria-label={t('Milestone date')}
           className="w-40"
         />
         <Button
@@ -254,7 +263,7 @@ export function MilestoneList({ goalId, milestones }: { goalId: string; mileston
           variant="outline"
           size="icon"
           disabled={pending}
-          aria-label="Add milestone"
+          aria-label={t('Add milestone')}
         >
           <Plus />
         </Button>

@@ -1,9 +1,9 @@
-import type { Metadata } from 'next'
 import { NoteEditor } from '@/components/notes/note-editor'
 import { linkSchema } from '@/lib/notes/schemas'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'New note' }
+export const generateMetadata = pageTitle('New note')
 
 export default async function NewNotePage({ searchParams }: PageProps<'/notes/new'>) {
   await getOnboardedUserContext()

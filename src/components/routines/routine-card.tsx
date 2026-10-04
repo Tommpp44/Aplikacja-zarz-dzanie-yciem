@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Progress } from '@/components/ui/progress'
 import { useServerAction } from '@/hooks/use-server-action'
-import { minutesToLabel, shortTime, WEEKDAY_SHORT } from '@/lib/dates'
+import { minutesToLabel, shortTime, weekdayShort } from '@/lib/dates'
 import { deleteRoutine, toggleRoutineItem } from '@/lib/routines/actions'
 import type { RoutineWithRun } from '@/lib/routines/repository'
 import {
@@ -26,6 +26,7 @@ import {
 } from '@/lib/routines/schemas'
 import { percent } from '@/lib/utils'
 import { RoutineFormDialog } from './routine-form-dialog'
+import { useT } from '@/lib/i18n/client'
 
 export function RoutineCard({
   routine,
@@ -38,6 +39,7 @@ export function RoutineCard({
   habits: { id: string; name: string }[]
   weekStartsOn: 0 | 1
 }) {
+  const t = useT()
   const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [, startTransition] = useTransition()
@@ -62,7 +64,7 @@ export function RoutineCard({
           <div className="flex items-center gap-2">
             <h2 className="font-medium">{routine.name}</h2>
             <Badge variant="secondary">
-              {ROUTINE_TYPE_LABELS[routine.routine_type as RoutineType]}
+              {t(ROUTINE_TYPE_LABELS[routine.routine_type as RoutineType])}
             </Badge>
           </div>
           <p className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-x-2 text-xs">
@@ -74,20 +76,24 @@ export function RoutineCard({
             {minutes > 0 && <span>~{minutesToLabel(minutes)}</span>}
             <span>
               {routine.weekdays.length === 7
-                ? 'Every day'
-                : routine.weekdays.map((d) => WEEKDAY_SHORT[d]).join(', ')}
+                ? t('Every day')
+                : routine.weekdays.map((d) => weekdayShort(d, t.locale)).join(', ')}
             </span>
           </p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label={`${routine.name} actions`}>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t('{name} actions', { name: routine.name })}
+            >
               <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onSelect={() => setEditing(true)}>
-              <Pencil /> Edit
+              <Pencil /> {t('Edit')}
             </DropdownMenuItem>
             <DropdownMenuItem variant="destructive" onSelect={() => setConfirming(true)}>
               <Trash2 /> Delete
@@ -100,7 +106,7 @@ export function RoutineCard({
           <Progress
             value={percent(completed, total)}
             tone={completed === total ? 'success' : 'primary'}
-            label={`${routine.name} progress`}
+            label={t('{name} progress', { name: routine.name })}
           />
           <span className="text-muted-foreground tabular text-xs">
             {completed}/{total}
@@ -122,7 +128,7 @@ export function RoutineCard({
                       item_id: item.id,
                       done: v === true,
                     })
-                    if (!r.ok) toast.error(r.error)
+                    if (!r.ok) toast.error(t(r.error))
                   })
                 }
               />
@@ -138,7 +144,9 @@ export function RoutineCard({
           </li>
         ))}
       </ol>
-      {!scheduledToday && <p className="text-muted-foreground text-xs">Not scheduled today.</p>}
+      {!scheduledToday && (
+        <p className="text-muted-foreground text-xs">{t('Not scheduled today.')}</p>
+      )}
       <RoutineFormDialog
         open={editing}
         onOpenChange={setEditing}
@@ -162,10 +170,10 @@ export function RoutineCard({
       <ConfirmDialog
         open={confirming}
         onOpenChange={setConfirming}
-        title="Delete this routine?"
-        description="The routine and its history will be removed. Linked habits are kept."
+        title={t('Delete this routine?')}
+        description={t('The routine and its history will be removed. Linked habits are kept.')}
         onConfirm={() =>
-          run(() => deleteRoutine({ id: routine.id }), { success: 'Routine deleted' })
+          run(() => deleteRoutine({ id: routine.id }), { success: t('Routine deleted') })
         }
       />
     </article>

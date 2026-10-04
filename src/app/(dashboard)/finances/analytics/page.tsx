@@ -1,4 +1,3 @@
-import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { BarsChart, DonutChart, TrendChart } from '@/components/charts/lazy'
 import { Money } from '@/components/finances/money'
@@ -12,12 +11,14 @@ import { getFinanceAnalytics, resolveFinanceRange } from '@/lib/finance/analytic
 import { formatMoney, minorToMajor } from '@/lib/money'
 import { describeRepeatRule, parseRepeatRule } from '@/lib/recurrence'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Financial analytics' }
+export const generateMetadata = pageTitle('Financial analytics')
 
 export default async function FinanceAnalyticsPage({
   searchParams,
 }: PageProps<'/finances/analytics'>) {
+  const t = await getT()
   const sp = await searchParams
   const { supabase, user, today, currency } = await getOnboardedUserContext()
   const { range, from, to } = resolveFinanceRange(
@@ -40,9 +41,9 @@ export default async function FinanceAnalyticsPage({
             from={from}
             to={to}
             options={[
-              { value: 'month', label: 'Month' },
-              { value: 'quarter', label: 'Quarter' },
-              { value: 'year', label: 'Year' },
+              { value: 'month', label: t('Month') },
+              { value: 'quarter', label: t('Quarter') },
+              { value: 'year', label: t('Year') },
             ]}
           />
         </Suspense>
@@ -52,24 +53,24 @@ export default async function FinanceAnalyticsPage({
       </div>
 
       <section className="bg-card grid grid-cols-2 gap-4 rounded-xl border p-5 md:grid-cols-4">
-        <Stat label="Income" value={formatMoney(a.summary.income, currency)} tone="positive" />
-        <Stat label="Expenses" value={formatMoney(a.summary.expenses, currency)} />
+        <Stat label={t('Income')} value={formatMoney(a.summary.income, currency)} tone="positive" />
+        <Stat label={t('Expenses')} value={formatMoney(a.summary.expenses, currency)} />
         <Stat
-          label="Savings"
+          label={t('Savings')}
           value={formatMoney(a.summary.savings, currency)}
           tone={a.summary.savings < 0 ? 'negative' : undefined}
         />
-        <Stat label="Savings rate" value={`${Math.round(a.summary.savingsRate)}%`} />
+        <Stat label={t('Savings rate')} value={`${Math.round(a.summary.savingsRate)}%`} />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Income vs expenses</CardTitle>
+            <CardTitle>{t('Income vs expenses')}</CardTitle>
           </CardHeader>
           <CardContent>
             <BarsChart
-              ariaLabel="Income and expenses per month"
+              ariaLabel={t('Income and expenses per month')}
               format={money}
               data={a.flow.map((m) => ({
                 label: formatISODate(`${m.label}-01`, 'MMM'),
@@ -77,25 +78,25 @@ export default async function FinanceAnalyticsPage({
                 expenses: m.expenses,
               }))}
               series={[
-                { key: 'income', label: 'Income', color: 'var(--chart-2)' },
-                { key: 'expenses', label: 'Expenses', color: 'var(--chart-4)' },
+                { key: 'income', label: t('Income'), color: 'var(--chart-2)' },
+                { key: 'expenses', label: t('Expenses'), color: 'var(--chart-4)' },
               ]}
             />
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Cash flow & savings rate</CardTitle>
+            <CardTitle>{t('Cash flow & savings rate')}</CardTitle>
           </CardHeader>
           <CardContent>
             <BarsChart
-              ariaLabel="Net cash flow per month"
+              ariaLabel={t('Net cash flow per month')}
               format={money}
               data={a.flow.map((m) => ({
                 label: formatISODate(`${m.label}-01`, 'MMM'),
                 net: m.net,
               }))}
-              series={[{ key: 'net', label: 'Net cash flow' }]}
+              series={[{ key: 'net', label: t('Net cash flow') }]}
               height={180}
             />
             <ul className="text-muted-foreground mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">
@@ -110,11 +111,11 @@ export default async function FinanceAnalyticsPage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Net worth</CardTitle>
+            <CardTitle>{t('Net worth')}</CardTitle>
           </CardHeader>
           <CardContent>
             <TrendChart
-              ariaLabel="Net worth trend"
+              ariaLabel={t('Net worth trend')}
               format={money}
               data={a.netWorth.map((p) => ({
                 label: formatISODate(`${p.label}-01`, 'MMM yy'),
@@ -125,15 +126,15 @@ export default async function FinanceAnalyticsPage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Top categories</CardTitle>
+            <CardTitle>{t('Top categories')}</CardTitle>
           </CardHeader>
           <CardContent>
             {a.byCategory.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No expenses in this range.</p>
+              <p className="text-muted-foreground text-sm">{t('No expenses in this range.')}</p>
             ) : (
               <div className="grid items-center gap-4 sm:grid-cols-2">
                 <DonutChart
-                  ariaLabel="Spending by category"
+                  ariaLabel={t('Spending by category')}
                   format={money}
                   data={a.byCategory.slice(0, 8).map((c) => ({
                     label: c.name,
@@ -160,15 +161,17 @@ export default async function FinanceAnalyticsPage({
         </Card>
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Recurring costs</CardTitle>
+            <CardTitle>{t('Recurring costs')}</CardTitle>
             <span className="text-muted-foreground text-xs">
-              {formatMoney(a.recurringMonthly.expenses, currency)} / month ·{' '}
-              {formatMoney(a.recurringMonthly.income, currency)} recurring income
+              {t('{costs} / month · {income} recurring income', {
+                costs: formatMoney(a.recurringMonthly.expenses, currency),
+                income: formatMoney(a.recurringMonthly.income, currency),
+              })}
             </span>
           </CardHeader>
           <CardContent>
             {a.recurring.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No recurring transactions yet.</p>
+              <p className="text-muted-foreground text-sm">{t('No recurring transactions yet.')}</p>
             ) : (
               <ul className="grid gap-x-8 gap-y-1 text-sm sm:grid-cols-2">
                 {a.recurring.map((r) => (

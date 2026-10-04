@@ -1,5 +1,4 @@
 import { Target } from 'lucide-react'
-import type { Metadata } from 'next'
 import { GoalCard } from '@/components/goals/goal-card'
 import { NewGoalButton } from '@/components/goals/new-goal-button'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -7,10 +6,12 @@ import { PageHeader } from '@/components/ui/page-header'
 import { listAccountOptions } from '@/lib/finance/accounts-repository'
 import { listGoalsWithProgress } from '@/lib/goals/service'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Goals' }
+export const generateMetadata = pageTitle('Goals')
 
 export default async function GoalsPage({ searchParams }: PageProps<'/goals'>) {
+  const t = await getT()
   const params = await searchParams
   const { supabase, user, today } = await getOnboardedUserContext()
   const [goals, accounts] = await Promise.all([
@@ -27,26 +28,26 @@ export default async function GoalsPage({ searchParams }: PageProps<'/goals'>) {
   return (
     <>
       <PageHeader
-        title="Goals"
+        title={t('Goals')}
         description={
           active.length
-            ? `${active.length} active · ${behind ? `${behind} need attention` : 'all on track'} · ${completed.length} completed`
-            : 'Long-term outcomes your daily actions build towards.'
+            ? `${t('{n} active', { n: active.length })} · ${behind ? t('{n} need attention', { n: behind }) : t('all on track')} · ${t('{n} completed', { n: completed.length })}`
+            : t('Long-term outcomes your daily actions build towards.')
         }
         actions={<NewGoalButton accounts={accounts} defaultOpen={params.new === '1'} />}
       />
       {goals.length === 0 ? (
         <EmptyState
           icon={Target}
-          title="No goals yet"
-          description="Create your first goal and start tracking progress."
+          title={t('No goals yet')}
+          description={t('Create your first goal and start tracking progress.')}
         />
       ) : (
         <div className="flex flex-col gap-8">
           {[
-            ['Active', active],
-            ['Paused', paused],
-            ['Completed', completed],
+            [t('Active'), active],
+            [t('Paused'), paused],
+            [t('Completed'), completed],
           ].map(([label, list]) =>
             (list as typeof goals).length ? (
               <section key={label as string} aria-labelledby={`goals-${label}`}>

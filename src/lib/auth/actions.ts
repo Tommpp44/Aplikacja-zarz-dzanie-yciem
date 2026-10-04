@@ -7,6 +7,7 @@ import type { ActionResult } from '@/lib/action-types'
 import { logger } from '@/lib/logger'
 import { createClient } from '@/lib/supabase/server'
 import { isValidTimeZone } from '@/lib/dates'
+import { getLocale } from '@/lib/i18n/server'
 import { safeRedirectPath } from './access'
 import {
   magicLinkSchema,
@@ -15,6 +16,7 @@ import {
   signInSchema,
   signUpSchema,
 } from './schemas'
+import { msg } from '@/lib/i18n/translate'
 
 function fieldErrors(error: z.ZodError) {
   const out: Record<string, string> = {}
@@ -32,7 +34,7 @@ export async function signIn(
   if (!parsed.success)
     return {
       ok: false,
-      error: 'Please check the highlighted fields.',
+      error: msg('Please check the highlighted fields.'),
       fieldErrors: fieldErrors(parsed.error),
     }
   const supabase = await createClient()
@@ -42,7 +44,7 @@ export async function signIn(
   })
   if (error) {
     logger.warn('sign in failed', { action: 'signIn', code: error.code })
-    return { ok: false, error: 'Incorrect email or password.' }
+    return { ok: false, error: msg('Incorrect email or password.') }
   }
   return { ok: true, data: { redirectTo: safeRedirectPath(parsed.data.next) } }
 }
@@ -54,7 +56,7 @@ export async function signUp(
   if (!parsed.success)
     return {
       ok: false,
-      error: 'Please check the highlighted fields.',
+      error: msg('Please check the highlighted fields.'),
       fieldErrors: fieldErrors(parsed.error),
     }
   const { email, password, display_name, timezone } = parsed.data
@@ -67,15 +69,16 @@ export async function signUp(
       data: {
         display_name,
         timezone: timezone && isValidTimeZone(timezone) ? timezone : undefined,
+        language: await getLocale(),
       },
     },
   })
   if (error) {
     logger.warn('sign up failed', { action: 'signUp', code: error.code })
     if (error.code === 'user_already_exists')
-      return { ok: false, error: 'An account with this email already exists.' }
+      return { ok: false, error: msg('An account with this email already exists.') }
     if (error.code === 'weak_password')
-      return { ok: false, error: 'Please choose a stronger password.' }
+      return { ok: false, error: msg('Please choose a stronger password.') }
     return { ok: false, error: "We couldn't create your account. Please try again." }
   }
   return { ok: true, data: { needsConfirmation: !data.session } }
@@ -88,7 +91,7 @@ export async function sendMagicLink(
   if (!parsed.success)
     return {
       ok: false,
-      error: 'Please check the highlighted fields.',
+      error: msg('Please check the highlighted fields.'),
       fieldErrors: fieldErrors(parsed.error),
     }
   const supabase = await createClient()
@@ -105,7 +108,7 @@ export async function sendMagicLink(
 
 export async function signInWithOAuth(provider: OAuthProvider, next?: string) {
   if (!enabledOAuthProviders().includes(provider))
-    return { ok: false, error: 'This sign-in method is not enabled.' } as const
+    return { ok: false, error: msg('This sign-in method is not enabled.') } as const
   const supabase = await createClient()
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
@@ -123,7 +126,7 @@ export async function requestPasswordReset(
   if (!parsed.success)
     return {
       ok: false,
-      error: 'Please check the highlighted fields.',
+      error: msg('Please check the highlighted fields.'),
       fieldErrors: fieldErrors(parsed.error),
     }
   const supabase = await createClient()
@@ -143,7 +146,7 @@ export async function updatePassword(
   if (!parsed.success)
     return {
       ok: false,
-      error: 'Please check the highlighted fields.',
+      error: msg('Please check the highlighted fields.'),
       fieldErrors: fieldErrors(parsed.error),
     }
   const supabase = await createClient()
@@ -151,7 +154,7 @@ export async function updatePassword(
   if (error) {
     logger.warn('password update failed', { action: 'updatePassword', code: error.code })
     if (error.code === 'same_password')
-      return { ok: false, error: 'Choose a password different from the current one.' }
+      return { ok: false, error: msg('Choose a password different from the current one.') }
     return { ok: false, error: "We couldn't update your password. Please sign in again and retry." }
   }
   return { ok: true, data: null }

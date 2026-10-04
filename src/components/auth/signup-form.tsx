@@ -11,10 +11,12 @@ import { Input } from '@/components/ui/input'
 import { SubmitButton } from '@/components/ui/submit-button'
 import { signUp } from '@/lib/auth/actions'
 import { signUpSchema } from '@/lib/auth/schemas'
+import { useT } from '@/lib/i18n/client'
 
 type Values = z.input<typeof signUpSchema>
 
 export function SignupForm() {
+  const t = useT()
   const [error, setError] = useState<string>()
   const [confirmEmail, setConfirmEmail] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
@@ -28,10 +30,9 @@ export function SignupForm() {
     return (
       <div className="bg-card flex flex-col items-center gap-3 rounded-xl border p-6 text-center">
         <MailCheck className="text-primary size-8" aria-hidden />
-        <h1 className="text-lg font-semibold">Confirm your email</h1>
+        <h1 className="text-lg font-semibold">{t('Confirm your email')}</h1>
         <p className="text-muted-foreground text-sm">
-          We sent a confirmation link to <strong className="text-foreground">{confirmEmail}</strong>
-          .
+          {t('We sent a confirmation link to {email}.', { email: confirmEmail })}
         </p>
       </div>
     )
@@ -59,9 +60,9 @@ export function SignupForm() {
       )}
     >
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Create your LifeOS</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t('Create your LifeOS')}</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          One place for your plans, habits, money and training.
+          {t('One place for your plans, habits, money and training.')}
         </p>
       </div>
       {error && (
@@ -69,11 +70,11 @@ export function SignupForm() {
           role="alert"
           className="bg-destructive-soft text-destructive rounded-md px-3 py-2 text-sm"
         >
-          {error}
+          {t(error)}
         </p>
       )}
       <Field
-        label="Name"
+        label={t('Name')}
         htmlFor="display_name"
         error={form.formState.errors.display_name?.message}
       >
@@ -84,14 +85,14 @@ export function SignupForm() {
           {...form.register('display_name')}
         />
       </Field>
-      <Field label="Email" htmlFor="email" error={form.formState.errors.email?.message}>
+      <Field label={t('Email')} htmlFor="email" error={form.formState.errors.email?.message}>
         <Input id="email" type="email" autoComplete="email" {...form.register('email')} />
       </Field>
       <Field
-        label="Password"
+        label={t('Password')}
         htmlFor="password"
         error={form.formState.errors.password?.message}
-        hint="At least 8 characters."
+        hint={t('At least 8 characters.')}
       >
         <Input
           id="password"
@@ -100,8 +101,8 @@ export function SignupForm() {
           {...form.register('password')}
         />
       </Field>
-      <SubmitButton pending={pending} pendingLabel="Creating account…">
-        Create account
+      <SubmitButton pending={pending} pendingLabel={t('Creating account…')}>
+        {t('Create account')}
       </SubmitButton>
     </form>
   )

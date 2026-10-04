@@ -11,6 +11,8 @@ import { getTodayData } from '@/lib/today/service'
 import { buildChecklist } from '@/lib/engagement/checklist'
 import type { ReflectionStatus } from '@/lib/engagement/nudges'
 import { lifeBalance } from './life-balance'
+import { currentLocale } from '@/lib/i18n/locale-state'
+import { translate } from '@/lib/i18n/translate'
 
 /** Weekly spending per category vs the average of the previous 8 weeks. */
 export function categoryWeeklyDeltas(
@@ -34,7 +36,7 @@ export function categoryWeeklyDeltas(
     if (avg <= 0) continue
     const delta = Math.round(amount - avg)
     if (Math.abs(delta) >= Math.max(5000, avg * 0.2))
-      out.push({ category: names.get(id) ?? 'Other', delta })
+      out.push({ category: names.get(id) ?? translate(currentLocale(), 'Other'), delta })
   }
   return out.sort((a, b) => b.delta - a.delta)
 }
@@ -73,21 +75,24 @@ export async function getDashboardData(ctx: UserContext) {
     (s) => s.workout_type !== 'rest' && !s.done,
   )
 
-  const brief = await getAIProvider().dailyBrief({
-    currency,
-    tasksToday: day.tasks.filter((t) => !['completed', 'cancelled'].includes(t.status)).length,
-    importantTasks: day.tasks.filter((t) => t.priority <= 2 && t.status !== 'completed').length,
-    overdueTasks: day.overdue.length,
-    nextEvent: nextEvent ? { title: nextEvent.title, time: nextEvent.time! } : null,
-    workoutToday: plannedWorkout ? { title: plannedWorkout.title, time: null } : null,
-    habitsDue: day.habits.dueCount,
-    habitsDone: day.habits.doneCount,
-    budgetsOver: finance.budgets.filter((b) => b.status === 'over').map((b) => b.name),
-    budgetsWarning: finance.budgets.filter((b) => b.status === 'warning').map((b) => b.name),
-    categoryDeltas: categoryWeeklyDeltas(recentTxns, weekStart, currency, categoryNames),
-    goals: goals.map((g) => ({ title: g.title, status: g.pace.status })),
-    dueRecurring: finance.dueRecurring.length,
-  })
+  const brief = await getAIProvider().dailyBrief(
+    {
+      currency,
+      tasksToday: day.tasks.filter((t) => !['completed', 'cancelled'].includes(t.status)).length,
+      importantTasks: day.tasks.filter((t) => t.priority <= 2 && t.status !== 'completed').length,
+      overdueTasks: day.overdue.length,
+      nextEvent: nextEvent ? { title: nextEvent.title, time: nextEvent.time! } : null,
+      workoutToday: plannedWorkout ? { title: plannedWorkout.title, time: null } : null,
+      habitsDue: day.habits.dueCount,
+      habitsDone: day.habits.doneCount,
+      budgetsOver: finance.budgets.filter((b) => b.status === 'over').map((b) => b.name),
+      budgetsWarning: finance.budgets.filter((b) => b.status === 'warning').map((b) => b.name),
+      categoryDeltas: categoryWeeklyDeltas(recentTxns, weekStart, currency, categoryNames),
+      goals: goals.map((g) => ({ title: g.title, status: g.pace.status })),
+      dueRecurring: finance.dueRecurring.length,
+    },
+    ctx.locale,
+  )
 
   const periodSummary = periodTxns ? summarize(periodTxns as Txn[], currency) : finance.month
 

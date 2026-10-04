@@ -1,5 +1,4 @@
 import { Gauge } from 'lucide-react'
-import type { Metadata } from 'next'
 import { BudgetCard, NewBudgetButton } from '@/components/finances/budget-dialogs'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Stat } from '@/components/ui/stat'
@@ -7,10 +6,12 @@ import { formatISODate } from '@/lib/dates'
 import { getFinanceOverview } from '@/lib/finance/service'
 import { formatMoney } from '@/lib/money'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { getT, pageTitle } from '@/lib/i18n/server'
 
-export const metadata: Metadata = { title: 'Budgets' }
+export const generateMetadata = pageTitle('Budgets')
 
 export default async function BudgetsPage() {
+  const t = await getT()
   const { supabase, user, today, currency } = await getOnboardedUserContext()
   const f = await getFinanceOverview(supabase, user.id, today, currency)
   const total = f.budgets.filter((b) => b.currency === currency).reduce((s, b) => s + b.limit, 0)
@@ -23,9 +24,9 @@ export default async function BudgetsPage() {
             label={`Budgeted · ${formatISODate(today, 'MMMM')}`}
             value={formatMoney(total, currency)}
           />
-          <Stat label="Spent" value={formatMoney(spent, currency)} />
+          <Stat label={t('Spent')} value={formatMoney(spent, currency)} />
           <Stat
-            label="Remaining"
+            label={t('Remaining')}
             value={formatMoney(total - spent, currency)}
             tone={total - spent < 0 ? 'negative' : 'positive'}
           />
@@ -35,8 +36,10 @@ export default async function BudgetsPage() {
       {f.budgets.length === 0 ? (
         <EmptyState
           icon={Gauge}
-          title="No budgets yet"
-          description="Set monthly limits — e.g. Food 800 PLN — and see what's left at a glance. You'll get a warning at 80%."
+          title={t('No budgets yet')}
+          description={t(
+            "Set monthly limits — e.g. Food 800 PLN — and see what's left at a glance. You'll get a warning at 80%.",
+          )}
         />
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">

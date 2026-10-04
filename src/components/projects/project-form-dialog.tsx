@@ -26,6 +26,7 @@ import {
   projectSchema,
   type ProjectInput,
 } from '@/lib/projects/schemas'
+import { useT } from '@/lib/i18n/client'
 
 export function ProjectFormDialog({
   open,
@@ -38,6 +39,7 @@ export function ProjectFormDialog({
   project?: ProjectInput & { id: string }
   goals: { id: string; title: string }[]
 }) {
+  const t = useT()
   const router = useRouter()
   const [pending, run] = useServerAction()
   const form = useForm<ProjectInput>({
@@ -70,7 +72,7 @@ export function ProjectFormDialog({
   const submit = form.handleSubmit((values) => {
     const clean = { ...values, deadline: values.deadline || null, goal_id: values.goal_id || null }
     run(() => (project ? updateProject({ id: project.id, ...clean }) : createProject(clean)), {
-      success: project ? 'Project updated' : 'Project created',
+      success: project ? t('Project updated') : t('Project created'),
       onSuccess: (data) => {
         onOpenChange(false)
         if (!project) router.push(`/projects/${data.id}`)
@@ -82,34 +84,38 @@ export function ProjectFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{project ? 'Edit project' : 'New project'}</DialogTitle>
+          <DialogTitle>{project ? t('Edit project') : t('New project')}</DialogTitle>
           <DialogDescription>
-            A project is a set of tasks that leads to one outcome.
+            {t('A project is a set of tasks that leads to one outcome.')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-          <Field label="Name" htmlFor="project-name" error={form.formState.errors.name?.message}>
+          <Field
+            label={t('Name')}
+            htmlFor="project-name"
+            error={form.formState.errors.name?.message}
+          >
             <Input
               id="project-name"
               autoFocus
-              placeholder="Move to Berlin"
+              placeholder={t('Move to Berlin')}
               {...form.register('name')}
             />
           </Field>
-          <Field label="Description" htmlFor="project-description" optional>
+          <Field label={t('Description')} htmlFor="project-description" optional>
             <Textarea id="project-description" rows={3} {...form.register('description')} />
           </Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Status" htmlFor="project-status">
+            <Field label={t('Status')} htmlFor="project-status">
               <NativeSelect id="project-status" {...form.register('status')}>
                 {PROJECT_STATUSES.map((s) => (
                   <option key={s} value={s}>
-                    {PROJECT_STATUS_LABELS[s]}
+                    {t(PROJECT_STATUS_LABELS[s])}
                   </option>
                 ))}
               </NativeSelect>
             </Field>
-            <Field label="Priority" htmlFor="project-priority">
+            <Field label={t('Priority')} htmlFor="project-priority">
               <NativeSelect
                 id="project-priority"
                 {...form.register('priority', { valueAsNumber: true })}
@@ -121,12 +127,12 @@ export function ProjectFormDialog({
                 ))}
               </NativeSelect>
             </Field>
-            <Field label="Deadline" htmlFor="project-deadline" optional>
+            <Field label={t('Deadline')} htmlFor="project-deadline" optional>
               <Input id="project-deadline" type="date" {...form.register('deadline')} />
             </Field>
-            <Field label="Linked goal" htmlFor="project-goal" optional>
+            <Field label={t('Linked goal')} htmlFor="project-goal" optional>
               <NativeSelect id="project-goal" {...form.register('goal_id')}>
-                <option value="">None</option>
+                <option value="">{t('None')}</option>
                 {goals.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.title}
@@ -135,7 +141,7 @@ export function ProjectFormDialog({
               </NativeSelect>
             </Field>
           </div>
-          <Field label="Color">
+          <Field label={t('Color')}>
             <Controller
               control={form.control}
               name="color"
@@ -145,7 +151,9 @@ export function ProjectFormDialog({
             />
           </Field>
           <DialogFooter>
-            <SubmitButton pending={pending}>{project ? 'Save' : 'Create project'}</SubmitButton>
+            <SubmitButton pending={pending}>
+              {project ? t('Save') : t('Create project')}
+            </SubmitButton>
           </DialogFooter>
         </form>
       </DialogContent>

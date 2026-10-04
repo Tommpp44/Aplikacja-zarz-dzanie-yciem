@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { msg } from '@/lib/i18n/translate'
 
 export const NOTE_ENTITY_TYPES = [
   'project',
@@ -14,15 +15,15 @@ export const NOTE_ENTITY_TYPES = [
 export type NoteEntityType = (typeof NOTE_ENTITY_TYPES)[number]
 
 export const ENTITY_LABELS: Record<NoteEntityType, string> = {
-  project: 'Project',
-  goal: 'Goal',
-  workout: 'Workout',
-  task: 'Task',
-  transaction: 'Transaction',
-  account: 'Account',
-  journal_entry: 'Journal',
-  habit: 'Habit',
-  event: 'Event',
+  project: msg('Project'),
+  goal: msg('Goal'),
+  workout: msg('Workout'),
+  task: msg('Task'),
+  transaction: msg('Transaction'),
+  account: msg('Account'),
+  journal_entry: msg('Journal'),
+  habit: msg('Habit'),
+  event: msg('Event'),
 }
 
 export function entityHref(type: NoteEntityType, id: string) {

@@ -7,6 +7,7 @@ import type { ISODate } from '@/lib/dates'
 import type { TaskListItem } from '@/lib/tasks/repository'
 import { dueLabel, dueTone, PRIORITY_RING } from '@/lib/tasks/format'
 import { cn } from '@/lib/utils'
+import { useT } from '@/lib/i18n/client'
 
 export function TaskItem({
   task,
@@ -21,12 +22,13 @@ export function TaskItem({
   onOpen: () => void
   showProject?: boolean
 }) {
+  const t = useT()
   const done = task.status === 'completed'
   const label = dueLabel(task.due_date, task.due_time, today)
   const tone = done ? null : dueTone(task.due_date, today)
   const subDone = task.subtasks.filter((s) => s.status === 'completed').length
   const tags = task.task_tags
-    .map((t) => t.tag)
+    .map((it) => it.tag)
     .filter((t): t is NonNullable<typeof t> => Boolean(t))
 
   return (
@@ -34,7 +36,11 @@ export function TaskItem({
       <Checkbox
         checked={done}
         onCheckedChange={(v) => onToggle(v === true)}
-        aria-label={done ? `Mark "${task.title}" as not done` : `Complete "${task.title}"`}
+        aria-label={
+          done
+            ? t('Mark "{title}" as not done', { title: task.title })
+            : t('Complete "{title}"', { title: task.title })
+        }
         className={cn('mt-0.5 size-[18px] rounded-full', PRIORITY_RING[task.priority])}
       />
       <button
@@ -59,7 +65,7 @@ export function TaskItem({
               {label}
             </span>
           )}
-          {task.repeat_rule && <Repeat className="size-3" aria-label="Repeats" />}
+          {task.repeat_rule && <Repeat className="size-3" aria-label={t('Repeats')} />}
           {task.subtasks.length > 0 && (
             <span className="inline-flex items-center gap-1">
               <GitBranch className="size-3" aria-hidden />

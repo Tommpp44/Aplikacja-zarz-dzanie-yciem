@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans'
 import type { Metadata, Viewport } from 'next'
 import { cookies } from 'next/headers'
 import { Providers } from '@/components/layout/providers'
+import { getLocale } from '@/lib/i18n/server'
 import { ACCENTS, ACCENT_COOKIE } from '@/lib/settings/schemas'
 import './globals.css'
 
@@ -31,15 +32,16 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const accent = (ACCENTS as readonly string[]).includes(accentCookie ?? '')
     ? accentCookie
     : 'indigo'
+  const locale = await getLocale()
   return (
     <html
-      lang="en"
+      lang={locale}
       data-accent={accent}
       suppressHydrationWarning
       className={`${GeistSans.variable} ${GeistMono.variable}`}
     >
       <body className="min-h-dvh font-sans">
-        <Providers>{children}</Providers>
+        <Providers locale={locale}>{children}</Providers>
       </body>
     </html>
   )
