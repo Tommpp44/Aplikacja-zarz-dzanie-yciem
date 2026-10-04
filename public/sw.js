@@ -4,7 +4,7 @@
  *   page and finally to /offline. Lets you read recent data without a connection.
  * - Never caches API routes, server actions (POST) or auth endpoints.
  */
-const VERSION = 'lifeos-v1'
+const VERSION = 'lifeos-v2'
 const STATIC_CACHE = `${VERSION}-static`
 const PAGE_CACHE = `${VERSION}-pages`
 const OFFLINE_URL = '/offline'
@@ -84,4 +84,39 @@ self.addEventListener('fetch', (event) => {
 // Clear cached pages on sign-out so another person on the device cannot read them.
 self.addEventListener('message', (event) => {
   if (event.data === 'clear-user-cache') event.waitUntil(caches.delete(PAGE_CACHE))
+})
+
+// Web Push: show reminders even when LifeOS is closed.
+self.addEventListener('push', (event) => {
+  let data = {}
+  try {
+    data = event.data ? event.data.json() : {}
+  } catch {
+    data = { title: event.data ? event.data.text() : 'LifeOS' }
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'LifeOS', {
+      body: data.body,
+      tag: data.tag,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      data: { url: typeof data.url === 'string' && data.url.startsWith('/') ? data.url : '/dashboard' },
+    }),
+  )
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const url = (event.notification.data && event.notification.data.url) || '/dashboard'
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+      for (const w of windows) {
+        if ('focus' in w) {
+          w.navigate(url)
+          return w.focus()
+        }
+      }
+      return self.clients.openWindow(url)
+    }),
+  )
 })

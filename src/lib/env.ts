@@ -9,6 +9,7 @@ const publicSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   NEXT_PUBLIC_SITE_URL: z.url().default('http://localhost:3000'),
   NEXT_PUBLIC_OAUTH_PROVIDERS: z.string().optional().default(''),
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string().optional().default(''),
 })
 
 export const publicEnv = publicSchema.parse({
@@ -16,6 +17,7 @@ export const publicEnv = publicSchema.parse({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || undefined,
   NEXT_PUBLIC_OAUTH_PROVIDERS: process.env.NEXT_PUBLIC_OAUTH_PROVIDERS,
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
 })
 
 export const OAUTH_PROVIDERS = ['google', 'github', 'apple', 'azure'] as const

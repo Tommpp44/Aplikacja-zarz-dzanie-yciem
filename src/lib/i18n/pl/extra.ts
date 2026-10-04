@@ -164,4 +164,14 @@ export const extra: Dict = {
   'Something measurable for this year': 'Coś mierzalnego na ten rok',
   'A weekly planning ritual': 'Cotygodniowe planowanie',
   'Plan your week + a weekly review': 'Plan tygodnia + podsumowanie tygodnia',
+  'Push notifications enabled on this device': 'Powiadomienia push włączone na tym urządzeniu',
+  'Could not enable push notifications on this device.':
+    'Nie udało się włączyć powiadomień push na tym urządzeniu.',
+  'Not available in this browser or not configured on the server.':
+    'Niedostępne w tej przeglądarce lub nieskonfigurowane na serwerze.',
+  'Notifications are blocked for LifeOS in your browser settings.':
+    'Powiadomienia dla LifeOS są zablokowane w ustawieniach przeglądarki.',
+  'Get reminders on this device even when LifeOS is closed.':
+    'Otrzymuj przypomnienia na tym urządzeniu, nawet gdy LifeOS jest zamknięty.',
+  'Push notifications on this device': 'Powiadomienia push na tym urządzeniu',
 }

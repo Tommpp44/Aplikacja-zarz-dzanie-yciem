@@ -10,11 +10,13 @@ import {
   ProfileForm,
   SignOutEverywhereButton,
 } from '@/components/settings/settings-forms'
+import { PushToggle } from '@/components/settings/push-toggle'
 import { LanguagePicker } from '@/components/shared/language-picker'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { SETTINGS_SECTIONS, type SettingsSectionId } from '@/lib/settings/sections'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { publicEnv } from '@/lib/env'
 import { getT, pageTitle } from '@/lib/i18n/server'
 import { msg } from '@/lib/i18n/translate'
 
@@ -75,7 +77,14 @@ export default async function SettingsSectionPage({ params }: PageProps<'/settin
           />
         </>
       )}
-      {id === 'notifications' && <NotificationsForm initial={prefs.notification_settings} />}
+      {id === 'notifications' && (
+        <>
+          <div className="max-w-xl">
+            <PushToggle publicKey={publicEnv.NEXT_PUBLIC_VAPID_PUBLIC_KEY} />
+          </div>
+          <NotificationsForm initial={prefs.notification_settings} />
+        </>
+      )}
       {id === 'privacy' && (
         <>
           <div className="bg-card flex max-w-xl flex-col gap-3 rounded-xl border p-5">

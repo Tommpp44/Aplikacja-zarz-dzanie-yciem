@@ -2,7 +2,7 @@
 -- users' data. Run with `npx supabase test db` (uses pgTAP, local stack only).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(21);
+select plan(23);
 
 -- Two users (the bootstrap trigger creates profiles, preferences, categories).
 insert into auth.users (id, email, raw_user_meta_data) values
@@ -72,6 +72,18 @@ insert into auth.users (id, email, raw_user_meta_data) values
 select is((select language from public.user_preferences where user_id = '33333333-3333-3333-3333-333333333333'), 'pl', 'polish sign-up stores the language');
 select ok(exists(select 1 from public.transaction_categories where user_id = '33333333-3333-3333-3333-333333333333' and name = 'Jedzenie'), 'polish users get polish category names');
 select is((select language from public.user_preferences where user_id = '44444444-4444-4444-4444-444444444444'), 'en', 'unknown languages fall back to english');
+
+-- Push subscriptions are private to their owner.
+set local role authenticated;
+set local request.jwt.claims to '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+insert into public.push_subscriptions (endpoint, p256dh, auth)
+  values ('https://push.example.com/alice', 'p256dh-key-alice', 'auth-alice');
+set local request.jwt.claims to '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+select is((select count(*)::int from public.push_subscriptions), 0, 'bob cannot see alice push subscriptions');
+select throws_ok(
+  $$insert into public.push_subscriptions (user_id, endpoint, p256dh, auth)
+    values ('11111111-1111-1111-1111-111111111111', 'https://push.example.com/x', 'p256dh-key-x', 'auth-xxxx')$$,
+  '42501', null, 'bob cannot register a device for alice');
 
 select * from finish();
 rollback;

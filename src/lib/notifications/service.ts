@@ -13,6 +13,8 @@ import { listBudgets, listTransactionsInRange } from '@/lib/finance/repository'
 import { listHabitLogs, listHabits } from '@/lib/habits/repository'
 import { isOpenToday } from '@/lib/habits/stats'
 import { isLocale } from '@/lib/i18n/config'
+import { toPushPayload } from '@/lib/push/payload'
+import { sendPushToUser } from '@/lib/push/send'
 import { normalizeNotificationSettings } from '@/lib/settings/schemas'
 import { listPlans, sessionsForDate } from '@/lib/workouts/repository'
 import { computeNotifications, type NotificationFacts } from './engine'
@@ -193,6 +195,8 @@ export async function syncNotificationsForUser(db: DB, userId: string) {
       drafts.map((d) => ({ ...d, user_id: userId })),
       { onConflict: 'user_id,dedupe_key', ignoreDuplicates: true },
     )
-    .select('id')
+    .select('title, body, href, dedupe_key')
+  // Newly created notifications also go to the user's devices (best effort).
+  if (data?.length) await sendPushToUser(db, userId, data.map(toPushPayload))
   return data?.length ?? 0
 }

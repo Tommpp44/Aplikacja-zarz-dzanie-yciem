@@ -88,6 +88,16 @@ npm run test:e2e     # Playwright E2E against a production build + local Supabas
 - **Translations** — `src/lib/i18n/coverage.test.ts` checks every UI string has a Polish translation; `e2e/i18n.spec.ts` switches languages end to end.
 - **Accessibility** — `e2e/a11y.spec.ts` runs axe-core (WCAG 2.1 A/AA) over every main page in light and dark mode as part of the E2E suite.
 
+## Push notifications (optional)
+
+Reminders can reach phones and desktops even when LifeOS is closed (Web Push, no third-party account needed):
+
+1. `npx web-push generate-vapid-keys`
+2. Set `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `VAPID_SUBJECT` (e.g. `mailto:you@example.com`).
+3. Each user enables it per device in **Settings → Notifications**. New notifications (generated in-app or by the hourly cron) are pushed to all of the user's devices; expired subscriptions are removed automatically.
+
+On iPhone, push works after LifeOS is added to the Home Screen (iOS 16.4+).
+
 ## Deployment
 
 1. Create a Supabase project, run `npx supabase db push`, configure Auth URLs.
