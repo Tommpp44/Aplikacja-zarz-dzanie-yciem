@@ -17,7 +17,13 @@ import { DASHBOARD_WIDGETS, type DashboardWidget, type FinanceRange } from '@/li
 import { NativeSelect } from '@/components/ui/native-select'
 
 /** Reorder, hide and show dashboard widgets (stored in user preferences). */
-export function CustomizeDashboard({ layout, financeRange }: { layout: DashboardWidget[]; financeRange: FinanceRange }) {
+export function CustomizeDashboard({
+  layout,
+  financeRange,
+}: {
+  layout: DashboardWidget[]
+  financeRange: FinanceRange
+}) {
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState(layout)
   const [range, setRange] = useState<FinanceRange>(financeRange)
@@ -80,9 +86,14 @@ export function CustomizeDashboard({ layout, financeRange }: { layout: Dashboard
               </li>
             ))}
           </ul>
-          <label className="mx-5 flex items-center justify-between gap-3 rounded-lg border bg-card px-3 py-2 text-sm">
+          <label className="bg-card mx-5 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm">
             Finance widget period
-            <NativeSelect aria-label="Finance widget period" className="w-40" value={range} onChange={(e) => setRange(e.target.value as FinanceRange)}>
+            <NativeSelect
+              aria-label="Finance widget period"
+              className="w-40"
+              value={range}
+              onChange={(e) => setRange(e.target.value as FinanceRange)}
+            >
               <option value="month">This month</option>
               <option value="quarter">Last 3 months</option>
               <option value="year">Year to date</option>
@@ -101,9 +112,10 @@ export function CustomizeDashboard({ layout, financeRange }: { layout: Dashboard
                     return r.ok ? updateDashboardLayout({ layout: items }) : r
                   },
                   {
-                  success: 'Dashboard updated',
-                  onSuccess: () => setOpen(false),
-                })
+                    success: 'Dashboard updated',
+                    onSuccess: () => setOpen(false),
+                  },
+                )
               }
             >
               Save

@@ -63,7 +63,12 @@ export function computeNotifications(
       })
     }
     for (const t of f.taskReminders ?? []) {
-      out.push({ kind: 'task_reminder', title: `Reminder: ${t.title}`, href: '/tasks?view=today', dedupe_key: `task_reminder:${t.id}:${t.reminder_at}` })
+      out.push({
+        kind: 'task_reminder',
+        title: `Reminder: ${t.title}`,
+        href: '/tasks?view=today',
+        dedupe_key: `task_reminder:${t.id}:${t.reminder_at}`,
+      })
     }
     if (f.tasksDueToday > 0) {
       out.push({

@@ -58,16 +58,16 @@ Swapping the backend means re-implementing repositories; services and UI stay.
 
 ## Cross-module integration
 
-| Link | How |
-| --- | --- |
-| Goal ↔ account | `goals.progress_source = 'account'` → progress = live account balance |
-| Goal ↔ tasks / milestones | progress from completed linked tasks or milestones |
-| Goal ↔ projects, habits, workouts, training plans | `goal_id` foreign keys; shown on the goal page |
-| Routine step ↔ habit | checking the step logs the habit |
-| Tasks ↔ calendar / today | dated tasks appear in calendar views and the Today timeline |
-| Training plan ↔ today / dashboard / notifications | planned session for the day with one-tap start |
-| Notes ↔ anything | `note_links` (project, goal, task, workout, habit, transaction, …) |
-| Everything ↔ dashboard, reviews, analytics, daily brief | aggregation services read from all modules |
+| Link                                                    | How                                                                   |
+| ------------------------------------------------------- | --------------------------------------------------------------------- |
+| Goal ↔ account                                          | `goals.progress_source = 'account'` → progress = live account balance |
+| Goal ↔ tasks / milestones                               | progress from completed linked tasks or milestones                    |
+| Goal ↔ projects, habits, workouts, training plans       | `goal_id` foreign keys; shown on the goal page                        |
+| Routine step ↔ habit                                    | checking the step logs the habit                                      |
+| Tasks ↔ calendar / today                                | dated tasks appear in calendar views and the Today timeline           |
+| Training plan ↔ today / dashboard / notifications       | planned session for the day with one-tap start                        |
+| Notes ↔ anything                                        | `note_links` (project, goal, task, workout, habit, transaction, …)    |
+| Everything ↔ dashboard, reviews, analytics, daily brief | aggregation services read from all modules                            |
 
 ## Security
 

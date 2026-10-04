@@ -250,7 +250,12 @@ export function FinanceWidget({ data, currency }: P) {
           />
         </div>
         <p className="text-muted-foreground text-xs">
-          {data.financePeriod.range === 'month' ? 'This month' : data.financePeriod.range === 'quarter' ? 'Last 3 months' : 'Year to date'} · savings rate {Math.round(p.savingsRate)}% · forecast end balance{' '}
+          {data.financePeriod.range === 'month'
+            ? 'This month'
+            : data.financePeriod.range === 'quarter'
+              ? 'Last 3 months'
+              : 'Year to date'}{' '}
+          · savings rate {Math.round(p.savingsRate)}% · forecast end balance{' '}
           {formatMoney(f.forecast.expectedEndBalance, currency, { compact: true })}
         </p>
       </div>

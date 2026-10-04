@@ -74,11 +74,18 @@ export async function getDashboardData(ctx: UserContext) {
   // Finance widget period (configurable): month, quarter or year to date.
   const financeRange = prefs.last_used.finance_range ?? 'month'
   const periodStart =
-    financeRange === 'year' ? `${today.slice(0, 4)}-01-01` : financeRange === 'quarter' ? addMonthsISO(startOfMonthISO(today), -2) : startOfMonthISO(today)
+    financeRange === 'year'
+      ? `${today.slice(0, 4)}-01-01`
+      : financeRange === 'quarter'
+        ? addMonthsISO(startOfMonthISO(today), -2)
+        : startOfMonthISO(today)
   const periodSummary =
     financeRange === 'month'
       ? finance.month
-      : summarize((await listTransactionsInRange(supabase, user.id, periodStart, today)) as Txn[], currency)
+      : summarize(
+          (await listTransactionsInRange(supabase, user.id, periodStart, today)) as Txn[],
+          currency,
+        )
 
   return {
     day,

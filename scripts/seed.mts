@@ -67,7 +67,6 @@ function instant(date: string, time: string) {
   )
   return new Date(guess.getTime() - offset * 3600_000).toISOString()
 }
-const monthStart = `${today.slice(0, 7)}-01`
 let seed = 42
 const rand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646
 
@@ -480,18 +479,16 @@ async function main() {
     'milestones',
   )
   await must(
-    db
-      .from('goal_progress_logs')
-      .insert(
-        own(
-          [10, 12, 13].map((v, i) => ({
-            goal_id: goal('Read 24 books'),
-            value: v,
-            logged_at: addDays(today, -60 + i * 20) + 'T12:00:00Z',
-          })),
-        ),
-        { defaultToNull: false },
+    db.from('goal_progress_logs').insert(
+      own(
+        [10, 12, 13].map((v, i) => ({
+          goal_id: goal('Read 24 books'),
+          value: v,
+          logged_at: addDays(today, -60 + i * 20) + 'T12:00:00Z',
+        })),
       ),
+      { defaultToNull: false },
+    ),
     'progress logs',
   )
 

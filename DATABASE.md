@@ -30,17 +30,17 @@ Net worth = assets − liabilities (credit cards and loans hold negative balance
 
 ## Tables
 
-| Area | Tables |
-| --- | --- |
-| Identity | `profiles` (role, plan, onboarding), `user_preferences` (currency, timezone, week start, units, theme, accent, dashboard layout, notifications, smart defaults, focus) |
-| Organisation | `life_areas`, `tags`, `audit_log` |
-| Planning | `goals`, `goal_milestones`, `goal_progress_logs`, `projects`, `project_members`, `tasks`, `task_tags`, `task_dependencies`, `task_attachments` |
-| Routine | `habits`, `habit_logs` (unique per habit/day), `routines`, `routine_items`, `routine_runs` |
-| Finance | `accounts`, `account_balances` (view), `transaction_categories`, `transactions`, `budgets`, `budget_categories`, `recurring_transactions` |
-| Calendar | `calendar_events` (+ `external_provider/external_id` for sync) |
-| Fitness | `exercises`, `workout_templates`, `workout_template_exercises`, `training_plans`, `training_plan_sessions`, `workouts`, `workout_exercises`, `workout_sets`, `activity_records` |
-| Knowledge | `notes`, `note_links` (polymorphic), `note_tags`, `journal_entries` |
-| Other | `shopping_lists`, `shopping_items`, `notifications` (unique dedupe key), `daily_reviews`, `weekly_reviews`, `monthly_reviews`, `integrations` |
+| Area         | Tables                                                                                                                                                                          |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity     | `profiles` (role, plan, onboarding), `user_preferences` (currency, timezone, week start, units, theme, accent, dashboard layout, notifications, smart defaults, focus)          |
+| Organisation | `life_areas`, `tags`, `audit_log`                                                                                                                                               |
+| Planning     | `goals`, `goal_milestones`, `goal_progress_logs`, `projects`, `project_members`, `tasks`, `task_tags`, `task_dependencies`, `task_attachments`                                  |
+| Routine      | `habits`, `habit_logs` (unique per habit/day), `routines`, `routine_items`, `routine_runs`                                                                                      |
+| Finance      | `accounts`, `account_balances` (view), `transaction_categories`, `transactions`, `budgets`, `budget_categories`, `recurring_transactions`                                       |
+| Calendar     | `calendar_events` (+ `external_provider/external_id` for sync)                                                                                                                  |
+| Fitness      | `exercises`, `workout_templates`, `workout_template_exercises`, `training_plans`, `training_plan_sessions`, `workouts`, `workout_exercises`, `workout_sets`, `activity_records` |
+| Knowledge    | `notes`, `note_links` (polymorphic), `note_tags`, `journal_entries`                                                                                                             |
+| Other        | `shopping_lists`, `shopping_items`, `notifications` (unique dedupe key), `daily_reviews`, `weekly_reviews`, `monthly_reviews`, `integrations`                                   |
 
 ## Triggers
 

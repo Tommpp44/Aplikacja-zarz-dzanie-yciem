@@ -166,7 +166,13 @@ export async function syncNotificationsForUser(db: DB, userId: string) {
       goalId: m.goal_id,
       goalTitle: m.goal?.title ?? '',
     })),
-    taskReminders: (reminders.data ?? []).map((t: { id: string; title: string; reminder_at: string | null }) => ({ id: t.id, title: t.title, reminder_at: t.reminder_at! })),
+    taskReminders: (reminders.data ?? []).map(
+      (t: { id: string; title: string; reminder_at: string | null }) => ({
+        id: t.id,
+        title: t.title,
+        reminder_at: t.reminder_at!,
+      }),
+    ),
     recurringDue: (recurring.data ?? []).map((r) => ({
       id: r.id,
       name: r.merchant || r.description || 'Payment',

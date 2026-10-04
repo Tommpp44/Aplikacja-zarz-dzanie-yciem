@@ -30,15 +30,15 @@ Demo account after seeding: `demo@lifeos.app` / `lifeos-demo-2026`.
 
 ## Environment variables
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | yes | Supabase API URL (`npx supabase status` prints it locally). |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes | Public anon/publishable key. Safe for the browser; all access is protected by RLS. |
-| `SUPABASE_SERVICE_ROLE_KEY` | for account deletion, cron, seed | **Server-only** secret. Never expose it to the client. |
-| `NEXT_PUBLIC_SITE_URL` | yes | Public URL of the app, used in auth emails (magic link, confirmation, password reset). |
-| `NEXT_PUBLIC_OAUTH_PROVIDERS` | no | Comma-separated OAuth providers enabled in Supabase (`google,github,apple,azure`). Empty hides OAuth buttons. |
-| `CRON_SECRET` | for cron | Bearer token required by `/api/cron/daily`. |
-| `AI_PROVIDER` | no | `rules` (default, offline). Reserved for future LLM providers. |
+| Variable                        | Required                         | Description                                                                                                   |
+| ------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | yes                              | Supabase API URL (`npx supabase status` prints it locally).                                                   |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes                              | Public anon/publishable key. Safe for the browser; all access is protected by RLS.                            |
+| `SUPABASE_SERVICE_ROLE_KEY`     | for account deletion, cron, seed | **Server-only** secret. Never expose it to the client.                                                        |
+| `NEXT_PUBLIC_SITE_URL`          | yes                              | Public URL of the app, used in auth emails (magic link, confirmation, password reset).                        |
+| `NEXT_PUBLIC_OAUTH_PROVIDERS`   | no                               | Comma-separated OAuth providers enabled in Supabase (`google,github,apple,azure`). Empty hides OAuth buttons. |
+| `CRON_SECRET`                   | for cron                         | Bearer token required by `/api/cron/daily`.                                                                   |
+| `AI_PROVIDER`                   | no                               | `rules` (default, offline). Reserved for future LLM providers.                                                |
 
 `.env*` files are git-ignored; only `.env.example` is committed.
 
