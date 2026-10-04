@@ -57,6 +57,8 @@ export const notificationSettingsSchema = z.object({
   deadlines: z.boolean().default(true),
   goal_milestones: z.boolean().default(true),
   recurring_transactions: z.boolean().default(true),
+  email_daily_agenda: z.boolean().default(false),
+  email_weekly_summary: z.boolean().default(false),
 })
 export type NotificationSettings = z.infer<typeof notificationSettingsSchema>
 
@@ -91,6 +93,14 @@ export const NOTIFICATION_LABELS: Record<
   recurring_transactions: {
     label: msg('Recurring transactions'),
     description: msg('Bills and income due to be recorded.'),
+  },
+  email_daily_agenda: {
+    label: msg('Morning e-mail'),
+    description: msg('Your day at 7:00 — tasks, events and habits.'),
+  },
+  email_weekly_summary: {
+    label: msg('Weekly e-mail summary'),
+    description: msg('On the last day of your week: what you achieved and what is next.'),
   },
 }
 

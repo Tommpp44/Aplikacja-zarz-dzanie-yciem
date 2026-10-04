@@ -174,4 +174,37 @@ export const extra: Dict = {
   'Get reminders on this device even when LifeOS is closed.':
     'Otrzymuj przypomnienia na tym urządzeniu, nawet gdy LifeOS jest zamknięty.',
   'Push notifications on this device': 'Powiadomienia push na tym urządzeniu',
+  'Morning e-mail': 'Poranny e-mail',
+  'Your day at 7:00 — tasks, events and habits.':
+    'Twój dzień o 7:00 — zadania, wydarzenia i nawyki.',
+  'Weekly e-mail summary': 'Cotygodniowe podsumowanie e-mailem',
+  'On the last day of your week: what you achieved and what is next.':
+    'W ostatni dzień tygodnia: co udało się osiągnąć i co dalej.',
+  'Good morning, {name}': 'Dzień dobry, {name}',
+  'Nothing planned yet — a calm day. Pick one thing that matters and start there.':
+    'Nic jeszcze nie zaplanowano — spokojny dzień. Wybierz jedną ważną rzecz i od niej zacznij.',
+  'Here is your {date}.': 'Oto Twój dzień: {date}.',
+  'You get this e-mail because the morning e-mail is on.':
+    'Dostajesz tę wiadomość, bo masz włączony poranny e-mail.',
+  'Change e-mail settings': 'Zmień ustawienia e-maili',
+  'Your day: {tasks} tasks, {events} events': 'Twój dzień: zadania {tasks}, wydarzenia {events}',
+  'Tasks completed: {n}': 'Ukończone zadania: {n}',
+  'Habits: {done}/{due} ({rate}%)': 'Nawyki: {done}/{due} ({rate}%)',
+  'Workouts: {n} ({time})': 'Treningi: {n} ({time})',
+  'Spent: {amount}': 'Wydano: {amount}',
+  'Goals achieved: {n}': 'Osiągnięte cele: {n}',
+  'Your week, {name}': 'Twój tydzień, {name}',
+  '{range} — take ten minutes to look back and plan the next week.':
+    '{range} — poświęć dziesięć minut na podsumowanie i zaplanuj kolejny tydzień.',
+  'Done this week': 'Zrobione w tym tygodniu',
+  'You get this e-mail because the weekly summary is on.':
+    'Dostajesz tę wiadomość, bo masz włączone cotygodniowe podsumowanie.',
+  'Your week in LifeOS: {range}': 'Twój tydzień w LifeOS: {range}',
+  'We couldn’t send the e-mail. Check the SMTP settings and try again.':
+    'Nie udało się wysłać e-maila. Sprawdź ustawienia SMTP i spróbuj ponownie.',
+  'E-mail is not configured on this server.': 'E-mail nie jest skonfigurowany na tym serwerze.',
+  'E-mails go to {email}.': 'E-maile trafiają na {email}.',
+  "Sent — check your inbox for today's agenda.":
+    'Wysłano — sprawdź skrzynkę, czeka tam plan na dziś.',
+  'Send a test e-mail': 'Wyślij testowy e-mail',
 }

@@ -98,6 +98,15 @@ Reminders can reach phones and desktops even when LifeOS is closed (Web Push, no
 
 On iPhone, push works after LifeOS is added to the Home Screen (iOS 16.4+).
 
+## E-mail (optional)
+
+With `SMTP_URL` (any SMTP provider) and `EMAIL_FROM` set, users can opt in under **Settings → Notifications** to:
+
+- a **morning e-mail** (after 7:00 in their timezone): today's focus, events, tasks and open habits;
+- a **weekly summary** (last day of their week, after 17:00): completed tasks, habits, workouts, spending and next week's priorities.
+
+The hourly cron sends each digest at most once per day/week (`email_deliveries`). "Send a test e-mail" in settings sends today's agenda immediately. Locally, Supabase's Mailpit catches everything (UI at http://127.0.0.1:54324).
+
 ## Deployment
 
 1. Create a Supabase project, run `npx supabase db push`, configure Auth URLs.

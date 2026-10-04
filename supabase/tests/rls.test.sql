@@ -2,7 +2,7 @@
 -- users' data. Run with `npx supabase test db` (uses pgTAP, local stack only).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(23);
+select plan(24);
 
 -- Two users (the bootstrap trigger creates profiles, preferences, categories).
 insert into auth.users (id, email, raw_user_meta_data) values
@@ -84,6 +84,10 @@ select throws_ok(
   $$insert into public.push_subscriptions (user_id, endpoint, p256dh, auth)
     values ('11111111-1111-1111-1111-111111111111', 'https://push.example.com/x', 'p256dh-key-x', 'auth-xxxx')$$,
   '42501', null, 'bob cannot register a device for alice');
+
+select throws_ok(
+  $$insert into public.email_deliveries (user_id, kind, period_key) values ('22222222-2222-2222-2222-222222222222', 'daily_agenda', '2026-01-01')$$,
+  '42501', null, 'users cannot write the e-mail delivery log');
 
 select * from finish();
 rollback;

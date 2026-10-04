@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { todayISO } from '@/lib/dates'
 import { serverEnv } from '@/lib/env.server'
+import { sendDigestsForUser } from '@/lib/email/digests'
 import { logger } from '@/lib/logger'
 import { syncNotificationsForUser } from '@/lib/notifications/service'
 import { nextOccurrenceAfter, parseRepeatRule } from '@/lib/recurrence'
@@ -79,10 +80,14 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // 3. Morning agenda / weekly summary e-mails (opt-in, at most once per period).
+  let emailed = 0
+  for (const userId of tz.keys()) emailed += await sendDigestsForUser(db, userId)
+
   logger.info('cron completed', {
     route: 'cron/daily',
     count: posted,
     durationMs: Date.now() - started,
   })
-  return NextResponse.json({ posted, notified })
+  return NextResponse.json({ posted, notified, emailed })
 }

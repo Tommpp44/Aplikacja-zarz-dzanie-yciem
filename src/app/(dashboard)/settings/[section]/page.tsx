@@ -11,11 +11,13 @@ import {
   SignOutEverywhereButton,
 } from '@/components/settings/settings-forms'
 import { PushToggle } from '@/components/settings/push-toggle'
+import { SendTestEmailButton } from '@/components/settings/send-test-email'
 import { LanguagePicker } from '@/components/shared/language-picker'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { SETTINGS_SECTIONS, type SettingsSectionId } from '@/lib/settings/sections'
 import { getOnboardedUserContext } from '@/lib/settings/service'
+import { emailConfigured } from '@/lib/email/send'
 import { publicEnv } from '@/lib/env'
 import { getT, pageTitle } from '@/lib/i18n/server'
 import { msg } from '@/lib/i18n/translate'
@@ -82,6 +84,14 @@ export default async function SettingsSectionPage({ params }: PageProps<'/settin
           <div className="max-w-xl">
             <PushToggle publicKey={publicEnv.NEXT_PUBLIC_VAPID_PUBLIC_KEY} />
           </div>
+          {emailConfigured() ? (
+            <div className="flex max-w-xl flex-wrap items-center justify-between gap-3 rounded-lg border px-4 py-3">
+              <p className="text-muted-foreground text-sm">
+                {t('E-mails go to {email}.', { email: user.email ?? '' })}
+              </p>
+              <SendTestEmailButton />
+            </div>
+          ) : null}
           <NotificationsForm initial={prefs.notification_settings} />
         </>
       )}
