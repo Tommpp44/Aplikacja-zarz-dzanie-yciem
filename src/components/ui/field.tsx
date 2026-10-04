@@ -25,7 +25,7 @@ function Field({
     <div className={cn('flex flex-col gap-1.5', className)}>
       <Label htmlFor={htmlFor}>
         {label}
-        {optional && <span className="text-muted-foreground font-normal">(optional)</span>}
+        {optional && <span className="text-muted-foreground font-normal"> (optional)</span>}
       </Label>
       {React.isValidElement<{ 'aria-invalid'?: boolean; 'aria-describedby'?: string }>(children)
         ? React.cloneElement(children, {

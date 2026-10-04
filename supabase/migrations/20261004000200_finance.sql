@@ -128,11 +128,17 @@ declare
   v_kind text;
 begin
   select currency into v_currency from public.accounts where id = new.account_id;
+  if v_currency is null then
+    -- Unknown or not visible (another user's) account.
+    raise exception 'Account not found' using errcode = '23503';
+  end if;
   new.currency := v_currency;
 
   if new.txn_type = 'transfer' then
     select currency into v_dest_currency from public.accounts where id = new.transfer_account_id;
-    if v_dest_currency = v_currency then
+    if v_dest_currency is null then
+      raise exception 'Destination account not found' using errcode = '23503';
+    elsif v_dest_currency = v_currency then
       new.transfer_amount_minor := new.amount_minor;
     elsif new.transfer_amount_minor is null then
       raise exception 'Cross-currency transfers require transfer_amount_minor' using errcode = '23514';
