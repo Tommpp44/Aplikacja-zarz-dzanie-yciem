@@ -74,7 +74,14 @@ export function CommandPalette() {
       const typing =
         target &&
         (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
-      if (!typing && !e.metaKey && !e.ctrlKey && !e.altKey && e.key === 'c') {
+      if (
+        !typing &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        e.key === 'c' &&
+        !document.querySelector('[role="dialog"], [role="alertdialog"]')
+      ) {
         e.preventDefault()
         setCaptureMenuOpen(true)
       }

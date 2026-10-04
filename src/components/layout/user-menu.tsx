@@ -1,6 +1,6 @@
 'use client'
 
-import { LogOut, Monitor, Moon, Settings, Sun, User } from 'lucide-react'
+import { Keyboard, LogOut, Monitor, Moon, Settings, Sun, User } from 'lucide-react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { useTransition } from 'react'
@@ -59,6 +59,9 @@ export function UserMenu({
           <Link href="/settings">
             <Settings /> Settings
           </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => window.dispatchEvent(new Event('lifeos:shortcuts'))}>
+          <Keyboard /> Keyboard shortcuts
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Theme</DropdownMenuLabel>

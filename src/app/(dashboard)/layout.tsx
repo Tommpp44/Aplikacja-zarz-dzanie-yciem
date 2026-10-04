@@ -1,4 +1,5 @@
 import { CommandPalette } from '@/components/search/command-palette'
+import { KeyboardShortcuts } from '@/components/layout/keyboard-shortcuts'
 import { MobileNav } from '@/components/layout/mobile-nav'
 import { Sidebar } from '@/components/layout/sidebar'
 import { ThemeSync } from '@/components/layout/theme-sync'
@@ -28,6 +29,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <MobileNav />
       <QuickCapture />
       <CommandPalette />
+      <KeyboardShortcuts />
     </div>
   )
 }

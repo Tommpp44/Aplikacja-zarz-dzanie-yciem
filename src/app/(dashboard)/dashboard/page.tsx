@@ -1,4 +1,7 @@
 import type { Metadata } from 'next'
+import { GettingStarted } from '@/components/dashboard/getting-started'
+import { NudgeCard } from '@/components/dashboard/nudge-card'
+import { Celebrate } from '@/components/engagement/celebrate'
 import { CustomizeDashboard } from '@/components/dashboard/customize-dashboard'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
 import { QuickActions } from '@/components/dashboard/quick-actions'
@@ -16,7 +19,9 @@ import {
 import { FocusEditor } from '@/components/today/focus-editor'
 import { Card, CardContent } from '@/components/ui/card'
 import { getDashboardData } from '@/lib/dashboard/service'
-import { currentHour } from '@/lib/dates'
+import { currentHour, startOfWeekISO } from '@/lib/dates'
+import { checklistProgress } from '@/lib/engagement/checklist'
+import { pickNudge } from '@/lib/engagement/nudges'
 import type { DashboardWidgetId } from '@/lib/settings/schemas'
 import { getOnboardedUserContext } from '@/lib/settings/service'
 import type { Units } from '@/lib/units'
@@ -46,13 +51,22 @@ export default async function DashboardPage() {
   const units: Units = prefs.units === 'imperial' ? 'imperial' : 'metric'
   const name = profile.display_name || user.email?.split('@')[0] || 'there'
   const visible = prefs.dashboard_layout.filter((w) => w.visible)
+  const hour = currentHour(timezone)
+  const showChecklist = data.checklist && !checklistProgress(data.checklist).complete
+  const nudge = pickNudge({
+    hour,
+    today,
+    weekStart: startOfWeekISO(today, prefs.week_start),
+    status: data.reflection,
+  })
+  const { dueCount, doneCount } = data.day.habits
 
   return (
     <>
       <DashboardHeader
         name={name}
         today={today}
-        hour={currentHour(timezone)}
+        hour={hour}
         actions={
           <CustomizeDashboard
             layout={prefs.dashboard_layout}
@@ -60,7 +74,14 @@ export default async function DashboardPage() {
           />
         }
       />
+      <Celebrate
+        when={dueCount > 0 && doneCount >= dueCount}
+        onceKey={`habits:${today}`}
+        message="All habits done today — great work!"
+      />
       <div className="mb-6 flex flex-col gap-4">
+        {showChecklist && <GettingStarted items={data.checklist!} />}
+        {nudge && <NudgeCard nudge={nudge} />}
         <Card>
           <CardContent className="pt-4">
             <p className="text-muted-foreground mb-2 text-xs font-medium">Today&apos;s focus</p>

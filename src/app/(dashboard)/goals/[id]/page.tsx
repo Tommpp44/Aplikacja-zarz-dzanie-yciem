@@ -9,6 +9,7 @@ import {
   MilestoneList,
   ProgressUpdater,
 } from '@/components/goals/goal-detail-client'
+import { Celebrate } from '@/components/engagement/celebrate'
 import { GoalProgressBar, PaceBadge } from '@/components/goals/goal-progress-bar'
 import { LinkedNotes } from '@/components/notes/linked-notes'
 import { QuickAddBar } from '@/components/tasks/quick-add-bar'
@@ -86,6 +87,15 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
 
   return (
     <>
+      <Celebrate
+        when={
+          progress.done &&
+          (!goal.completed_at ||
+            Date.parse(goal.completed_at) > Date.parse(`${today}T00:00:00Z`) - 3 * 86_400_000)
+        }
+        onceKey={`goal:${goal.id}`}
+        message={`Goal achieved: ${goal.title} 🎉`}
+      />
       <Link
         href="/goals"
         className="text-muted-foreground hover:text-foreground mb-3 inline-flex items-center gap-1 text-sm"

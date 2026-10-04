@@ -139,6 +139,7 @@ export const rememberLastUsed = authedAction(
     income_category_id: z.uuid().optional(),
     workout_type: z.string().max(20).optional(),
     finance_range: z.enum(['month', 'quarter', 'year']).optional(),
+    checklist_dismissed: z.boolean().optional(),
   }),
   { name: 'rememberLastUsed', revalidate: [] },
   async (input, { supabase, user }) => {

@@ -8,6 +8,8 @@ import { listGoalsWithProgress } from '@/lib/goals/service'
 import { listNotes } from '@/lib/notes/repository'
 import type { UserContext } from '@/lib/settings/service'
 import { getTodayData } from '@/lib/today/service'
+import { buildChecklist } from '@/lib/engagement/checklist'
+import type { ReflectionStatus } from '@/lib/engagement/nudges'
 import { lifeBalance } from './life-balance'
 
 /** Weekly spending per category vs the average of the previous 8 weeks. */
@@ -46,6 +48,11 @@ export async function getDashboardData(ctx: UserContext) {
     listGoalsWithProgress(supabase, user.id, today, ['active']),
     listNotes(supabase, user.id, { limit: 4 }),
     listTransactionsInRange(supabase, user.id, addDaysISO(weekStart, -56), today),
+  ])
+  // First-week checklist (skipped once dismissed or completed).
+  const [checklist, reflection] = await Promise.all([
+    prefs.last_used.checklist_dismissed ? null : getChecklist(supabase, user.id),
+    getReflectionStatus(supabase, user.id, today, weekStart),
   ])
   const categoryNames = new Map(finance.categories.map((c) => [c.id, c.name]))
   const nextEvent = day.timeline.timed.find(
@@ -88,6 +95,8 @@ export async function getDashboardData(ctx: UserContext) {
         )
 
   return {
+    checklist,
+    reflection,
     day,
     finance,
     financePeriod: { range: financeRange, from: periodStart, summary: periodSummary },
@@ -102,3 +111,63 @@ export async function getDashboardData(ctx: UserContext) {
 }
 
 export type DashboardData = Awaited<ReturnType<typeof getDashboardData>>
+
+async function getChecklist(supabase: UserContext['supabase'], userId: string) {
+  const count = (
+    table:
+      | 'tasks'
+      | 'habits'
+      | 'goals'
+      | 'accounts'
+      | 'calendar_events'
+      | 'workouts'
+      | 'notes'
+      | 'journal_entries',
+  ) =>
+    supabase
+      .from(table)
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .then((r) => r.count ?? 0)
+  const [tasks, habits, goals, accounts, events, workouts, notes, journal] = await Promise.all([
+    count('tasks'),
+    count('habits'),
+    count('goals'),
+    count('accounts'),
+    count('calendar_events'),
+    count('workouts'),
+    count('notes'),
+    count('journal_entries'),
+  ])
+  return buildChecklist({ tasks, habits, goals, accounts, events, workouts, notes, journal })
+}
+
+async function getReflectionStatus(
+  supabase: UserContext['supabase'],
+  userId: string,
+  today: string,
+  weekStart: string,
+): Promise<ReflectionStatus> {
+  const [daily, journal, weekly] = await Promise.all([
+    supabase
+      .from('daily_reviews')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('review_date', today),
+    supabase
+      .from('journal_entries')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('entry_date', today),
+    supabase
+      .from('weekly_reviews')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('week_start', weekStart),
+  ])
+  return {
+    dailyReview: (daily.count ?? 0) > 0,
+    journal: (journal.count ?? 0) > 0,
+    weeklyReview: (weekly.count ?? 0) > 0,
+  }
+}

@@ -96,6 +96,7 @@ export const lastUsedSchema = z
     income_category_id: z.uuid().optional(),
     workout_type: z.string().max(20).optional(),
     finance_range: financeRangeSchema.optional(),
+    checklist_dismissed: z.boolean().optional(),
   })
   .catch({})
 export type LastUsed = z.infer<typeof lastUsedSchema>
