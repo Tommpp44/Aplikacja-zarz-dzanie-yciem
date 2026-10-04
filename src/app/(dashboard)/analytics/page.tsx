@@ -1,5 +1,6 @@
 import { BarChart3 } from 'lucide-react'
 import Link from 'next/link'
+import { goalCategoryLabel } from '@/lib/goals/schemas'
 import { BarsChart, TrendChart } from '@/components/charts/lazy'
 import { GoalProgressBar } from '@/components/goals/goal-progress-bar'
 import { Button } from '@/components/ui/button'
@@ -277,8 +278,8 @@ export default async function AnalyticsPage({ searchParams }: PageProps<'/analyt
                     <span className="flex justify-between text-sm">
                       <span>
                         {g.title}{' '}
-                        <span className="text-muted-foreground text-xs capitalize">
-                          · {g.category}
+                        <span className="text-muted-foreground text-xs">
+                          · {t(goalCategoryLabel(g.category))}
                         </span>
                       </span>
                       <span className="tabular">{Math.round(g.progress.percent)}%</span>

@@ -28,7 +28,7 @@ npm run db:seed                 # optional: demo user with realistic data
 npm run dev                     # http://localhost:3000
 ```
 
-Demo account after seeding: `demo@lifeos.app` / `lifeos-demo-2026`.
+Demo account after seeding: `demo@lifeos.app` / `lifeos-demo-2026`. `npm run db:seed -- --lang pl` creates it in Polish (Polish interface, categories and sample data).
 
 ## Environment variables
 

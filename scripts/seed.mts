@@ -2,6 +2,7 @@
  * Development seed: creates a demo user with realistic data across all modules.
  *
  *   npm run db:seed            (local Supabase only)
+ *   npm run db:seed -- --lang pl  (demo account and data in Polish)
  *   npm run db:seed -- --force (allow a non-local URL — never use on production)
  *
  * Reads NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY from .env.local.
@@ -13,6 +14,16 @@ import fs from 'node:fs'
 const DEMO_EMAIL = 'demo@lifeos.app'
 const DEMO_PASSWORD = 'lifeos-demo-2026'
 const TIMEZONE = 'Europe/Warsaw'
+/** `npm run db:seed -- --lang pl` creates the demo account in Polish. */
+const LANG: 'en' | 'pl' =
+  process.argv.includes('--lang=pl') || process.argv[process.argv.indexOf('--lang') + 1] === 'pl'
+    ? 'pl'
+    : 'en'
+// Loaded dynamically: tsc rejects `.mts` import paths, Node's type stripping requires them.
+const { PL }: { PL: Record<string, string> } = await import(
+  new URL('./seed-pl.mts', import.meta.url).href
+)
+const L = (text: string) => (LANG === 'pl' ? (PL[text] ?? text) : text)
 
 function loadEnv() {
   for (const file of ['.env.local', '.env']) {
@@ -88,7 +99,11 @@ async function main() {
     email: DEMO_EMAIL,
     password: DEMO_PASSWORD,
     email_confirm: true,
-    user_metadata: { display_name: 'Alex', timezone: TIMEZONE },
+    user_metadata: {
+      display_name: LANG === 'pl' ? 'Ola' : 'Alex',
+      timezone: TIMEZONE,
+      language: LANG,
+    },
   })
   if (error || !created.user) throw new Error(`create user: ${error?.message}`)
   const uid = created.user.id
@@ -110,7 +125,7 @@ async function main() {
     db.from('transaction_categories').select('id, name, kind').eq('user_id', uid),
     'categories',
   )
-  const cat = (name: string) => cats.find((c) => c.name === name)!.id
+  const cat = (name: string) => cats.find((c) => c.name === L(name))!.id
 
   // --- Accounts (5) ---------------------------------------------------------
   const accounts = await must(
@@ -119,7 +134,7 @@ async function main() {
       .insert(
         own([
           {
-            name: 'Main Bank Account',
+            name: L('Main Bank Account'),
             account_type: 'checking',
             currency: 'PLN',
             opening_balance_minor: 845_000,
@@ -128,7 +143,7 @@ async function main() {
             position: 0,
           },
           {
-            name: 'Savings',
+            name: L('Savings'),
             account_type: 'savings',
             currency: 'PLN',
             opening_balance_minor: 1_650_000,
@@ -137,7 +152,7 @@ async function main() {
             position: 1,
           },
           {
-            name: 'Cash',
+            name: L('Cash'),
             account_type: 'cash',
             currency: 'PLN',
             opening_balance_minor: 42_000,
@@ -145,7 +160,7 @@ async function main() {
             position: 2,
           },
           {
-            name: 'Credit Card',
+            name: L('Credit Card'),
             account_type: 'credit_card',
             currency: 'PLN',
             opening_balance_minor: -120_000,
@@ -154,7 +169,7 @@ async function main() {
             position: 3,
           },
           {
-            name: 'ETF Portfolio',
+            name: L('ETF Portfolio'),
             account_type: 'investment',
             currency: 'PLN',
             opening_balance_minor: 3_210_000,
@@ -168,7 +183,7 @@ async function main() {
       .select('id, name'),
     'accounts',
   )
-  const acc = (name: string) => accounts.find((a) => a.name === name)!.id
+  const acc = (name: string) => accounts.find((a) => a.name === L(name))!.id
 
   // --- Recurring transactions ----------------------------------------------------
   const nextMonthly = (day: number) => {
@@ -187,7 +202,7 @@ async function main() {
             txn_type: 'income',
             amount_minor: 1_045_000,
             category_id: cat('Salary'),
-            merchant: 'ACME Sp. z o.o.',
+            merchant: L('ACME Sp. z o.o.'),
             repeat_rule: { freq: 'monthly', interval: 1, monthDay: 10 },
             next_date: nextMonthly(10),
           },
@@ -196,7 +211,7 @@ async function main() {
             txn_type: 'expense',
             amount_minor: 280_000,
             category_id: cat('Housing'),
-            merchant: 'Rent',
+            merchant: L('Rent'),
             repeat_rule: { freq: 'monthly', interval: 1, monthDay: 1 },
             next_date: nextMonthly(1),
           },
@@ -205,7 +220,7 @@ async function main() {
             txn_type: 'expense',
             amount_minor: 6_900,
             category_id: cat('Utilities'),
-            merchant: 'Orange Internet',
+            merchant: L('Orange Internet'),
             repeat_rule: { freq: 'monthly', interval: 1, monthDay: 15 },
             next_date: nextMonthly(15),
           },
@@ -214,7 +229,7 @@ async function main() {
             txn_type: 'expense',
             amount_minor: 4_900,
             category_id: cat('Subscriptions'),
-            merchant: 'Netflix',
+            merchant: L('Netflix'),
             repeat_rule: { freq: 'monthly', interval: 1, monthDay: 20 },
             next_date: nextMonthly(20),
           },
@@ -223,7 +238,7 @@ async function main() {
             txn_type: 'transfer',
             amount_minor: 150_000,
             transfer_account_id: acc('Savings'),
-            merchant: 'Monthly savings',
+            merchant: L('Monthly savings'),
             repeat_rule: { freq: 'monthly', interval: 1, monthDay: 11 },
             next_date: nextMonthly(11),
           },
@@ -233,7 +248,7 @@ async function main() {
       .select('id, merchant'),
     'recurring',
   )
-  const rec = (m: string) => recurring.find((r) => r.merchant === m)!.id
+  const rec = (m: string) => recurring.find((r) => r.merchant === L(m))!.id
 
   // --- Transactions (~90 over 3 months) ---------------------------------------------
   const txns: Record<string, unknown>[] = []
@@ -250,7 +265,7 @@ async function main() {
       txn_type: 'income',
       amount_minor: 1_045_000,
       category_id: cat('Salary'),
-      merchant: 'ACME Sp. z o.o.',
+      merchant: L('ACME Sp. z o.o.'),
       occurred_on: day(10),
       recurring_id: rec('ACME Sp. z o.o.'),
       source: 'recurring',
@@ -260,7 +275,7 @@ async function main() {
       txn_type: 'expense',
       amount_minor: 280_000,
       category_id: cat('Housing'),
-      merchant: 'Rent',
+      merchant: L('Rent'),
       occurred_on: day(1),
       recurring_id: rec('Rent'),
       source: 'recurring',
@@ -270,7 +285,7 @@ async function main() {
       txn_type: 'expense',
       amount_minor: 6_900,
       category_id: cat('Utilities'),
-      merchant: 'Orange Internet',
+      merchant: L('Orange Internet'),
       occurred_on: day(15),
       recurring_id: rec('Orange Internet'),
       source: 'recurring',
@@ -280,7 +295,7 @@ async function main() {
       txn_type: 'expense',
       amount_minor: 4_900,
       category_id: cat('Subscriptions'),
-      merchant: 'Netflix',
+      merchant: L('Netflix'),
       occurred_on: day(20),
       recurring_id: rec('Netflix'),
       source: 'recurring',
@@ -290,7 +305,7 @@ async function main() {
       txn_type: 'transfer',
       amount_minor: 150_000,
       transfer_account_id: acc('Savings'),
-      merchant: 'Monthly savings',
+      merchant: L('Monthly savings'),
       occurred_on: day(11),
       recurring_id: rec('Monthly savings'),
       source: 'recurring',
@@ -301,7 +316,7 @@ async function main() {
         txn_type: 'income',
         amount_minor: 180_000,
         category_id: cat('Freelance'),
-        merchant: 'Design project',
+        merchant: L('Design project'),
         occurred_on: day(22),
       })
     const merchants: [string, string, number, number][] = [
@@ -348,14 +363,14 @@ async function main() {
     txn_type: 'expense',
     amount_minor: 1_500,
     category_id: cat('Food'),
-    merchant: 'Bakery',
+    merchant: L('Bakery'),
     occurred_on: addDays(today, -4),
   })
   txns.push({
     account_id: acc('ETF Portfolio'),
     txn_type: 'adjustment',
     amount_minor: 85_000,
-    description: 'Market value update',
+    description: L('Market value update'),
     occurred_on: addDays(today, -6),
   })
   await must(db.from('transactions').insert(own(txns), { defaultToNull: false }), 'transactions')
@@ -369,7 +384,9 @@ async function main() {
     const [budget] = await must(
       db
         .from('budgets')
-        .insert(own([{ name, amount_minor: amount, currency: 'PLN' }]), { defaultToNull: false })
+        .insert(own([{ name: L(name), amount_minor: amount, currency: 'PLN' }]), {
+          defaultToNull: false,
+        })
         .select('id'),
       'budget',
     )
@@ -391,7 +408,7 @@ async function main() {
       .insert(
         own([
           {
-            title: 'Build emergency fund',
+            title: L('Build emergency fund'),
             category: 'finance',
             target_type: 'numeric',
             progress_source: 'account',
@@ -402,7 +419,7 @@ async function main() {
             deadline: yearEnd,
           },
           {
-            title: 'Run a half marathon',
+            title: L('Run a half marathon'),
             category: 'fitness',
             target_type: 'numeric',
             progress_source: 'milestones',
@@ -410,19 +427,19 @@ async function main() {
             deadline: addDays(today, 60),
           },
           {
-            title: 'Read 24 books',
+            title: L('Read 24 books'),
             category: 'learning',
             target_type: 'numeric',
             progress_source: 'manual',
             start_value: 0,
             target_value: 24,
             current_value: 15,
-            unit: 'books',
+            unit: L('books'),
             start_date: `${today.slice(0, 4)}-01-01`,
             deadline: yearEnd,
           },
           {
-            title: 'Move to Berlin',
+            title: L('Move to Berlin'),
             category: 'lifestyle',
             target_type: 'numeric',
             progress_source: 'tasks',
@@ -430,7 +447,7 @@ async function main() {
             deadline: addDays(today, 120),
           },
           {
-            title: 'Get AWS certification',
+            title: L('Get AWS certification'),
             category: 'career',
             target_type: 'percentage',
             progress_source: 'manual',
@@ -445,31 +462,31 @@ async function main() {
       .select('id, title'),
     'goals',
   )
-  const goal = (t: string) => goals.find((g) => g.title === t)!.id
+  const goal = (t: string) => goals.find((g) => g.title === L(t))!.id
   await must(
     db.from('goal_milestones').insert(
       own([
         {
           goal_id: goal('Run a half marathon'),
-          title: 'Run 5 km without stopping',
+          title: L('Run 5 km without stopping'),
           completed_at: addDays(today, -30) + 'T18:00:00Z',
           position: 0,
         },
         {
           goal_id: goal('Run a half marathon'),
-          title: 'Run 10 km',
+          title: L('Run 10 km'),
           completed_at: addDays(today, -10) + 'T18:00:00Z',
           position: 1,
         },
         {
           goal_id: goal('Run a half marathon'),
-          title: 'Run 15 km',
+          title: L('Run 15 km'),
           due_date: addDays(today, 20),
           position: 2,
         },
         {
           goal_id: goal('Run a half marathon'),
-          title: 'Race day — 21.1 km',
+          title: L('Race day — 21.1 km'),
           due_date: addDays(today, 60),
           position: 3,
         },
@@ -499,8 +516,8 @@ async function main() {
       .insert(
         own([
           {
-            name: 'Move to Berlin',
-            description: 'Find a flat, sort out paperwork and move by spring.',
+            name: L('Move to Berlin'),
+            description: L('Find a flat, sort out paperwork and move by spring.'),
             status: 'active',
             priority: 1,
             deadline: addDays(today, 120),
@@ -508,31 +525,31 @@ async function main() {
             goal_id: goal('Move to Berlin'),
           },
           {
-            name: 'Website redesign',
-            description: 'New portfolio site with case studies.',
+            name: L('Website redesign'),
+            description: L('New portfolio site with case studies.'),
             status: 'active',
             priority: 2,
             deadline: addDays(today, 30),
             color: 'blue',
           },
-          { name: 'Home office setup', status: 'planning', priority: 3, color: 'amber' },
+          { name: L('Home office setup'), status: 'planning', priority: 3, color: 'amber' },
         ]),
         { defaultToNull: false },
       )
       .select('id, name'),
     'projects',
   )
-  const proj = (n: string) => projects.find((p) => p.name === n)!.id
+  const proj = (n: string) => projects.find((p) => p.name === L(n))!.id
   const tasks = [
     {
-      title: 'Find apartment',
+      title: L('Find apartment'),
       project_id: proj('Move to Berlin'),
       goal_id: goal('Move to Berlin'),
       priority: 1,
       due_date: addDays(today, 3),
     },
     {
-      title: 'Compare neighborhoods',
+      title: L('Compare neighborhoods'),
       project_id: proj('Move to Berlin'),
       goal_id: goal('Move to Berlin'),
       priority: 2,
@@ -540,84 +557,84 @@ async function main() {
       due_time: '19:00',
     },
     {
-      title: 'Prepare documents',
+      title: L('Prepare documents'),
       project_id: proj('Move to Berlin'),
       goal_id: goal('Move to Berlin'),
       priority: 2,
       due_date: addDays(today, 7),
     },
     {
-      title: 'Book transport',
+      title: L('Book transport'),
       project_id: proj('Move to Berlin'),
       goal_id: goal('Move to Berlin'),
       priority: 3,
     },
     {
-      title: 'Cancel current rental',
+      title: L('Cancel current rental'),
       project_id: proj('Move to Berlin'),
       goal_id: goal('Move to Berlin'),
       priority: 3,
       due_date: addDays(today, 30),
     },
     {
-      title: 'Research Berlin neighborhoods',
+      title: L('Research Berlin neighborhoods'),
       project_id: proj('Move to Berlin'),
       goal_id: goal('Move to Berlin'),
       status: 'completed',
       completed_at: addDays(today, -5) + 'T10:00:00Z',
     },
     {
-      title: 'Write case study: banking app',
+      title: L('Write case study: banking app'),
       project_id: proj('Website redesign'),
       priority: 2,
       due_date: addDays(today, 2),
     },
     {
-      title: 'Prepare report',
+      title: L('Prepare report'),
       priority: 1,
       due_date: today,
       due_time: '13:00',
       duration_minutes: 90,
     },
     {
-      title: 'Finish project presentation',
+      title: L('Finish project presentation'),
       priority: 1,
       due_date: today,
       due_time: '16:00',
       duration_minutes: 60,
     },
-    { title: 'Buy groceries', priority: 3, due_date: today, due_time: '18:00' },
-    { title: 'Call the dentist', priority: 2, due_date: addDays(today, -1) },
-    { title: 'Pay electricity bill', priority: 2, due_date: addDays(today, 1) },
+    { title: L('Buy groceries'), priority: 3, due_date: today, due_time: '18:00' },
+    { title: L('Call the dentist'), priority: 2, due_date: addDays(today, -1) },
+    { title: L('Pay electricity bill'), priority: 2, due_date: addDays(today, 1) },
     {
-      title: 'Water the plants',
+      title: L('Water the plants'),
       priority: 4,
       due_date: today,
       repeat_rule: { freq: 'daily', interval: 3 },
     },
     {
-      title: 'Weekly planning',
+      title: L('Weekly planning'),
       priority: 2,
       due_date: addDays(today, (7 - weekday(today)) % 7),
       repeat_rule: { freq: 'weekly', interval: 1, weekdays: [0] },
     },
     {
-      title: 'Study for AWS exam — module 4',
+      title: L('Study for AWS exam — module 4'),
       goal_id: goal('Get AWS certification'),
       priority: 2,
       due_date: addDays(today, 2),
       duration_minutes: 120,
     },
-    { title: 'Pick a standing desk', project_id: proj('Home office setup'), priority: 4 },
-    { title: 'Learn Spanish basics', is_someday: true },
-    { title: 'Plan a trip to Lisbon', is_someday: true },
+    { title: L('Pick a standing desk'), project_id: proj('Home office setup'), priority: 4 },
+    { title: L('Learn Spanish basics'), is_someday: true },
+    { title: L('Plan a trip to Lisbon'), is_someday: true },
     {
-      title: 'Read “Atomic Habits”',
+      title: L('Read “Atomic Habits”'),
       goal_id: goal('Read 24 books'),
       status: 'completed',
       completed_at: addDays(today, -2) + 'T21:00:00Z',
     },
-    { title: 'Renew passport', priority: 2 },
+    { title: L('Renew passport'), priority: 2 },
   ]
   await must(db.from('tasks').insert(own(tasks), { defaultToNull: false }), 'tasks')
 
@@ -628,7 +645,7 @@ async function main() {
       .insert(
         own([
           {
-            name: 'Read 20 minutes',
+            name: L('Read 20 minutes'),
             habit_type: 'boolean',
             target: 1,
             frequency: 'daily',
@@ -637,7 +654,7 @@ async function main() {
             position: 0,
           },
           {
-            name: 'Drink water',
+            name: L('Drink water'),
             habit_type: 'numeric',
             target: 2,
             unit: 'L',
@@ -646,17 +663,17 @@ async function main() {
             position: 1,
           },
           {
-            name: 'Meditate',
+            name: L('Meditate'),
             habit_type: 'duration',
             target: 10,
-            unit: 'min',
+            unit: L('min'),
             frequency: 'daily',
             color: 'emerald',
             reminder_time: '07:30',
             position: 2,
           },
           {
-            name: '10k steps',
+            name: L('10k steps'),
             habit_type: 'boolean',
             target: 1,
             frequency: 'daily',
@@ -664,17 +681,17 @@ async function main() {
             position: 3,
           },
           {
-            name: 'Push-ups',
+            name: L('Push-ups'),
             habit_type: 'count',
             target: 50,
-            unit: 'reps',
+            unit: L('reps'),
             frequency: 'weekdays',
             weekdays: [1, 3, 5],
             color: 'rose',
             position: 4,
           },
           {
-            name: 'Gym',
+            name: L('Gym'),
             habit_type: 'boolean',
             target: 1,
             frequency: 'times_per_week',
@@ -684,7 +701,7 @@ async function main() {
             position: 5,
           },
           {
-            name: 'No sugar',
+            name: L('No sugar'),
             habit_type: 'boolean',
             target: 1,
             frequency: 'daily',
@@ -692,7 +709,7 @@ async function main() {
             position: 6,
           },
           {
-            name: 'Journal',
+            name: L('Journal'),
             habit_type: 'boolean',
             target: 1,
             frequency: 'daily',
@@ -716,15 +733,17 @@ async function main() {
     'No sugar': 0.5,
     Journal: 0.55,
   }
+  const reliabilityOf = (name: string) =>
+    Object.entries(reliability).find(([k]) => L(k) === name)?.[1] ?? 0.5
   for (const h of habits) {
     for (let i = 60; i >= 1; i--) {
       const date = addDays(today, -i)
-      if (h.name === 'Push-ups' && ![1, 3, 5].includes(weekday(date))) continue
-      if (rand() < reliability[h.name]!)
+      if (h.name === L('Push-ups') && ![1, 3, 5].includes(weekday(date))) continue
+      if (rand() < reliabilityOf(h.name))
         logs.push({ habit_id: h.id, log_date: date, value: Number(h.target) })
     }
   }
-  const hab = (n: string) => habits.find((h) => h.name === n)!
+  const hab = (n: string) => habits.find((h) => h.name === L(n))!
   logs.push(
     { habit_id: hab('Read 20 minutes').id, log_date: today, value: 1 },
     { habit_id: hab('Drink water').id, log_date: today, value: 1.25 },
@@ -737,7 +756,7 @@ async function main() {
       .from('routines')
       .insert(
         own([
-          { name: 'Morning routine', routine_type: 'morning', start_time: '07:00', position: 0 },
+          { name: L('Morning routine'), routine_type: 'morning', start_time: '07:00', position: 0 },
         ]),
         { defaultToNull: false },
       )
@@ -747,22 +766,27 @@ async function main() {
   await must(
     db.from('routine_items').insert(
       own([
-        { routine_id: morning!.id, title: 'Wake up, no phone', duration_minutes: 2, position: 0 },
         {
           routine_id: morning!.id,
-          title: 'Drink a glass of water',
+          title: L('Wake up, no phone'),
+          duration_minutes: 2,
+          position: 0,
+        },
+        {
+          routine_id: morning!.id,
+          title: L('Drink a glass of water'),
           duration_minutes: 1,
           position: 1,
         },
         {
           routine_id: morning!.id,
-          title: 'Meditate',
+          title: L('Meditate'),
           duration_minutes: 10,
           position: 2,
           habit_id: hab('Meditate').id,
         },
-        { routine_id: morning!.id, title: 'Stretch', duration_minutes: 10, position: 3 },
-        { routine_id: morning!.id, title: 'Plan the day', duration_minutes: 5, position: 4 },
+        { routine_id: morning!.id, title: L('Stretch'), duration_minutes: 10, position: 3 },
+        { routine_id: morning!.id, title: L('Plan the day'), duration_minutes: 5, position: 4 },
       ]),
       { defaultToNull: false },
     ),
@@ -773,7 +797,12 @@ async function main() {
       .from('routines')
       .insert(
         own([
-          { name: 'Evening shutdown', routine_type: 'evening', start_time: '21:30', position: 1 },
+          {
+            name: L('Evening shutdown'),
+            routine_type: 'evening',
+            start_time: '21:30',
+            position: 1,
+          },
         ]),
         { defaultToNull: false },
       )
@@ -783,17 +812,17 @@ async function main() {
   await must(
     db.from('routine_items').insert(
       own([
-        { routine_id: evening!.id, title: 'Review tomorrow', duration_minutes: 5, position: 0 },
+        { routine_id: evening!.id, title: L('Review tomorrow'), duration_minutes: 5, position: 0 },
         {
           routine_id: evening!.id,
-          title: 'Journal',
+          title: L('Journal'),
           duration_minutes: 10,
           position: 1,
           habit_id: hab('Journal').id,
         },
         {
           routine_id: evening!.id,
-          title: 'Read',
+          title: L('Read'),
           duration_minutes: 20,
           position: 2,
           habit_id: hab('Read 20 minutes').id,
@@ -807,34 +836,34 @@ async function main() {
   // --- Calendar (10 events) ----------------------------------------------------------
   const events = [
     {
-      title: 'Team standup',
+      title: L('Team standup'),
       starts_at: instant(addDays(today, -7), '09:30'),
       ends_at: instant(addDays(today, -7), '09:45'),
       repeat_rule: { freq: 'weekly', interval: 1, weekdays: [1, 2, 3, 4, 5] },
       color: 'blue',
     },
     {
-      title: 'Lunch with Kasia',
+      title: L('Lunch with Kasia'),
       starts_at: instant(today, '12:30'),
       ends_at: instant(today, '13:30'),
-      location: 'Bistro Mąka',
+      location: L('Bistro Mąka'),
       color: 'emerald',
     },
     {
-      title: 'Dentist',
+      title: L('Dentist'),
       starts_at: instant(addDays(today, 2), '08:00'),
       ends_at: instant(addDays(today, 2), '08:45'),
       color: 'rose',
     },
     {
-      title: 'Apartment viewing — Kreuzberg',
+      title: L('Apartment viewing — Kreuzberg'),
       starts_at: instant(addDays(today, 5), '17:00'),
       ends_at: instant(addDays(today, 5), '18:00'),
       color: 'violet',
       project_id: proj('Move to Berlin'),
     },
     {
-      title: 'Mom’s birthday',
+      title: L('Mom’s birthday'),
       starts_at: instant(addDays(today, 9), '00:00'),
       ends_at: instant(addDays(today, 10), '00:00'),
       all_day: true,
@@ -842,35 +871,35 @@ async function main() {
       color: 'pink',
     },
     {
-      title: 'Client call',
+      title: L('Client call'),
       starts_at: instant(addDays(today, 1), '15:00'),
       ends_at: instant(addDays(today, 1), '15:30'),
       color: 'blue',
     },
     {
-      title: 'Padel with friends',
+      title: L('Padel with friends'),
       starts_at: instant(addDays(today, 3), '19:00'),
       ends_at: instant(addDays(today, 3), '20:30'),
       color: 'orange',
     },
     {
-      title: 'Weekend in Kraków',
+      title: L('Weekend in Kraków'),
       starts_at: instant(addDays(today, 12), '00:00'),
       ends_at: instant(addDays(today, 14), '00:00'),
       all_day: true,
       color: 'cyan',
     },
     {
-      title: 'Portfolio review',
+      title: L('Portfolio review'),
       starts_at: instant(addDays(today, -2), '11:00'),
       ends_at: instant(addDays(today, -2), '12:00'),
       color: 'indigo',
     },
     {
-      title: 'Car service',
+      title: L('Car service'),
       starts_at: instant(addDays(today, 6), '08:30'),
       ends_at: instant(addDays(today, 6), '10:00'),
-      location: 'ASO Toyota',
+      location: L('ASO Toyota'),
       color: 'slate',
     },
   ]
@@ -885,7 +914,9 @@ async function main() {
   const [upper] = await must(
     db
       .from('workout_templates')
-      .insert(own([{ name: 'Upper body A', workout_type: 'strength' }]), { defaultToNull: false })
+      .insert(own([{ name: L('Upper body A'), workout_type: 'strength' }]), {
+        defaultToNull: false,
+      })
       .select('id'),
     'template',
   )
@@ -927,7 +958,7 @@ async function main() {
       .insert(
         own([
           {
-            name: 'Half Marathon — 12 weeks',
+            name: L('Half Marathon — 12 weeks'),
             start_date: addDays(today, -21),
             weeks: 12,
             goal_id: goal('Run a half marathon'),
@@ -952,7 +983,7 @@ async function main() {
         ].map(([weekday, title, workout_type]) => ({
           plan_id: plan[0]!.id,
           weekday,
-          title,
+          title: L(title as string),
           workout_type,
           template_id: workout_type === 'strength' ? upper!.id : null,
           target_duration_minutes: workout_type === 'rest' ? null : 45,
@@ -964,7 +995,7 @@ async function main() {
   )
   const runs = [
     {
-      name: 'Easy run',
+      name: L('Easy run'),
       workout_type: 'running',
       performed_on: addDays(today, -1),
       duration_minutes: 42,
@@ -974,7 +1005,7 @@ async function main() {
       goal_id: goal('Run a half marathon'),
     },
     {
-      name: 'Long run',
+      name: L('Long run'),
       workout_type: 'running',
       performed_on: addDays(today, -4),
       duration_minutes: 78,
@@ -985,7 +1016,7 @@ async function main() {
       goal_id: goal('Run a half marathon'),
     },
     {
-      name: 'Intervals 6×800 m',
+      name: L('Intervals 6×800 m'),
       workout_type: 'running',
       performed_on: addDays(today, -6),
       duration_minutes: 50,
@@ -994,7 +1025,7 @@ async function main() {
       goal_id: goal('Run a half marathon'),
     },
     {
-      name: 'Padel',
+      name: L('Padel'),
       workout_type: 'padel',
       performed_on: addDays(today, -9),
       duration_minutes: 90,
@@ -1013,7 +1044,7 @@ async function main() {
         .insert(
           own([
             {
-              name: 'Upper body A',
+              name: L('Upper body A'),
               workout_type: 'strength',
               performed_on: addDays(today, offset),
               duration_minutes: 55,
@@ -1084,22 +1115,24 @@ async function main() {
       .insert(
         own([
           {
-            title: 'Berlin budget',
-            content:
+            title: L('Berlin budget'),
+            content: L(
               '<p>Rent: ~1 400 EUR for 2 rooms in Kreuzberg / Neukölln.</p><ul><li><p>Deposit: 3 months</p></li><li><p>Anmeldung within 14 days</p></li></ul>',
-            content_text:
+            ),
+            content_text: L(
               'Rent: ~1 400 EUR for 2 rooms in Kreuzberg / Neukölln. Deposit: 3 months. Anmeldung within 14 days',
+            ),
             pinned: true,
           },
           {
-            title: 'Half marathon pacing',
-            content: '<p>Target pace 5:40/km. Negative split: first 10 km at 5:45.</p>',
-            content_text: 'Target pace 5:40/km. Negative split: first 10 km at 5:45.',
+            title: L('Half marathon pacing'),
+            content: L('<p>Target pace 5:40/km. Negative split: first 10 km at 5:45.</p>'),
+            content_text: L('Target pace 5:40/km. Negative split: first 10 km at 5:45.'),
           },
           {
-            title: 'Book ideas',
+            title: L('Book ideas'),
             content: '<ol><li><p>Deep Work</p></li><li><p>The Psychology of Money</p></li></ol>',
-            content_text: 'Deep Work. The Psychology of Money',
+            content_text: L('Deep Work. The Psychology of Money'),
           },
         ]),
         { defaultToNull: false },
@@ -1111,12 +1144,12 @@ async function main() {
     db.from('note_links').insert(
       own([
         {
-          note_id: notes.find((n) => n.title === 'Berlin budget')!.id,
+          note_id: notes.find((n) => n.title === L('Berlin budget'))!.id,
           entity_type: 'project',
           entity_id: proj('Move to Berlin'),
         },
         {
-          note_id: notes.find((n) => n.title === 'Half marathon pacing')!.id,
+          note_id: notes.find((n) => n.title === L('Half marathon pacing'))!.id,
           entity_type: 'goal',
           entity_id: goal('Run a half marathon'),
         },
@@ -1131,17 +1164,17 @@ async function main() {
         {
           entry_date: addDays(today, -1),
           mood: 4,
-          today_text: 'Good long run and productive afternoon.',
-          went_well: 'Kept the pace for 13 km.',
-          could_be_better: 'Went to bed too late.',
-          tomorrow_text: 'Finish the report before lunch.',
+          today_text: L('Good long run and productive afternoon.'),
+          went_well: L('Kept the pace for 13 km.'),
+          could_be_better: L('Went to bed too late.'),
+          tomorrow_text: L('Finish the report before lunch.'),
         },
         {
           entry_date: addDays(today, -2),
           mood: 3,
-          today_text: 'Busy day of meetings.',
-          went_well: 'Gym session felt strong.',
-          could_be_better: 'Too much coffee.',
+          today_text: L('Busy day of meetings.'),
+          went_well: L('Gym session felt strong.'),
+          could_be_better: L('Too much coffee.'),
         },
       ]),
       { defaultToNull: false },
@@ -1151,7 +1184,7 @@ async function main() {
   const [groceries] = await must(
     db
       .from('shopping_lists')
-      .insert(own([{ name: 'Groceries' }]), { defaultToNull: false })
+      .insert(own([{ name: L('Groceries') }]), { defaultToNull: false })
       .select('id'),
     'list',
   )
@@ -1160,26 +1193,32 @@ async function main() {
       own([
         {
           list_id: groceries!.id,
-          name: 'Milk',
+          name: L('Milk'),
           quantity: 2,
           unit: 'l',
-          category: 'Dairy',
+          category: L('Dairy'),
           position: 0,
         },
-        { list_id: groceries!.id, name: 'Eggs', quantity: 10, category: 'Dairy', position: 1 },
         {
           list_id: groceries!.id,
-          name: 'Chicken',
+          name: L('Eggs'),
+          quantity: 10,
+          category: L('Dairy'),
+          position: 1,
+        },
+        {
+          list_id: groceries!.id,
+          name: L('Chicken'),
           quantity: 1,
-          unit: 'kg',
-          category: 'Meat & fish',
+          unit: L('kg'),
+          category: L('Meat & fish'),
           position: 2,
         },
-        { list_id: groceries!.id, name: 'Vegetables', category: 'Produce', position: 3 },
+        { list_id: groceries!.id, name: L('Vegetables'), category: L('Produce'), position: 3 },
         {
           list_id: groceries!.id,
-          name: 'Toilet paper',
-          category: 'Household',
+          name: L('Toilet paper'),
+          category: L('Household'),
           position: 4,
           purchased: true,
           purchased_at: new Date().toISOString(),
@@ -1192,7 +1231,7 @@ async function main() {
   await must(
     db
       .from('user_preferences')
-      .update({ focus_text: 'Finish project presentation', focus_date: today })
+      .update({ focus_text: L('Finish project presentation'), focus_date: today })
       .eq('user_id', uid),
     'focus',
   )

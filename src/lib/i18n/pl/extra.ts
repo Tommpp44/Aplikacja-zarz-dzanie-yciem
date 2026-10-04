@@ -4,8 +4,6 @@ import type { Dict } from './index'
 export const extra: Dict = {
   'LifeOS brings your plans, habits, money, training and notes together — so you always know what matters next.':
     'LifeOS łączy Twoje plany, nawyki, pieniądze, treningi i notatki — dzięki temu zawsze wiesz, co jest teraz najważniejsze.',
-  'Automatic sync with {services} is planned. The data model already stores the source of every record, so imported data will sit next to manual entries.':
-    'Planujemy automatyczną synchronizację z: {services}. Model danych już zapisuje źródło każdego wpisu, więc zaimportowane dane pojawią się obok ręcznych.',
   ALL: 'WSZYSTKO',
   'of tasks due in range': 'zadań z terminem w okresie',
   'Overdue now': 'Zaległe teraz',
@@ -277,4 +275,8 @@ export const extra: Dict = {
   'We couldn’t read this calendar. Check that the link is the iCal (.ics) address.':
     'Nie udało się odczytać kalendarza. Sprawdź, czy to adres iCal (.ics).',
   'Strava is not configured on this server.': 'Strava nie jest skonfigurowana na tym serwerze.',
+  '{n} linked': 'powiązania: {n}',
+  'Import steps and workouts from Apple Health, Strava or GPX files — when several sources record the same day, the largest value counts.':
+    'Importuj kroki i treningi z Apple Health, Stravy lub plików GPX — gdy kilka źródeł zapisze ten sam dzień, liczy się największa wartość.',
+  'Open integrations': 'Otwórz integracje',
 }

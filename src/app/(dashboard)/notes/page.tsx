@@ -87,7 +87,9 @@ export default async function NotesPage({ searchParams }: PageProps<'/notes'>) {
                         </span>
                       ),
                   )}
-                  {n.note_links.length > 0 && <span>· {n.note_links.length} linked</span>}
+                  {n.note_links.length > 0 && (
+                    <span>· {t('{n} linked', { n: n.note_links.length })}</span>
+                  )}
                 </span>
               </Link>
             </li>

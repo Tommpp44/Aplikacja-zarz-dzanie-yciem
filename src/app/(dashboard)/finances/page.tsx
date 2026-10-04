@@ -63,7 +63,7 @@ export default async function FinancesPage() {
           label={t('Net worth')}
           value={formatMoney(f.netWorth.net, currency)}
           size="lg"
-          hint={`Assets ${formatMoney(f.netWorth.assets, currency)} · Liabilities ${formatMoney(f.netWorth.liabilities, currency)}${f.netWorth.otherCurrencies.length ? ` · + ${f.netWorth.otherCurrencies.map((o) => formatMoney(o.net, o.currency)).join(', ')}` : ''}`}
+          hint={`${t('Assets')} ${formatMoney(f.netWorth.assets, currency)} · ${t('Liabilities')} ${formatMoney(f.netWorth.liabilities, currency)}${f.netWorth.otherCurrencies.length ? ` · + ${f.netWorth.otherCurrencies.map((o) => formatMoney(o.net, o.currency)).join(', ')}` : ''}`}
         />
         <AddTransactionButton {...formProps} />
       </div>

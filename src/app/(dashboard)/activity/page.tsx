@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { ActivityForm } from '@/components/activity/activity-form'
 import { BarsChart } from '@/components/charts/lazy'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,8 +11,6 @@ import { getTrainingOverview } from '@/lib/workouts/service'
 import { getT, pageTitle } from '@/lib/i18n/server'
 
 export const generateMetadata = pageTitle('Activity')
-
-const INTEGRATIONS = ['Apple Health', 'Google Fit / Health Connect', 'Garmin', 'Strava', 'Fitbit']
 
 export default async function ActivityPage() {
   const t = await getT()
@@ -76,9 +75,11 @@ export default async function ActivityPage() {
         </Card>
         <p className="text-muted-foreground text-xs">
           {t(
-            'Automatic sync with {services} is planned. The data model already stores the source of every record, so imported data will sit next to manual entries.',
-            { services: INTEGRATIONS.join(', ') },
-          )}
+            'Import steps and workouts from Apple Health, Strava or GPX files — when several sources record the same day, the largest value counts.',
+          )}{' '}
+          <Link href="/settings/integrations" className="text-primary underline underline-offset-2">
+            {t('Open integrations')}
+          </Link>
         </p>
       </div>
     </>

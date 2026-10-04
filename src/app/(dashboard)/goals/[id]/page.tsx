@@ -22,7 +22,7 @@ import { computeGoalPace, computeGoalProgress } from '@/lib/goals/calculations'
 import { formatGoalValue } from '@/lib/goals/format'
 import { listGoalOptions } from '@/lib/goals/options'
 import { getGoal, listProgressLogs } from '@/lib/goals/repository'
-import type { GoalInput } from '@/lib/goals/schemas'
+import { goalCategoryLabel, type GoalInput } from '@/lib/goals/schemas'
 import { listProjectOptions } from '@/lib/projects/repository'
 import { getOnboardedUserContext } from '@/lib/settings/service'
 import { listTasks } from '@/lib/tasks/repository'
@@ -109,8 +109,8 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
             <h1 className="text-2xl font-semibold tracking-tight">{goal.title}</h1>
             <PaceBadge pace={pace} />
           </div>
-          <p className="text-muted-foreground mt-1 text-sm capitalize">
-            {goal.category}
+          <p className="text-muted-foreground mt-1 text-sm">
+            {t(goalCategoryLabel(goal.category))}
             {goal.description ? <span className="normal-case"> · {goal.description}</span> : null}
           </p>
         </div>

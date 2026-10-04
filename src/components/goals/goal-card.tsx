@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { goalCategoryLabel } from '@/lib/goals/schemas'
 import { formatISODate } from '@/lib/dates'
 import { formatGoalValue } from '@/lib/goals/format'
 import type { GoalWithProgress } from '@/lib/goals/service'
@@ -22,7 +23,7 @@ export async function GoalCard({ goal }: { goal: GoalWithProgress }) {
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate font-medium">{goal.title}</p>
-          <p className="text-muted-foreground text-xs capitalize">{goal.category}</p>
+          <p className="text-muted-foreground text-xs">{t(goalCategoryLabel(goal.category))}</p>
         </div>
         <PaceBadge pace={pace} />
       </div>
