@@ -8,6 +8,20 @@ test.describe('authentication', () => {
     await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible()
   })
 
+  test('anonymous visitors see the landing page; signed-in users skip it', async ({ page }) => {
+    await page.goto('/')
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Your life, in one calm place' }),
+    ).toBeVisible()
+    await page.getByRole('link', { name: 'Start for free' }).click()
+    await expect(page).toHaveURL(/\/signup/)
+
+    await signUp(page, uniqueEmail('landing'))
+    await finishOnboarding(page)
+    await page.goto('/')
+    await expect(page).toHaveURL(/\/dashboard/)
+  })
+
   test('rejects a wrong password with a human message', async ({ page }) => {
     await page.goto('/login')
     await page.getByLabel('Email').fill('nobody@example.com')

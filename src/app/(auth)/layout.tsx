@@ -33,7 +33,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1fr_1.05fr]">
       <main className="flex flex-col items-center justify-center px-4 py-10">
-        <Link href="/login" className="mb-8" aria-label={t('LifeOS home')}>
+        <Link href="/" className="mb-8" aria-label={t('LifeOS home')}>
           <Logo className="text-lg" />
         </Link>
         <div className="w-full max-w-sm">{children}</div>

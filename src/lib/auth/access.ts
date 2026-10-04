@@ -15,6 +15,8 @@ export const PUBLIC_PATHS = [
 ] as const
 
 export function isPublicPath(pathname: string) {
+  // The landing page is public; signed-in visitors are sent on to the dashboard.
+  if (pathname === '/') return true
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
 }
 

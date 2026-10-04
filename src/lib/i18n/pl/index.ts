@@ -1,6 +1,7 @@
 import { common } from './common'
 import { extra } from './extra'
 import { forms } from './forms'
+import { landing } from './landing'
 import { lib } from './lib'
 import { modules } from './modules'
 import { modules2 } from './modules2'
@@ -21,4 +22,5 @@ export const pl: Dict = {
   ...pages,
   ...pages2,
   ...extra,
+  ...landing,
 }

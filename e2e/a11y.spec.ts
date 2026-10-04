@@ -40,7 +40,7 @@ async function audit(page: import('@playwright/test').Page) {
 }
 
 test('auth pages have no WCAG A/AA violations', async ({ page }) => {
-  for (const path of ['/login', '/signup']) {
+  for (const path of ['/', '/login', '/signup']) {
     await page.goto(path)
     expect.soft(await audit(page), path).toEqual([])
   }
