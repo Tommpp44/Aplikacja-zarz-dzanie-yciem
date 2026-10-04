@@ -106,3 +106,22 @@ export function weeklyFrequency(
   }
   return out
 }
+
+/** Best estimated 1RM per training day for one exercise, oldest first. */
+export function e1rmSeries(
+  entries: { exerciseId: string; date: ISODate; sets: SetLike[] }[],
+  exerciseId: string,
+) {
+  const byDate = new Map<ISODate, number>()
+  for (const e of entries) {
+    if (e.exerciseId !== exerciseId) continue
+    for (const s of e.sets) {
+      if (s.completed === false || !s.weight_kg || !s.reps) continue
+      const v = estimatedOneRepMax(s.weight_kg, s.reps)
+      if (v > (byDate.get(e.date) ?? 0)) byDate.set(e.date, v)
+    }
+  }
+  return [...byDate.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, e1rm]) => ({ date, e1rm }))
+}

@@ -61,7 +61,7 @@ export async function getStrengthRecords(db: DB, userId: string) {
   const volumeByWorkout = new Map<string, number>()
   for (const h of history)
     volumeByWorkout.set(h.workoutId, (volumeByWorkout.get(h.workoutId) ?? 0) + totalVolume(h.sets))
-  return { prs, volumeByWorkout, exercises }
+  return { prs, volumeByWorkout, exercises, history }
 }
 
 export { listTemplates }

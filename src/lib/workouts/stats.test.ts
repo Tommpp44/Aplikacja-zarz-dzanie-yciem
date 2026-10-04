@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { formatDistance, formatPace, formatWeight } from '@/lib/units'
 import {
+  e1rmSeries,
   estimatedOneRepMax,
   isNewRecord,
   personalRecords,
@@ -72,5 +73,28 @@ describe('units', () => {
     expect(formatWeight(100, 'imperial')).toBe('220,5 lb')
     expect(formatDistance(21097.5, 'metric')).toBe('21,1 km')
     expect(formatPace(10000, 50, 'metric')).toBe('5:00 /km')
+  })
+})
+
+describe('e1rmSeries', () => {
+  it('keeps the best set per day, sorted by date, ignoring other exercises', () => {
+    const series = e1rmSeries(
+      [
+        { exerciseId: 'a', date: '2026-02-01', sets: [{ weight_kg: 100, reps: 1 }] },
+        {
+          exerciseId: 'a',
+          date: '2026-01-01',
+          sets: [
+            { weight_kg: 80, reps: 5 },
+            { weight_kg: 90, reps: 3, completed: false },
+          ],
+        },
+        { exerciseId: 'b', date: '2026-01-15', sets: [{ weight_kg: 200, reps: 1 }] },
+      ],
+      'a',
+    )
+    expect(series.map((p) => p.date)).toEqual(['2026-01-01', '2026-02-01'])
+    expect(series[0]!.e1rm).toBeCloseTo(80 * (1 + 5 / 30))
+    expect(series[1]!.e1rm).toBe(100)
   })
 })
