@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Field } from '@/components/ui/field'
@@ -64,11 +64,12 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
   const router = useRouter()
 
   // Prefer the browser's timezone when the account still has the default.
-  useEffect(() => {
+  const goToSettings = () => {
     const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone
-    if (defaults.timezone === 'UTC' && browserTz)
+    if (settings.timezone === 'UTC' && browserTz)
       setSettings((s) => ({ ...s, timezone: browserTz }))
-  }, [defaults.timezone])
+    setStep(2)
+  }
 
   const toggle = (value: Interest) =>
     setInterests((prev) =>
@@ -133,10 +134,10 @@ export function OnboardingFlow({ name, defaults }: { name: string; defaults: Def
             })}
           </div>
           <div className="flex justify-between">
-            <Button variant="ghost" onClick={() => setStep(2)}>
+            <Button variant="ghost" onClick={goToSettings}>
               Skip
             </Button>
-            <Button onClick={() => setStep(2)}>
+            <Button onClick={goToSettings}>
               Continue <ArrowRight />
             </Button>
           </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { Check, Monitor, Moon, Sun } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useState } from 'react'
 import { ConfirmDialog } from '@/components/ui/alert-dialog'
@@ -166,6 +167,11 @@ export function PreferencesForm({ initial }: { initial: Prefs }) {
   )
 }
 
+/** Applies the accent immediately (outside React state, like next-themes does for the theme). */
+function applyAccent(accent: Accent) {
+  document.documentElement.dataset.accent = accent
+}
+
 const ACCENT_SWATCH: Record<Accent, string> = {
   indigo: 'bg-indigo-500',
   blue: 'bg-blue-500',
@@ -191,7 +197,7 @@ export function AppearanceForm({
     setLocalTheme(t)
     setAccent(a)
     setTheme(t)
-    document.documentElement.dataset.accent = a
+    applyAccent(a)
     run(() => updateAppearance({ theme: t, accent: a }), { success: 'Appearance updated' })
   }
   return (
@@ -288,6 +294,7 @@ export function DeleteAccountSection() {
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
   const [, run] = useServerAction()
+  const router = useRouter()
   return (
     <div className="border-destructive/30 bg-destructive-soft/40 flex max-w-xl flex-col gap-3 rounded-xl border p-5">
       <h3 className="text-destructive font-medium">Delete account</h3>
@@ -311,7 +318,10 @@ export function DeleteAccountSection() {
         confirmDisabled={text !== 'DELETE'}
         onConfirm={() =>
           run(() => deleteAccount({ confirmation: 'DELETE' }), {
-            onSuccess: () => window.location.assign('/login'),
+            onSuccess: () => {
+              router.replace('/login')
+              router.refresh()
+            },
           })
         }
       >

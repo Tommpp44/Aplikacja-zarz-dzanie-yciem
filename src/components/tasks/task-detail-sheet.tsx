@@ -127,11 +127,9 @@ export function TaskDetailSheet({
 
   useEffect(() => {
     if (taskId) load(taskId)
-    else {
-      setDetails(null)
-      setForm(null)
-    }
   }, [taskId, load])
+  // Only show data that belongs to the task being opened (never a stale one).
+  const ready = form !== null && details !== null && details.task.id === taskId
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => (f ? { ...f, [key]: value } : f))
@@ -185,7 +183,7 @@ export function TaskDetailSheet({
           <SheetTitle>Task</SheetTitle>
           <SheetDescription>Edit details, subtasks, links and notes.</SheetDescription>
         </SheetHeader>
-        {!form || !details || loading ? (
+        {!ready || loading ? (
           <div className="flex flex-col gap-3 px-5">
             <Skeleton className="h-9" />
             <Skeleton className="h-20" />

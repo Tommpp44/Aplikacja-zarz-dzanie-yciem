@@ -83,39 +83,44 @@ export function CommandPalette() {
     return () => window.removeEventListener('keydown', onKey)
   }, [setOpen, setCaptureMenuOpen])
 
-  useEffect(() => {
-    if (!open) {
+  const onOpenChange = (next: boolean) => {
+    setOpen(next)
+    if (!next) {
       setQuery('')
       setResults([])
     }
-  }, [open])
+  }
 
   useEffect(() => {
     const q = query.trim()
-    if (q.length < 2) {
-      setResults([])
-      return
-    }
-    setLoading(true)
-    const h = setTimeout(async () => {
-      const r = await searchEverything({ query: q })
-      setLoading(false)
-      if (r.ok) setResults(r.data)
+    if (q.length < 2) return
+    let cancelled = false
+    const h = setTimeout(() => {
+      setLoading(true)
+      void searchEverything({ query: q }).then((r) => {
+        if (cancelled) return
+        setLoading(false)
+        if (r.ok) setResults(r.data)
+      })
     }, 180)
-    return () => clearTimeout(h)
+    return () => {
+      cancelled = true
+      clearTimeout(h)
+    }
   }, [query])
+  const visibleResults = query.trim().length >= 2 ? results : []
 
   const go = (href: string) => {
-    setOpen(false)
+    onOpenChange(false)
     router.push(href)
   }
 
   const grouped = Object.entries(TYPE_META)
-    .map(([type, meta]) => ({ type, meta, items: results.filter((r) => r.type === type) }))
+    .map(([type, meta]) => ({ type, meta, items: visibleResults.filter((r) => r.type === type) }))
     .filter((g) => g.items.length > 0)
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent hideClose className="overflow-hidden p-0 sm:max-w-xl">
         <DialogTitle className="sr-only">Search and commands</DialogTitle>
         <Command shouldFilter={!query || query.trim().length < 2} loop>
@@ -163,7 +168,7 @@ export function CommandPalette() {
                   })}
                   <CommandItem
                     onSelect={async () => {
-                      setOpen(false)
+                      onOpenChange(false)
                       const r = await startWorkout({ workout_type: 'strength' })
                       if (r.ok) router.push(`/workouts/${r.data.id}`)
                     }}

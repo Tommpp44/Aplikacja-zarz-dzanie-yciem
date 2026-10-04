@@ -2,7 +2,7 @@
 
 import { Bell, CheckCheck } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { getNotifications, markNotificationsRead } from '@/lib/notifications/actions'
 import { cn } from '@/lib/utils'
@@ -24,15 +24,21 @@ export function NotificationBell() {
   const [unread, setUnread] = useState(0)
   const [open, setOpen] = useState(false)
 
-  const load = useCallback(async (sync: boolean) => {
-    const r = await getNotifications({ sync })
-    if (r.ok) {
-      setItems(r.data.items)
-      setUnread(r.data.unread)
-    }
-  }, [])
-
   useEffect(() => {
+    let cancelled = false
+    const load = (sync: boolean) =>
+      getNotifications({ sync }).then((r) => {
+        if (cancelled || !r.ok) return
+        setItems(r.data.items)
+        setUnread(r.data.unread)
+        if (sync) {
+          try {
+            sessionStorage.setItem('lifeos-notif-sync', String(Date.now()))
+          } catch {
+            // storage unavailable
+          }
+        }
+      })
     // Generate due notifications at most every 10 minutes per browser.
     let last = 0
     try {
@@ -40,17 +46,13 @@ export function NotificationBell() {
     } catch {
       // storage unavailable
     }
-    const shouldSync = Date.now() - last > SYNC_INTERVAL
-    void load(shouldSync).then(() => {
-      try {
-        if (shouldSync) sessionStorage.setItem('lifeos-notif-sync', String(Date.now()))
-      } catch {
-        // ignore
-      }
-    })
+    void load(Date.now() - last > SYNC_INTERVAL)
     const t = setInterval(() => void load(true), SYNC_INTERVAL)
-    return () => clearInterval(t)
-  }, [load])
+    return () => {
+      cancelled = true
+      clearInterval(t)
+    }
+  }, [])
 
   const markAll = async () => {
     setUnread(0)

@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   applicationName: 'LifeOS',
   appleWebApp: { capable: true, title: 'LifeOS', statusBarStyle: 'default' },
   formatDetection: { telephone: false },
+  icons: { apple: '/icons/apple-touch-icon.png' },
 }
 
 export const viewport: Viewport = {

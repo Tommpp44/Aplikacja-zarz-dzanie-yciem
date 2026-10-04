@@ -72,7 +72,12 @@ export function UserMenu({
           <Monitor /> System
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => startTransition(() => signOut())}>
+        <DropdownMenuItem
+          onSelect={() => {
+            navigator.serviceWorker?.controller?.postMessage('clear-user-cache')
+            startTransition(() => signOut())
+          }}
+        >
           <LogOut /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
