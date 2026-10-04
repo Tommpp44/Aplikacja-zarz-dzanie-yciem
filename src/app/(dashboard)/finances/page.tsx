@@ -228,13 +228,11 @@ export default async function FinancesPage() {
                 <DonutChart
                   ariaLabel="Spending by category"
                   format={`money:${currency}`}
-                  data={f.topCategories
-                    .slice(0, 6)
-                    .map((c) => ({
-                      label: c.name,
-                      value: minorToMajor(c.amount, currency),
-                      color: COLOR_HEX[asEntityColor(c.color)],
-                    }))}
+                  data={f.topCategories.slice(0, 6).map((c) => ({
+                    label: c.name,
+                    value: minorToMajor(c.amount, currency),
+                    color: COLOR_HEX[asEntityColor(c.color)],
+                  }))}
                 />
                 <ul className="flex flex-col gap-1.5 text-sm">
                   {f.topCategories.slice(0, 6).map((c) => (

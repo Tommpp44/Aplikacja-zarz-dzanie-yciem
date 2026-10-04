@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { optionalDate, optionalUuid } from '@/lib/validation'
 
 export const GOAL_CATEGORIES = [
   'finance',
@@ -39,10 +40,10 @@ export const goalSchema = z
     current_value: z.number().finite().default(0),
     unit: z.string().trim().max(20).nullable().optional(),
     start_date: z.iso.date().optional(),
-    deadline: z.iso.date().nullable().optional(),
+    deadline: optionalDate,
     status: z.enum(GOAL_STATUSES).optional(),
-    linked_account_id: z.uuid().nullable().optional(),
-    life_area_id: z.uuid().nullable().optional(),
+    linked_account_id: optionalUuid,
+    life_area_id: optionalUuid,
   })
   .superRefine((v, ctx) => {
     if (
@@ -68,7 +69,7 @@ export type GoalInput = z.input<typeof goalSchema>
 export const milestoneSchema = z.object({
   goal_id: z.uuid(),
   title: z.string().trim().min(1, 'Name the milestone').max(200),
-  due_date: z.iso.date().nullable().optional(),
+  due_date: optionalDate,
   target_value: nullableNumber,
 })
 

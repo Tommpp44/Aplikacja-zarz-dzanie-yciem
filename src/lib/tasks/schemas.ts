@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { blankable, optionalDate, optionalTime, optionalUuid } from '@/lib/validation'
 import { repeatRuleSchema } from '@/lib/recurrence'
 
 export const TASK_STATUSES = ['inbox', 'todo', 'in_progress', 'completed', 'cancelled'] as const
@@ -25,14 +26,6 @@ export const STATUS_LABELS: Record<TaskStatus, string> = {
 
 export const PRIORITY_LABELS: Record<number, string> = { 1: 'P1', 2: 'P2', 3: 'P3', 4: 'P4' }
 
-const optionalUuid = z.uuid().nullable().optional()
-const optionalDate = z.iso.date().nullable().optional()
-const optionalTime = z
-  .string()
-  .regex(/^\d{2}:\d{2}(:\d{2})?$/, 'Use HH:MM')
-  .nullable()
-  .optional()
-
 export const taskFieldsSchema = z.object({
   title: z.string().trim().min(1, 'Give the task a title').max(500),
   description: z.string().trim().max(10000).nullable().optional(),
@@ -44,7 +37,7 @@ export const taskFieldsSchema = z.object({
   duration_minutes: z.number().int().min(1).max(1440).nullable().optional(),
   repeat_rule: repeatRuleSchema.nullable().optional(),
   is_someday: z.boolean().optional(),
-  reminder_at: z.iso.datetime({ offset: true }).nullable().optional(),
+  reminder_at: blankable(z.iso.datetime({ offset: true })),
   project_id: optionalUuid,
   goal_id: optionalUuid,
   parent_task_id: optionalUuid,

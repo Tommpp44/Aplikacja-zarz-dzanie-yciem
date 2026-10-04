@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { optionalDate, optionalUuid } from '@/lib/validation'
 import { ENTITY_COLORS } from '@/lib/colors'
 import { repeatRuleSchema } from '@/lib/recurrence'
 
@@ -70,8 +71,8 @@ export const transactionSchema = z
     /** Destination amount for cross-currency transfers. */
     transfer_amount: z.string().trim().max(30).optional(),
     account_id: z.uuid('Choose an account'),
-    transfer_account_id: z.uuid().nullable().optional(),
-    category_id: z.uuid().nullable().optional(),
+    transfer_account_id: optionalUuid,
+    category_id: optionalUuid,
     occurred_on: z.iso.date(),
     merchant: z.string().trim().max(120).nullable().optional(),
     description: z.string().trim().max(500).nullable().optional(),
@@ -104,13 +105,13 @@ export const recurringSchema = z
     txn_type: z.enum(['expense', 'income', 'transfer']),
     amount: amountText,
     account_id: z.uuid('Choose an account'),
-    transfer_account_id: z.uuid().nullable().optional(),
-    category_id: z.uuid().nullable().optional(),
+    transfer_account_id: optionalUuid,
+    category_id: optionalUuid,
     merchant: z.string().trim().max(120).nullable().optional(),
     description: z.string().trim().max(500).nullable().optional(),
     repeat_rule: repeatRuleSchema,
     next_date: z.iso.date(),
-    end_date: z.iso.date().nullable().optional(),
+    end_date: optionalDate,
     auto_post: z.boolean().default(false),
   })
   .superRefine((v, ctx) => {

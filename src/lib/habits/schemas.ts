@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { optionalDate, optionalTime, optionalUuid } from '@/lib/validation'
 import { ENTITY_COLORS } from '@/lib/colors'
 
 export const HABIT_TYPES = ['boolean', 'numeric', 'duration', 'count'] as const
@@ -38,13 +39,9 @@ export const habitSchema = z
     interval_days: z.number().int().min(1).max(365).nullable().optional(),
     color: z.enum(ENTITY_COLORS).default('indigo'),
     start_date: z.iso.date().optional(),
-    end_date: z.iso.date().nullable().optional(),
-    reminder_time: z
-      .string()
-      .regex(/^\d{2}:\d{2}$/)
-      .nullable()
-      .optional(),
-    goal_id: z.uuid().nullable().optional(),
+    end_date: optionalDate,
+    reminder_time: optionalTime,
+    goal_id: optionalUuid,
   })
   .superRefine((v, ctx) => {
     if (v.frequency === 'weekdays' && v.weekdays.length === 0)
