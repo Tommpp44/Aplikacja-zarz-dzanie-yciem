@@ -25,52 +25,46 @@ export const saveReview = authedAction(
     )
     if (type === 'daily') {
       unwrap(
-        await supabase
-          .from('daily_reviews')
-          .upsert(
-            {
-              user_id: user.id,
-              review_date: period.key,
-              stats,
-              highlights: a || null,
-              notes: b || null,
-            },
-            { onConflict: 'user_id,review_date' },
-          ),
+        await supabase.from('daily_reviews').upsert(
+          {
+            user_id: user.id,
+            review_date: period.key,
+            stats,
+            highlights: a || null,
+            notes: b || null,
+          },
+          { onConflict: 'user_id,review_date' },
+        ),
         'save the review',
       )
     } else if (type === 'weekly') {
       unwrap(
-        await supabase
-          .from('weekly_reviews')
-          .upsert(
-            {
-              user_id: user.id,
-              week_start: period.key,
-              stats,
-              wins: a || null,
-              challenges: b || null,
-              next_priorities: c || null,
-            },
-            { onConflict: 'user_id,week_start' },
-          ),
+        await supabase.from('weekly_reviews').upsert(
+          {
+            user_id: user.id,
+            week_start: period.key,
+            stats,
+            wins: a || null,
+            challenges: b || null,
+            next_priorities: c || null,
+          },
+          { onConflict: 'user_id,week_start' },
+        ),
         'save the review',
       )
     } else {
       unwrap(
-        await supabase
-          .from('monthly_reviews')
-          .upsert(
-            {
-              user_id: user.id,
-              month_start: period.key,
-              stats,
-              wins: a || null,
-              challenges: b || null,
-              next_focus: c || null,
-            },
-            { onConflict: 'user_id,month_start' },
-          ),
+        await supabase.from('monthly_reviews').upsert(
+          {
+            user_id: user.id,
+            month_start: period.key,
+            stats,
+            wins: a || null,
+            challenges: b || null,
+            next_focus: c || null,
+          },
+          { onConflict: 'user_id,month_start' },
+        ),
         'save the review',
       )
     }
