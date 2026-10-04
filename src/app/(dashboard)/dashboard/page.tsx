@@ -53,7 +53,7 @@ export default async function DashboardPage() {
         name={name}
         today={today}
         hour={currentHour(timezone)}
-        actions={<CustomizeDashboard layout={prefs.dashboard_layout} />}
+        actions={<CustomizeDashboard layout={prefs.dashboard_layout} financeRange={prefs.last_used.finance_range ?? 'month'} />}
       />
       <div className="mb-6 flex flex-col gap-4">
         <Card>

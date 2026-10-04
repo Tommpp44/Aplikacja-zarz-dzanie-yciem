@@ -239,7 +239,9 @@ async function main() {
   // --- Transactions (~90 over 3 months) ---------------------------------------------
   const txns: Record<string, unknown>[] = []
   for (let monthOffset = 2; monthOffset >= 0; monthOffset--) {
-    const base = addDays(monthStart, -31 * monthOffset).slice(0, 8)
+    const [cy, cm] = today.split('-').map(Number)
+    const monthDate = new Date(Date.UTC(cy!, cm! - 1 - monthOffset, 1))
+    const base = `${monthDate.getUTCFullYear()}-${pad(monthDate.getUTCMonth() + 1)}-`
     const day = (d: number) => `${base}${pad(d)}`
     const push = (t: Record<string, unknown>) => {
       if ((t.occurred_on as string) <= today) txns.push(t)

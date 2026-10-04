@@ -35,7 +35,9 @@ export async function syncNotificationsForUser(db: DB, userId: string) {
   const dayStart = zonedToUtc(today, '00:00', tz).toISOString()
   const monthStart = startOfMonthISO(today)
 
+  const nowIso = new Date().toISOString()
   const [
+    reminders,
     dueToday,
     overdue,
     habits,
@@ -49,6 +51,15 @@ export async function syncNotificationsForUser(db: DB, userId: string) {
     milestones,
     recurring,
   ] = await Promise.all([
+    db
+      .from('tasks')
+      .select('id, title, reminder_at')
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .in('status', ['inbox', 'todo', 'in_progress'])
+      .lte('reminder_at', nowIso)
+      .gte('reminder_at', dayStart)
+      .limit(20),
     db
       .from('tasks')
       .select('id', { count: 'exact', head: true })
@@ -155,6 +166,7 @@ export async function syncNotificationsForUser(db: DB, userId: string) {
       goalId: m.goal_id,
       goalTitle: m.goal?.title ?? '',
     })),
+    taskReminders: (reminders.data ?? []).map((t: { id: string; title: string; reminder_at: string | null }) => ({ id: t.id, title: t.title, reminder_at: t.reminder_at! })),
     recurringDue: (recurring.data ?? []).map((r) => ({
       id: r.id,
       name: r.merchant || r.description || 'Payment',

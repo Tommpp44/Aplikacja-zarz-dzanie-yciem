@@ -213,6 +213,7 @@ export function GoalsWidget({ data }: P) {
 
 export function FinanceWidget({ data, currency }: P) {
   const f = data.finance
+  const p = data.financePeriod.summary
   if (f.accounts.length === 0) {
     return (
       <Widget title="Finances" href="/finances/accounts?new=1" linkLabel="Add account">
@@ -232,24 +233,24 @@ export function FinanceWidget({ data, currency }: P) {
         <div className="grid grid-cols-3 gap-3">
           <Stat
             label="Income"
-            value={<Money minor={f.month.income} currency={currency} compact />}
+            value={<Money minor={p.income} currency={currency} compact />}
             size="sm"
             tone="positive"
           />
           <Stat
             label="Expenses"
-            value={<Money minor={f.month.expenses} currency={currency} compact />}
+            value={<Money minor={p.expenses} currency={currency} compact />}
             size="sm"
           />
           <Stat
             label="Savings"
-            value={<Money minor={f.month.savings} currency={currency} compact />}
+            value={<Money minor={p.savings} currency={currency} compact />}
             size="sm"
-            tone={f.month.savings < 0 ? 'negative' : undefined}
+            tone={p.savings < 0 ? 'negative' : undefined}
           />
         </div>
         <p className="text-muted-foreground text-xs">
-          This month · savings rate {Math.round(f.month.savingsRate)}% · forecast end balance{' '}
+          {data.financePeriod.range === 'month' ? 'This month' : data.financePeriod.range === 'quarter' ? 'Last 3 months' : 'Year to date'} · savings rate {Math.round(p.savingsRate)}% · forecast end balance{' '}
           {formatMoney(f.forecast.expectedEndBalance, currency, { compact: true })}
         </p>
       </div>

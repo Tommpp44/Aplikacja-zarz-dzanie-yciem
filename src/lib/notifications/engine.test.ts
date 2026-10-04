@@ -23,6 +23,7 @@ const facts: NotificationFacts = {
   goalsCompletedToday: [],
   milestonesToday: [],
   recurringDue: [{ id: 'r', name: 'Rent', date: '2026-10-04' }],
+  taskReminders: [{ id: 't1', title: 'Call bank', reminder_at: '2026-10-04T07:00:00Z' }],
 }
 
 describe('computeNotifications', () => {
@@ -31,6 +32,7 @@ describe('computeNotifications', () => {
     const n = computeNotifications(facts, settings)
     expect(n.map((x) => x.dedupe_key)).toEqual([
       'task_overdue:2026-10-04',
+      'task_reminder:t1:2026-10-04T07:00:00Z',
       'task_due:2026-10-04',
       'habit:h1:2026-10-04',
       'workout:2026-10-04',

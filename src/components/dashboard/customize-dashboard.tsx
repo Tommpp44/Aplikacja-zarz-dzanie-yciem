@@ -12,13 +12,15 @@ import {
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
 import { useServerAction } from '@/hooks/use-server-action'
-import { updateDashboardLayout } from '@/lib/settings/actions'
-import { DASHBOARD_WIDGETS, type DashboardWidget } from '@/lib/settings/schemas'
+import { rememberLastUsed, updateDashboardLayout } from '@/lib/settings/actions'
+import { DASHBOARD_WIDGETS, type DashboardWidget, type FinanceRange } from '@/lib/settings/schemas'
+import { NativeSelect } from '@/components/ui/native-select'
 
 /** Reorder, hide and show dashboard widgets (stored in user preferences). */
-export function CustomizeDashboard({ layout }: { layout: DashboardWidget[] }) {
+export function CustomizeDashboard({ layout, financeRange }: { layout: DashboardWidget[]; financeRange: FinanceRange }) {
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState(layout)
+  const [range, setRange] = useState<FinanceRange>(financeRange)
   const [pending, run] = useServerAction()
   const label = (id: string) => DASHBOARD_WIDGETS.find((w) => w.id === id)
   const move = (index: number, dir: -1 | 1) => {
@@ -78,6 +80,14 @@ export function CustomizeDashboard({ layout }: { layout: DashboardWidget[] }) {
               </li>
             ))}
           </ul>
+          <label className="mx-5 flex items-center justify-between gap-3 rounded-lg border bg-card px-3 py-2 text-sm">
+            Finance widget period
+            <NativeSelect aria-label="Finance widget period" className="w-40" value={range} onChange={(e) => setRange(e.target.value as FinanceRange)}>
+              <option value="month">This month</option>
+              <option value="quarter">Last 3 months</option>
+              <option value="year">Year to date</option>
+            </NativeSelect>
+          </label>
           <div className="mt-auto flex justify-end gap-2 border-t px-5 py-3">
             <Button variant="ghost" onClick={() => setItems(layout)}>
               Reset
@@ -85,7 +95,12 @@ export function CustomizeDashboard({ layout }: { layout: DashboardWidget[] }) {
             <Button
               disabled={pending}
               onClick={() =>
-                run(() => updateDashboardLayout({ layout: items }), {
+                run(
+                  async () => {
+                    const r = await rememberLastUsed({ finance_range: range })
+                    return r.ok ? updateDashboardLayout({ layout: items }) : r
+                  },
+                  {
                   success: 'Dashboard updated',
                   onSuccess: () => setOpen(false),
                 })

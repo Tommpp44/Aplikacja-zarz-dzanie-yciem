@@ -37,6 +37,8 @@ export type NotificationFacts = {
   goalsCompletedToday: { id: string; title: string }[]
   milestonesToday: { id: string; title: string; goalId: string; goalTitle: string }[]
   recurringDue: { id: string; name: string; date: string }[]
+  /** Open tasks whose reminder time has passed (task.reminder_at). */
+  taskReminders?: { id: string; title: string; reminder_at: string }[]
 }
 
 /**
@@ -59,6 +61,9 @@ export function computeNotifications(
         href: '/tasks?view=today',
         dedupe_key: `task_overdue:${d}`,
       })
+    }
+    for (const t of f.taskReminders ?? []) {
+      out.push({ kind: 'task_reminder', title: `Reminder: ${t.title}`, href: '/tasks?view=today', dedupe_key: `task_reminder:${t.id}:${t.reminder_at}` })
     }
     if (f.tasksDueToday > 0) {
       out.push({
