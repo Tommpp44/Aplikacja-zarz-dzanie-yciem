@@ -59,18 +59,16 @@ export async function setHabitLog(
     return
   }
   unwrap(
-    await db
-      .from('habit_logs')
-      .upsert(
-        {
-          habit_id: habitId,
-          user_id: userId,
-          log_date: date,
-          value,
-          ...(note !== undefined ? { note } : {}),
-        },
-        { onConflict: 'habit_id,log_date' },
-      ),
+    await db.from('habit_logs').upsert(
+      {
+        habit_id: habitId,
+        user_id: userId,
+        log_date: date,
+        value,
+        ...(note !== undefined ? { note } : {}),
+      },
+      { onConflict: 'habit_id,log_date' },
+    ),
     'update the habit',
   )
 }

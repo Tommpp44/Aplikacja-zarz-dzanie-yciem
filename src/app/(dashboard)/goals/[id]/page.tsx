@@ -79,12 +79,10 @@ export default async function GoalPage({ params }: PageProps<'/goals/[id]'>) {
         : goal.unit
   const fmt = (v: number) => formatGoalValue(v, unit)
   const openTasks = tasks.filter((t) => !['completed', 'cancelled'].includes(t.status))
-  const chartData = [...logs]
-    .reverse()
-    .map((l) => ({
-      label: formatISODate(l.logged_at.slice(0, 10), 'd MMM'),
-      value: Number(l.value),
-    }))
+  const chartData = [...logs].reverse().map((l) => ({
+    label: formatISODate(l.logged_at.slice(0, 10), 'd MMM'),
+    value: Number(l.value),
+  }))
 
   return (
     <>
